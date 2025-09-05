@@ -22,10 +22,11 @@ services:
         value: "8000"
 
   # Frontend static site  
-  - type: static
+  - type: web
     name: mapa-prilezitosti-ui
-    staticPublishPath: ./ui/dist
+    env: static
     buildCommand: cd ui && npm install && npm run build
+    staticPublishPath: ./ui/dist
     routes:
       - type: rewrite
         source: /*
