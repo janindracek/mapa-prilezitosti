@@ -3,7 +3,7 @@ from fastapi import APIRouter
 
 from api.services.bars import BarsService
 from api.helpers import build_trend
-from api.data_access import get_metrics_cached, metrics_mtime_key
+# Old import removed - using deployment_data instead
 from api.data.deployment_loader import deployment_data
 
 router = APIRouter()
@@ -46,9 +46,29 @@ def trend(hs6: str, years: int = 10):
     """
     Return time series for selected HS6 aggregated across partners.
     Adds value_fmt and unit for nicer tooltips in UI.
+    
+    Note: Deployment data only contains 2023, so trends are not available
     """
-    df = get_metrics_cached(metrics_mtime_key())
-    return build_trend(df, hs6=hs6, years=years)
+    # Use deployment data (only 2023 available)
+    df = deployment_data.core_trade
+    
+    # Since we only have 2023 data, return a simple single-point trend
+    try:
+        hs6_int = int(hs6.lstrip('0')) if isinstance(hs6, str) else int(hs6)
+        hs6_data = df[df['hs6'] == hs6_int]
+        
+        if len(hs6_data) == 0:
+            return {"data": [], "total_export": 0, "status": "no_data"}
+        
+        total_export = hs6_data['export_cz_to_partner'].sum()
+        
+        return {
+            "data": [{"year": 2023, "export_cz_to_partner": total_export}],
+            "total_export": total_export,
+            "status": "single_year_only"
+        }
+    except (ValueError, TypeError):
+        return {"data": [], "total_export": 0, "status": "invalid_hs6"}
 
 
 @router.get("/bars")

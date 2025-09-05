@@ -2,7 +2,7 @@ import pandas as pd
 from fastapi import APIRouter
 
 from api.config import load_config
-from api.data_access import get_metrics_cached, metrics_mtime_key
+from api.data.deployment_loader import deployment_data
 from api.services import PeerGroupsService
 
 router = APIRouter()
@@ -29,8 +29,8 @@ def controls_with_labels():
         "metric_labels": { [metric]: string }
       }
     """
-    # Reuse parquet loader and YAML labels
-    df = get_metrics_cached(metrics_mtime_key())
+    # Use deployment data loader
+    df = deployment_data.core_trade
     countries = sorted(pd.Series(df["partner_iso3"]).dropna().unique().tolist())
     years = sorted(int(y) for y in pd.Series(df["year"]).dropna().unique().tolist())
 
