@@ -82,21 +82,10 @@ class DeploymentDataLoader:
     def metadata(self) -> Dict[str, Any]:
         """Reference data: countries, HS6 names, configurations"""
         if self._metadata is None:
-            csv_path = f"{self.base_path}/metadata.csv"
-            parquet_path = f"{self.base_path}/metadata.parquet"
-            
-            # Try CSV first (deployment), then parquet (development)
-            if os.path.exists(csv_path):
-                meta_df = pd.read_csv(csv_path)
-                self._metadata = meta_df.iloc[0].to_dict() if len(meta_df) > 0 else {}
-                print("Loaded metadata from CSV")
-            elif os.path.exists(parquet_path):
-                meta_df = pd.read_parquet(parquet_path)
-                self._metadata = meta_df.iloc[0].to_dict() if len(meta_df) > 0 else {}
-                print("Loaded metadata from Parquet")
-            else:
-                print(f"Warning: Neither {csv_path} nor {parquet_path} found")
-                self._metadata = {'countries': [], 'hs6_names': {}, 'config': {}}
+            # Skip the malformed metadata.csv and just provide empty fallback
+            # Actual data is loaded from separate clean files (countries.csv, hs6_names.csv, config.yaml)
+            self._metadata = {'countries': [], 'hs6_names': {}, 'config': {}}
+            print("Using empty metadata (data loaded from separate files)")
         return self._metadata
     
     @lru_cache(maxsize=100)
@@ -115,7 +104,7 @@ class DeploymentDataLoader:
                 # Final fallback: empty DataFrame
                 return pd.DataFrame({'iso3': [], 'name': []})
     
-    def get_map_data(self, hs6: str = None, metric: str = 'export_cz_to_partner', year: int = 2023) -> List[Dict]:
+    def get_map_data(self, hs6: str = None, metric: str = 'export_cz_to_partner', year: int = 2023, top: int = 0) -> List[Dict]:
         """
         Global map data with full coverage
         
@@ -131,7 +120,13 @@ class DeploymentDataLoader:
         
         # Apply filters
         if hs6:
-            df = df[df['hs6'] == hs6]
+            # Handle HS6 as both string and int formats
+            try:
+                hs6_int = int(hs6.lstrip('0')) if isinstance(hs6, str) else int(hs6)
+                df = df[df['hs6'] == hs6_int]
+            except (ValueError, TypeError):
+                print(f"Warning: Could not convert hs6 '{hs6}' to integer")
+                return []
             
         if len(df) == 0:
             return []
@@ -186,6 +181,11 @@ class DeploymentDataLoader:
         
         # Sort by value descending
         results.sort(key=lambda x: x['value'], reverse=True)
+        
+        # Apply top limit if specified
+        if top > 0:
+            results = results[:top]
+            
         return results
         
     def get_signals_data(self, country: str = None, hs6: str = None, type: str = None, limit: int = None) -> List[Dict]:
@@ -210,7 +210,12 @@ class DeploymentDataLoader:
         if country:
             df = df[df['partner_iso3'] == country]
         if hs6:
-            df = df[df['hs6'] == hs6]
+            # Handle HS6 as both string and int formats
+            try:
+                hs6_int = int(hs6.lstrip('0')) if isinstance(hs6, str) else int(hs6)
+                df = df[df['hs6'] == hs6_int]
+            except (ValueError, TypeError):
+                print(f"Warning: Could not convert hs6 '{hs6}' to integer")
         if type:
             df = df[df['type'] == type]
         if limit:
