@@ -18,4 +18,22 @@ APP.add_middleware(
 
 @APP.get("/health")
 def health():
+    return {"status": "ok", "message": "API server is running"}
+
+@APP.get("/debug")
+def debug():
+    import os
+    return {
+        "status": "debug",
+        "working_directory": os.getcwd(),
+        "deployment_data_exists": os.path.exists("data/deployment"),
+        "csv_files": {
+            "core_trade": os.path.exists("data/deployment/core_trade.csv"),
+            "signals": os.path.exists("data/deployment/signals_filtered.csv"),
+            "countries": os.path.exists("data/deployment/countries.csv")
+        }
+    }
+
+@APP.get("/")
+def root():
     return {"status": "ok"}

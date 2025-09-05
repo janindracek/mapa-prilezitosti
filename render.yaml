@@ -6,7 +6,7 @@ services:
     region: oregon
     plan: free
     buildCommand: pip install -r requirements-deployment.txt
-    startCommand: uvicorn api.server_full:APP --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn api.server_full:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: TRADE_UNITS_SCALE
         value: "1000"
