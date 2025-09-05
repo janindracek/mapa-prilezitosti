@@ -17,12 +17,14 @@ services:
   - type: web
     name: mapa-prilezitosti-ui
     env: static
-    buildCommand: cd ui && npm install && npm run build
-    staticPublishPath: ./ui/dist
+    buildCommand: npm install --prefix ui && npm run build --prefix ui
+    staticPublishPath: ui/dist
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
     envVars:
+      - key: NODE_VERSION
+        value: "20"
       - key: VITE_API_BASE
         value: https://mapa-prilezitosti-api.onrender.com
