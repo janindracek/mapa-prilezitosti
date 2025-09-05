@@ -27,11 +27,15 @@ def debug():
         "status": "debug",
         "working_directory": os.getcwd(),
         "deployment_data_exists": os.path.exists("data/deployment"),
+        "config_yaml_exists": os.path.exists("data/config.yaml"),
+        "deployment_config_exists": os.path.exists("data/deployment/config.yaml"),
         "csv_files": {
             "core_trade": os.path.exists("data/deployment/core_trade.csv"),
             "signals": os.path.exists("data/deployment/signals_filtered.csv"),
             "countries": os.path.exists("data/deployment/countries.csv")
-        }
+        },
+        "directory_contents": os.listdir(".") if os.path.exists(".") else [],
+        "data_directory_contents": os.listdir("data") if os.path.exists("data") else []
     }
 
 @APP.get("/")
