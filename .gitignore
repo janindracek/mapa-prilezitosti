@@ -5,6 +5,9 @@ data/out/*.parquet
 data/backup_corrupted/
 data/raw/
 
+# Exclude large debug/temp CSV files
+data/out/debug_*.csv
+
 # Keep small essential files (exceptions to above rules)
 !data/parquet/product_codes_HS22.parquet
 !data/out/top_signals.parquet
