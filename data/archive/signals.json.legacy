@@ -1,0 +1,92 @@
+[
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "210111",
+    "partner_iso3": "FIN",
+    "intensity": 681474.0,
+    "value": 681475.0,
+    "yoy": 681474.0
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "210111",
+    "partner_iso3": "FIN",
+    "intensity": 566579.7075653721,
+    "value": 0.00854113653120955,
+    "yoy": 566579.7075653721
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "720610",
+    "partner_iso3": "ITA",
+    "intensity": 176326.93097736497,
+    "value": 0.19836949266182696,
+    "yoy": 176326.93097736497
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "120400",
+    "partner_iso3": "DNK",
+    "intensity": 169172.75819838973,
+    "value": 0.03768219409393448,
+    "yoy": 169172.75819838973
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "290220",
+    "partner_iso3": "HUN",
+    "intensity": 159048.4467371133,
+    "value": 0.2699693140948826,
+    "yoy": 159048.4467371133
+  },
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "030284",
+    "partner_iso3": "ROU",
+    "intensity": 147325.5,
+    "value": 883959.0,
+    "yoy": 147325.5
+  },
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "120400",
+    "partner_iso3": "DNK",
+    "intensity": 143565.33333333334,
+    "value": 430699.0,
+    "yoy": 143565.33333333334
+  },
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "844130",
+    "partner_iso3": "ROU",
+    "intensity": 120608.0,
+    "value": 723654.0,
+    "yoy": 120608.0
+  },
+  {
+    "type": "Peer_gap_below_median",
+    "year": 2023,
+    "hs6": "880240",
+    "partner_iso3": "NLD",
+    "intensity": 0.9999999772959409,
+    "value": 3.7499748517311506e-10,
+    "peer_median": 0.01651675954698129
+  },
+  {
+    "type": "Peer_gap_below_median",
+    "year": 2023,
+    "hs6": "640610",
+    "partner_iso3": "MAR",
+    "intensity": 0.9999999141857001,
+    "value": 1.2364881062023591e-08,
+    "peer_median": 0.1440888183749947
+  }
+]

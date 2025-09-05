@@ -1,0 +1,35 @@
+services:
+  # Backend API service
+  - type: web
+    name: mapa-prilezitosti-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt &&
+      export TRADE_UNITS_SCALE=1000 &&
+      python etl/01_build_base_facts.py &&
+      python etl/02_compute_trade_metrics.py &&
+      python etl/03b_compute_all_peer_medians.py &&
+      python etl/04b_enrich_metrics_with_all_peers.py &&
+      python etl/05_build_map_data.py &&
+      python etl/06b_generate_comprehensive_signals.py
+    startCommand: uvicorn api.server_full:APP --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: TRADE_UNITS_SCALE
+        value: "1000"
+      - key: PORT
+        value: "8000"
+
+  # Frontend static site  
+  - type: static
+    name: mapa-prilezitosti-ui
+    staticPublishPath: ./ui/dist
+    buildCommand: cd ui && npm install && npm run build
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE
+        value: https://mapa-prilezitosti-api.onrender.com

@@ -1,0 +1,954 @@
+import os, json
+from typing import Optional
+import pandas as pd
+import pycountry
+import math
+from api.server_cors import APP  # reuses CORS + /health + all existing endpoints
+from api.config import load_config
+from api.formatting import to_json_safe as _to_json_safe, fmt_value as _fmt_value
+from api.normalizers import normalize_iso as _normalize_iso
+from api.data_access import metrics_mtime_key as _metrics_mtime_key, get_metrics_cached as _get_metrics_cached
+from api.signals import build_peer_gap, build_yoy_exports, build_yoy_share
+from api.helpers import build_world_map, build_product_bars, build_trend
+from api.insights_text import generate_insights as _gen_insights
+from fastapi import APIRouter
+from .insights_text import generate_insights
+from dotenv import load_dotenv
+load_dotenv()
+
+
+#
+# ---- Unified map endpoint (v2) backed by parquet ----
+#
+_MAP_PARQUET = "data/out/ui_shapes/map_rows.parquet"
+_MAP_CACHE = {"df": None, "mtime": None}
+
+def _load_map_df():
+    try:
+        if not os.path.isfile(_MAP_PARQUET):
+            return pd.DataFrame()
+        mtime = os.path.getmtime(_MAP_PARQUET)
+        if _MAP_CACHE["df"] is None or _MAP_CACHE["mtime"] != mtime:
+            df = pd.read_parquet(_MAP_PARQUET)
+            cols = [
+                "hs6", "year", "iso3", "name",
+                "delta_export_abs", "cz_share_in_partner_import", "partner_share_in_cz_exports",
+                "cz_curr", "cz_world", "imp_total",
+            ]
+            df = df[cols].copy()
+            _MAP_CACHE["df"] = df
+            _MAP_CACHE["mtime"] = mtime
+        return _MAP_CACHE["df"]
+    except Exception:
+        return pd.DataFrame()
+
+@APP.get("/map_v2")
+def map_v2(hs6: str, year: int, metric: str = 'delta_export_abs', top: int = 0):
+    """Unified map endpoint: returns [{ iso3, name, value }] for the selected metric."""
+    df = _load_map_df()
+    if df.empty:
+        return []
+    try:
+        hs6_int = int(hs6)
+    except Exception:
+        return []
+    sub = df[(df["hs6"] == hs6_int) & (df["year"] == int(year))]
+    if sub.empty:
+        # Fallback: use the latest available year for this HS6 so the map always colors HS6-by-HS6
+        hs6_rows = df[df["hs6"] == hs6_int]
+        if hs6_rows.empty:
+            return []
+        fb_year = int(hs6_rows["year"].max())
+        if fb_year != int(year):
+            try:
+                print(f"/map_v2 fallback: year {year} -> {fb_year} for hs6={hs6_int}")
+            except Exception:
+                pass
+        sub = hs6_rows[hs6_rows["year"] == fb_year]
+        if sub.empty:
+            return []
+    # Pick metric column; recompute shares from primitives so we can return nulls on zero denominators
+    if metric == "partner_share_in_cz_exports":
+        vals = (sub["cz_curr"] / sub["cz_world"]).where(sub["cz_world"] > 0, pd.NA)
+        out = sub[["iso3", "name"]].copy()
+        out["value"] = vals
+    elif metric == "cz_share_in_partner_import":
+        vals = (sub["cz_curr"] / sub["imp_total"]).where(sub["imp_total"] > 0, pd.NA)
+        out = sub[["iso3", "name"]].copy()
+        out["value"] = vals
+    elif metric == "export_value_usd":
+        # Return absolute Czech export values (current year)
+        out = sub[["iso3", "name", "cz_curr"]].rename(columns={"cz_curr": "value"})
+    else:
+        # Default to year-over-year export change
+        metric_col = "delta_export_abs"
+        out = sub[["iso3", "name", metric_col]].rename(columns={metric_col: "value"})
+
+    out = out.sort_values(["value", "iso3"], ascending=[False, True])
+    if isinstance(top, int) and top > 0:
+        out = out.head(top)
+
+    rows = []
+    for r in out.itertuples(index=False):
+        iso3 = str(r.iso3) if r.iso3 is not None else ""
+        name = (r.name or "")
+        # best-effort enrichment if iso3 looks like alphabetic ISO3
+        if not name and len(iso3) == 3 and iso3.isalpha():
+            try:
+                rec = pycountry.countries.get(alpha_3=iso3)
+                if rec:
+                    name = rec.name
+            except Exception:
+                pass
+        # robust numeric coerce; treat NA/non-numeric as None so FE leaves region uncolored
+        val_raw = getattr(r, "value", None)
+        try:
+            fv = float(val_raw)
+        except Exception:
+            fv = float("nan")
+        val = fv if math.isfinite(fv) else None
+        rows.append({"iso3": iso3, "name": name, "value": val})
+    return rows
+
+# ---- Local helpers / defaults used by /signals (no external deps) ----
+ENV = {
+    "out": {
+        # Path used when /signals is called WITHOUT country -> serve precomputed list
+        "ui_signals_enriched": "data/out/ui_shapes/signals_enriched.json",
+        "baci_parquet": os.getenv("BACI_PARQUET", "data/parquet/baci.parquet"),
+    }
+}
+
+def _load_json(path: str):
+    try:
+        with open(path, "r") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+
+def _remove_route(path: str, method: str = "GET") -> None:
+    # Remove any pre-registered route matching path+method
+    keep = []
+    for r in APP.router.routes:
+        try:
+            if getattr(r, "path", None) == path and method in getattr(r, "methods", set()):
+                continue
+        except Exception:
+            pass
+        keep.append(r)
+    APP.router.routes = keep
+
+
+
+@APP.get("/insights")
+def get_insights(importer: str, hs6: str, year: int):
+    # Use same parquet as signals
+    parquet_path = "data/out/metrics_enriched.parquet"
+    text = generate_insights(parquet_path, importer, hs6, year)
+    return {"insight": text}
+
+@APP.get("/insights_data")
+def get_insights_data(importer: str, hs6: str, year: int):
+    """
+    Return structured data for KeyData component.
+    Returns the context data needed for UI calculations.
+    """
+    from api.insights_text import extract_context
+    import pandas as pd
+    
+    parquet_path = "data/out/metrics_enriched.parquet"
+    df = pd.read_parquet(parquet_path, columns=[
+        "year", "partner_iso3", "hs6",
+        "import_partner_total", "export_cz_to_partner", "export_cz_total_for_hs6"
+    ])
+    
+    context = extract_context(df, importer, hs6, year, lookback=5)
+    
+    return {
+        "c_import_total": context.get("imp_last"),           # Country's total imports 
+        "cz_share_in_c": context.get("pen_imp"),            # CZ's share of country's imports
+        "median_peer_share": context.get("pen_med"),        # Median peer penetration
+        "import_yoy_change": context.get("imp_yoy_change"),  # Country's import YoY change %
+        "cz_to_c": context.get("cz_to_imp_last"),           # CZ export to this country (KeyData expects cz_to_c)
+        "cz_world_total": context.get("cz_global_last"),    # CZ total export for this HS6 (KeyData expects cz_world_total)
+        "cz_delta_pct": context.get("imp_yoy_change")       # YoY change % (KeyData expects cz_delta_pct)
+    }
+
+
+@APP.get("/meta")
+def meta():
+    # re-read on each call so edits to YAML are picked up without restart
+    labels, th = load_config()
+    return {"metric_labels": labels, "thresholds": th, "status": "ok"}
+
+_remove_route("/controls", "GET")
+
+@APP.get("/controls")
+def controls_with_labels():
+    """
+    Return UI controls with metric labels from config.yaml.
+    Shape:
+      {
+        "countries": string[],
+        "years": number[],
+        "metrics": string[],
+        "metric_labels": { [metric]: string }
+      }
+    """
+    # Reuse parquet loader and YAML labels
+    df = _get_metrics_cached(_metrics_mtime_key())
+    countries = sorted(pd.Series(df["partner_iso3"]).dropna().unique().tolist())
+    years = sorted(int(y) for y in pd.Series(df["year"]).dropna().unique().tolist())
+
+    metrics = [
+        "YoY_export_change",        # S1
+        "YoY_partner_share_change", # S2
+        "Peer_gap_matching",        # 3b (current setup)
+        "Peer_gap_opportunity",     # 3a (opportunity-based)
+        "Peer_gap_human",           # 3c (human-defined)
+    ]
+
+    labels, _ = load_config()
+    return {
+        "countries": countries,
+        "years": years,
+        "metrics": metrics,
+        "metric_labels": labels,
+    }
+
+
+
+# Replace /map with a version that supports ?country=
+_remove_route("/map", "GET")
+
+@APP.get("/map")
+def world_map(
+    year: Optional[int] = None,
+    hs6: Optional[str] = None,
+    metric: str = "delta_vs_peer",
+    country: Optional[str] = None,
+    hs2: Optional[str | int] = None,
+):
+    """
+    World map data with optional country and HS2 focus.
+    - Without country: returns all partners (iso3, name, value)
+    - With country=ISO2/ISO3: returns a single-item array for that partner
+    - If hs6 is not provided and hs2 is provided: pick top HS6 within that HS2 for given year.
+    """
+    df = _get_metrics_cached(_metrics_mtime_key())
+    if metric not in df.columns:
+        return {"error": f"metric '{metric}' not found"}
+
+    records = build_world_map(df, year=year, hs6=hs6, metric=metric, country=country, hs2=hs2)
+
+    # Enrich readable country names via pycountry (best-effort)
+    for r in records:
+        rec = pycountry.countries.get(alpha_3=r.get("iso3"))
+        if rec:
+            r["name"] = rec.name
+    return records
+
+
+
+# Replace /products with a version that supports ?country=
+_remove_route("/products", "GET")
+
+@APP.get("/products")
+def product_bars(
+    year: Optional[int] = None,
+    top: int = 10,
+    country: Optional[str] = None,
+    hs2: Optional[str | int] = None,
+):
+    """
+    Product bars with optional country/HS2 filters.
+    - Without filters: top HS6 by CZ exports for the year.
+    - With country: top HS6 only to that partner.
+    - With hs2: restrict candidates to that 2-digit chapter.
+    """
+    df = _get_metrics_cached(_metrics_mtime_key())
+
+    records = build_product_bars(df, year=year, top=top, country=country, hs2=hs2, hs6_names=HS6_NAMES)
+    return records
+
+
+# Nahradíme /trend vylepšenou verzí (s value_fmt + unit)
+_remove_route("/trend", "GET")
+
+@APP.get("/trend")
+def trend(hs6: str, years: int = 10):
+    """
+    Return time series for selected HS6 aggregated across partners.
+    Adds value_fmt and unit for nicer tooltips in UI.
+    """
+    df = _get_metrics_cached(_metrics_mtime_key())
+    return build_trend(df, hs6=hs6, years=years)
+
+
+# Remove any previous /signals route (from api.server)
+# Remove any previous /signals route (from api.server)
+_remove_route("/signals", "GET")
+
+
+@APP.get("/signals")
+def signals(
+    country: str | None = None,
+    hs6: str | None = None,
+    type: str | None = None,
+    limit: int = 10,
+    peer_group: str | None = "all",
+):
+    """
+    If country is provided, compute signals on-the-fly from metrics_enriched
+    using thresholds in config.yaml. Otherwise, return precomputed global Top-N.
+    """
+    labels, thresholds = load_config()
+    sig_type = type  # avoid shadowing builtin 'type' in local logic
+    # Backward-compatible: no country -> serve precomputed enriched list
+    if not country:
+        path = ENV["out"]["ui_signals_enriched"]
+        data = _load_json(path)
+        # Optional filter by type/hs6 on the precomputed list
+        if sig_type:
+            data = [d for d in data if d.get("type") == sig_type]
+        if hs6:
+            hs6 = str(hs6).zfill(6)
+            data = [d for d in data if d.get("hs6") == hs6]
+        # Cap limit
+        return data[: max(1, int(limit))]
+
+    # Country is set -> compute from parquet (normalize to ISO3)
+    iso3 = _normalize_iso(country)
+    if not iso3:
+        return []
+    country = iso3
+    df = _get_metrics_cached(_metrics_mtime_key())
+
+    # focus on latest year in the data
+    latest_year = int(df["year"].max())
+
+    cur = df[df["year"] == latest_year].copy()
+    sub = cur[cur["partner_iso3"] == country].copy()
+    
+    if sub.empty:
+        return []
+
+    # thresholds (with safe defaults)
+    S1 = float(thresholds.get("S1_REL_GAP_MIN", 0.20))           # absolute gap (fraction points)
+    S2 = float(thresholds.get("S2_YOY_THRESHOLD", 0.30))         # 30% YoY exports
+    S3 = float(thresholds.get("S3_YOY_SHARE_THRESHOLD", 0.20))   # 20% YoY partner share
+    MAX_TOTAL = int(thresholds.get("MAX_TOTAL", 10))
+    MAX_PER_TYPE = int(thresholds.get("MAX_PER_TYPE", 4))
+
+    # --- 1) Peer_gap (default and/or statistical combos) ---
+    peer_gap_list = []
+
+    # Include default when requested or when asking for all
+    if peer_group in ("all", "default"):
+        try:
+            df_def = build_peer_gap(sub, cur, country, latest_year, S1, "default")
+            if not df_def.empty:
+                peer_gap_list.append(df_def)
+        except Exception:
+            pass
+
+    # Include statistical methods:
+    # - if peer_group == "all", load available (method,k) combos for this country/year
+    # - if peer_group looks like "method:k", compute only that one
+    specs = []
+    if peer_group == "all":
+        try:
+            pg_all = pd.read_parquet("data/out/peer_groups_statistical.parquet")
+            pg_yr = pg_all[pg_all["year"] == latest_year]
+            if not pg_yr.empty and not pg_yr.loc[pg_yr["iso3"] == country].empty:
+                combos = pg_yr[["method", "k"]].drop_duplicates().to_dict("records")
+                specs = [f"{c['method']}:{int(c['k'])}" for c in combos]
+        except Exception:
+            specs = []
+    elif isinstance(peer_group, str) and ":" in peer_group:
+        specs = [peer_group]
+
+    for spec in specs:
+        try:
+            df_pg = build_peer_gap(sub, cur, country, latest_year, S1, spec)
+            if not df_pg.empty:
+                peer_gap_list.append(df_pg)
+        except Exception:
+            pass
+
+    peer_gap = pd.concat(peer_gap_list, ignore_index=True) if peer_gap_list else pd.DataFrame()
+
+    # --- 1a) Re-label peer_gap type into specific buckets (opportunity vs current-setup) ---
+    #   - necháme "Peer_gap_human" z předchozí větve beze změny
+    if not peer_gap.empty:
+        # Získáme text metody z peer_group_label/peer_group a podle substrings přiřadíme typ
+        def _pg_type(row):
+            label = str(row.get("peer_group_label") or "") + " " + str(row.get("peer_group") or "")
+            label_low = label.lower()
+            if "opportunity" in label_low:
+                return "Peer_gap_opportunity"
+            if "hs2_shares" in label_low or "kmeans_cosine_hs2_shares" in label_low:
+                return "Peer_gap_matching"
+            # fallback: pokud nepoznáme, necháme původní type
+            return row.get("type", None) or "Peer_gap_below_median"
+        peer_gap["type"] = peer_gap.apply(_pg_type, axis=1)
+
+    # --- 1b) Peer_gap_human via precomputed medians (loaded fresh each call) ---
+    human_gap = pd.DataFrame()
+    if peer_group in ("human", "all"):
+        from pathlib import Path as _Path
+        hp_path = _Path("data/out/peer_medians_human.parquet")
+        if hp_path.is_file():
+            try:
+                hp = pd.read_parquet(hp_path)
+                hp = hp[(hp["year"] == latest_year) & (hp["country_iso3"] == country)][["hs6","median_peer_share_human"]]
+                if not hp.empty:
+                    hsub = sub.merge(hp, on="hs6", how="left")
+                    hsub["delta_vs_peer_human"] = hsub["podil_cz_na_importu"] - hsub["median_peer_share_human"]
+                    hsub = hsub[(hsub["median_peer_share_human"].notna()) & (hsub["delta_vs_peer_human"] <= -abs(S1))].copy()
+                    if not hsub.empty:
+                        hsub["intensity"] = (-hsub["delta_vs_peer_human"]).abs()
+                        hsub["value"] = hsub["podil_cz_na_importu"]
+                        hsub["type"] = "Peer_gap_human"
+                        hsub["peer_group"] = "human"
+                        hsub["peer_group_label"] = "Peers (human)"
+                        human_gap = hsub
+            except Exception:
+                human_gap = pd.DataFrame()
+
+    # --- 2) YoY_export_change ---
+
+    yoy_exp = build_yoy_exports(sub, S2)
+
+
+    # --- 3) YoY_partner_share_change ---
+
+    yoy_share = build_yoy_share(sub, S3)
+
+
+
+    # Concatenate and rank within each type by intensity (desc)
+    import pandas as _pd
+    all_sig = _pd.concat([peer_gap, human_gap, yoy_exp, yoy_share], axis=0, ignore_index=True)
+    if sig_type:
+        all_sig = all_sig[all_sig["type"] == sig_type]
+
+    # Keep essential fields
+    cols = [
+        "type","year","hs6","partner_iso3","intensity","value","yoy",
+        "podil_cz_na_importu","median_peer_share","delta_vs_peer",
+        "YoY_export_change","export_cz_to_partner",
+        "YoY_partner_share_change","partner_share_in_cz_exports",
+        "peer_group","peer_group_label",
+    ]
+    for c in cols:
+        if c not in all_sig.columns:
+            all_sig[c] = _pd.NA
+
+    # rank per type
+    out = []
+    for t, grp in all_sig.groupby("type"):
+        g = grp.sort_values("intensity", ascending=False).head(MAX_PER_TYPE)
+        out.extend(g.to_dict(orient="records"))
+
+    # Trim TOTAL
+    out = sorted(out, key=lambda r: float(r.get("intensity") or 0), reverse=True)[:MAX_TOTAL]
+
+    # Enrich names for UI using local lookups
+    for s in out:
+        s["hs6"] = str(s.get("hs6") or "").zfill(6)
+        s["value_fmt"], s["unit"] = _fmt_value(float(s.get("intensity") or 0.0), s.get("type",""))
+        # HS6 name from HS6_NAMES (built from data/ref/hs_mapping.csv if present)
+        if HS6_NAMES:
+            s["hs6_name"] = HS6_NAMES.get(s["hs6"], s["hs6"]) 
+        # Country name via pycountry (best-effort)
+        iso = s.get("partner_iso3")
+        if iso:
+            rec = pycountry.countries.get(alpha_3=str(iso))
+            if rec:
+                s["partner_name"] = rec.name
+
+    # Make JSON-safe (replace NaN/Inf with None)
+    cleaned = []
+    for rec in out:
+        cleaned.append({k: _to_json_safe(v) for k, v in rec.items()})
+    return cleaned
+
+# Removed duplicate /insights endpoint that used raw BACI data
+# Keeping only the first /insights endpoint that uses processed metrics_enriched.parquet
+
+# -------- precomputed top signals (fast path for FE testing) --------
+@APP.get("/top_signals")
+def top_signals(country: str, year: Optional[int] = None, limit: int = 100):
+    """
+    Serve precomputed top signals (built by etl/28_build_top_signals.py).
+    - country: ISO2/ISO3 (normalized to ISO3)
+    - year: optional, defaults to latest available in the parquet
+    - limit: cap number of returned rows (per endpoint call)
+    """
+    iso3 = _normalize_iso(country)
+    if not iso3:
+        return []
+    path = "data/out/top_signals.parquet"
+    if not os.path.isfile(path):
+        return []
+    try:
+        df = pd.read_parquet(path)
+        if df.empty:
+            return []
+        if year is None:
+            year = int(df["year"].max())
+        out = df[(df["year"] == int(year)) & (df["country_iso3"] == iso3)].copy()
+        # keep only the fields FE expects; add fallbacks for consistency
+        keep = ["type","hs6","partner_iso3","intensity","value","method","k","year"]
+        for c in keep:
+            if c not in out.columns:
+                out[c] = pd.NA
+        out["hs6"] = out["hs6"].astype(str).str.zfill(6)
+        # sort for determinism: by type then intensity desc
+        # Keep top-3 per type (so FE reliably gets up to 15 = 5*3 rows)
+        try:
+            out = (
+                out.sort_values(["type","intensity"], ascending=[True, False])
+                   .groupby("type", group_keys=False)
+                   .head(3)
+            )
+        except Exception:
+            pass
+
+        # Optional global cap by limit
+        out = out.head(max(1, int(limit)))
+
+        rows = out.to_dict(orient="records")
+        cleaned = []
+        for rec in rows:
+            # normalize hs6 string
+            rec["hs6"] = str(rec.get("hs6") or "").zfill(6)
+            # enrich HS6 name (best-effort)
+            if HS6_NAMES:
+                rec["hs6_name"] = HS6_NAMES.get(rec["hs6"], rec["hs6"])
+            # enrich partner name (best-effort)
+            iso_p = rec.get("partner_iso3")
+            if iso_p:
+                pc = pycountry.countries.get(alpha_3=str(iso_p))
+                if pc:
+                    rec["partner_name"] = pc.name
+            # add value_fmt / unit consistent with /signals (based on intensity and type)
+            try:
+                rec["value_fmt"], rec["unit"] = _fmt_value(float(rec.get("intensity") or 0.0), rec.get("type",""))
+            except Exception:
+                rec["value_fmt"], rec["unit"] = None, None
+            # make JSON-safe (NaN/Inf -> None, numpy types -> python)
+            cleaned.append({k: _to_json_safe(v) for k, v in rec.items()})
+        return cleaned
+    except Exception:
+        return []
+
+
+# -------- optional HS6 name helper for map view (non-breaking) --------
+HS6_REF_PATH = "data/ref/hs_mapping.csv"
+HS6_REF = pd.read_csv(HS6_REF_PATH) if os.path.isfile(HS6_REF_PATH) else None
+HS6_NAMES = dict(zip(HS6_REF["hs6"], HS6_REF["name"])) if HS6_REF is not None else {}
+
+
+@APP.get("/map/{hs6}")
+def world_map_static(hs6: str, year: Optional[int] = None, metric: str = "delta_vs_peer", includeName: bool = False):
+    """Return current world_map.json and (optionally) the HS6 name for convenience."""
+    path = "data/out/ui_shapes/world_map.json"
+    if not os.path.isfile(path):
+        return {"error": "world_map.json not found. Run ETL."}
+    data = json.load(open(path))
+    out = {"data": data}
+    if includeName:
+        out["hs6_name"] = HS6_NAMES.get(str(hs6).zfill(6), str(hs6).zfill(6))
+    return out
+
+
+# -------- complete peer group information --------
+@APP.get("/peer_groups/complete")
+def get_complete_peer_group(country: str, peer_group: str = "human", year: int = 2023):
+    """
+    Return complete peer group information including all countries in the cluster,
+    regardless of whether they have trade data for any specific product.
+    """
+    
+    try:
+        # Choose data source based on peer group type
+        pg_req = (peer_group or "").strip().lower()
+        if pg_req == "human":
+            pg_path = "data/out/peer_groups_human.parquet"
+        elif pg_req == "opportunity":
+            pg_path = "data/out/peer_groups_opportunity.parquet"
+        else:
+            # default, matching, method:k, or empty
+            pg_path = "data/out/peer_groups_statistical.parquet"
+            
+        if not os.path.isfile(pg_path):
+            return {"error": f"Peer group file not found: {pg_path}"}
+            
+        pg_all = pd.read_parquet(pg_path)
+        if pg_all.empty:
+            return {"error": "Peer group data is empty"}
+            
+        # Normalize column names - some files use 'iso3', others use 'iso'
+        iso_col = 'iso3' if 'iso3' in pg_all.columns else 'iso'
+        
+        # Handle different country code formats
+        # Opportunity dataset uses numeric ISO codes, others use alpha-3 codes
+        search_codes = [country]  # alpha-3 like 'IRL'
+        if pg_req == "opportunity":
+            # Convert alpha-3 to numeric for opportunity dataset
+            try:
+                import pycountry
+                country_rec = pycountry.countries.get(alpha_3=country)
+                if country_rec:
+                    search_codes = [str(country_rec.numeric)]  # opportunity data stores as strings
+            except Exception:
+                pass
+        
+        # Filter by year
+        pg = pg_all[pg_all["year"] == year]
+        if pg.empty:
+            return {"error": f"No data for year {year}"}
+            
+        # Find the country's cluster using appropriate country code
+        country_row = None
+        found_country_code = None
+        for code in search_codes:
+            country_row = pg[pg[iso_col].astype(str) == str(code)]
+            if not country_row.empty:
+                found_country_code = str(code)
+                break
+                
+        if country_row is None or country_row.empty:
+            return {"error": f"Country {country} not found in peer groups for {year}"}
+            
+        cluster_id = country_row.iloc[0]["cluster"]
+        method = country_row.iloc[0]["method"] if "method" in country_row.columns else pg_req
+        
+        # Get all countries in the same cluster
+        cluster_countries = pg[pg["cluster"] == cluster_id][iso_col].astype(str).tolist()
+        
+        # Convert numeric codes back to alpha-3 for opportunity peer groups
+        if pg_req == "opportunity":
+            alpha3_countries = []
+            for code in cluster_countries:
+                try:
+                    import pycountry
+                    country_rec = pycountry.countries.get(numeric=code)
+                    if country_rec:
+                        alpha3_countries.append(country_rec.alpha_3)
+                    else:
+                        alpha3_countries.append(code)  # fallback to original
+                except Exception:
+                    alpha3_countries.append(code)  # fallback to original
+            cluster_countries = alpha3_countries
+        
+        # For human peer groups, get the cluster name
+        cluster_name = None
+        if pg_req == "human":
+            # Human peer group names from ETL script
+            HUMAN_PEER_GROUPS = {
+                0: "EU Core West", 1: "EU Nordics", 2: "Baltics",
+                3: "Central Europe (V4+AT+SI+ROU)", 4: "Southern EU (Med EU)",
+                5: "UK & CH", 6: "Western Balkans", 7: "Eastern Partnership & Caucasus",
+                8: "Russia & Central Asia", 9: "North America",
+                10: "Central America & Caribbean", 11: "South America", 12: "GCC",
+                13: "Levant & Iran/Iraq/Yemen", 14: "North Africa (Med non-EU)",
+                15: "East Asia Advanced", 16: "China", 17: "Southeast Asia",
+                18: "South Asia", 19: "Sub-Saharan Africa – West",
+                20: "Sub-Saharan Africa – East & Horn", 21: "Sub-Saharan Africa – South",
+                22: "Oceania & Pacific"
+            }
+            cluster_name = HUMAN_PEER_GROUPS.get(cluster_id, f"Cluster {cluster_id}")
+        
+        return {
+            "cluster_id": int(cluster_id),
+            "cluster_name": cluster_name,
+            "peer_countries": sorted(cluster_countries),
+            "method": str(method),
+            "year": int(year)
+        }
+        
+    except Exception as e:
+        return {"error": f"Failed to get peer group: {str(e)}"}
+
+
+# -------- diagnostics: peer_groups parquet inspection --------
+@APP.get("/debug/peer_groups")
+def debug_peer_groups(country: str):
+    """Inspect peer_groups.parquet for a given country.
+    Returns: file existence, metrics latest year, available years in parquet,
+    whether the country exists in the metrics year, chosen fallback year,
+    available (method,k) combos for that year, and the country cluster row.
+    """
+    iso3 = _normalize_iso(country)
+    if not iso3:
+        return {"error": f"unknown country '{country}'"}
+
+    # Metrics latest year (what /signals uses)
+    try:
+        df = _get_metrics_cached(_metrics_mtime_key())
+        metrics_latest_year = int(df["year"].max())
+    except Exception:
+        metrics_latest_year = None
+
+    pg_path = "data/out/peer_groups_statistical.parquet"
+    exists = os.path.isfile(pg_path)
+    if not exists:
+        return {
+            "exists": False,
+            "metrics_latest_year": metrics_latest_year,
+            "peer_groups_years": [],
+            "has_country_latest_year": False,
+            "fallback_year_used": None,
+            "combos": [],
+            "cluster_row": [],
+        }
+
+    try:
+        pg_all = pd.read_parquet(pg_path)
+        years = sorted({int(y) for y in pg_all.get("year", pd.Series(dtype=int)).dropna().unique().tolist()})
+        has_exact = False
+        fallback_year = None
+        pg = pd.DataFrame()
+        if metrics_latest_year is not None:
+            pg_exact = pg_all[pg_all["year"] == metrics_latest_year]
+            has_exact = not pg_exact.loc[pg_exact["iso3"] == iso3].empty
+            if has_exact:
+                pg = pg_exact.copy()
+                fallback_year = metrics_latest_year
+        if pg.empty:
+            cand = pg_all.loc[pg_all["iso3"] == iso3]
+            if not cand.empty:
+                fallback_year = int(cand["year"].max())
+                pg = pg_all.loc[pg_all["year"] == fallback_year].copy()
+        combos = (
+            pg[["method", "k"]].drop_duplicates().sort_values(["method", "k"]).to_dict("records")
+            if not pg.empty else []
+        )
+        cluster_row = (
+            pg.loc[pg["iso3"] == iso3].head(1).to_dict("records")
+            if not pg.empty else []
+        )
+        return {
+            "exists": True,
+            "metrics_latest_year": metrics_latest_year,
+            "peer_groups_years": years,
+            "has_country_latest_year": has_exact,
+            "fallback_year_used": fallback_year,
+            "combos": combos,
+            "cluster_row": cluster_row,
+        }
+    except Exception as e:
+        return {"exists": True, "error": str(e)}
+
+
+# ---- bars_v2: top bars for peers / imports with selected-country inclusion ----
+def _resolve_peers(country_iso3: str, year: int, peer_group: str | None) -> set[str] | None:
+    """Return a set of ISO3 peers for (country,year,peer_group). None -> no filter.
+    peer_group: 'default' | 'human' | 'opportunity' | 'matching' | 'method:k' | 'all' (treat as default).
+    """
+    try:
+        # Choose data source based on peer group type
+        pg_req = (peer_group or "").strip().lower()
+        if pg_req == "human":
+            pg_path = "data/out/peer_groups_human.parquet"
+        elif pg_req == "opportunity":
+            pg_path = "data/out/peer_groups_opportunity.parquet"
+        else:
+            # default, matching, method:k, or empty
+            pg_path = "data/out/peer_groups_statistical.parquet"
+            
+        if not os.path.isfile(pg_path):
+            return None
+        pg_all = pd.read_parquet(pg_path)
+        if pg_all.empty:
+            return None
+        # Normalize column names - some files use 'iso3', others use 'iso'
+        iso_col = 'iso3' if 'iso3' in pg_all.columns else 'iso'
+        
+        # Handle different country code formats
+        # Opportunity dataset uses numeric ISO codes, others use alpha-3 codes
+        search_codes = [country_iso3]  # alpha-3 like 'DEU'
+        if pg_req == "opportunity":
+            # Convert alpha-3 to numeric for opportunity dataset
+            try:
+                import pycountry
+                country_rec = pycountry.countries.get(alpha_3=country_iso3)
+                if country_rec:
+                    search_codes = [str(country_rec.numeric)]  # opportunity data stores as strings
+            except Exception:
+                pass
+        
+        # choose year: exact or fallback where the country exists
+        pg = pg_all[pg_all["year"] == int(year)]
+        found_country = False
+        for code in search_codes:
+            if not pg.loc[pg[iso_col].astype(str) == str(code)].empty:
+                found_country = True
+                country_iso3 = str(code)  # use the code that was found
+                break
+                
+        if not found_country:
+            # Try fallback years
+            cand = None
+            for code in search_codes:
+                cand = pg_all.loc[pg_all[iso_col].astype(str) == str(code)]
+                if not cand.empty:
+                    country_iso3 = str(code)
+                    break
+            if cand is None or cand.empty:
+                return None
+            y_fb = int(cand["year"].max())
+            pg = pg_all[pg_all["year"] == y_fb]
+        # choose spec (normalized, guarded)
+        pg_req = (peer_group or "").strip().lower()
+        if ":" in pg_req:
+            m, k = pg_req.split(":", 1)
+            m = m.strip()
+            try:
+                k_str = str(int(float(k.strip())))
+            except Exception:
+                return None
+            if "method" not in pg.columns or "k" not in pg.columns:
+                return None
+            pg = pg[(pg["method"].astype(str).str.lower() == m) & (pg["k"].astype(str) == k_str)]
+        elif pg_req in ("default", "all", ""):
+            if "method" not in pg.columns:
+                return None
+            pg = pg[pg["method"].astype(str).str.lower() == "default"]
+
+        # needed columns + row existence
+        if iso_col not in pg.columns or "cluster" not in pg.columns or pg.empty:
+            return None
+
+        # find cluster of the country
+        row = pg.loc[pg[iso_col].astype(str) == str(country_iso3)].head(1)
+        if row.empty:
+            return None
+        cl = row.iloc[0]["cluster"]
+        peers = pg.loc[pg["cluster"] == cl, iso_col].dropna().astype(str).unique().tolist()
+        
+        # Convert numeric codes back to alpha-3 for opportunity peer groups
+        if pg_req == "opportunity":
+            alpha3_peers = []
+            for code in peers:
+                try:
+                    import pycountry
+                    country_rec = pycountry.countries.get(numeric=code)
+                    if country_rec:
+                        alpha3_peers.append(country_rec.alpha_3)
+                    else:
+                        alpha3_peers.append(code)  # fallback to original
+                except Exception:
+                    alpha3_peers.append(code)  # fallback to original
+            peers = alpha3_peers
+            
+        return set(peers)
+    except Exception:
+        return None
+
+
+@APP.get("/bars_v2")
+def bars_v2(
+    hs6: str,
+    year: int,
+    mode: str = "peer_compare",  # peer_compare | yoy_growth | import_change
+    peer_group: str | None = None,
+    country: str | None = None,
+    top: int = 10,
+):
+    """Return top bars [{id,name,value,value_fmt}] in USD for selected HS6.
+    Always includes `country` even if outside top-N. Sorting is desc by value.
+    """
+    df = _get_metrics_cached(_metrics_mtime_key())
+    if df.empty:
+        return []
+    # normalize hs6 as zero-padded 6-digit string on both sides
+    hs6_q = str(hs6).strip()
+    try:
+        hs6_q = str(int(hs6_q)).zfill(6)
+    except Exception:
+        hs6_q = hs6_q.zfill(6)
+    if "hs6" not in df.columns or "year" not in df.columns:
+        return []
+    df = df.copy()
+    df["hs6_str"] = df["hs6"].astype(str).str.replace(r"\D", "", regex=True).str.zfill(6)
+    sub = df[(df["hs6_str"] == hs6_q) & (df["year"] == int(year))].copy()
+    if sub.empty:
+        # fallback: use latest available year for this HS6
+        hs_rows = df[df["hs6_str"] == hs6_q].copy()
+        if hs_rows.empty:
+            return []
+        fb_year = int(hs_rows["year"].max())
+        sub = hs_rows[hs_rows["year"] == fb_year].copy()
+    # pick value column
+    val_col = None
+    # candidate columns (expanded aliases)
+    export_cols = ("export_cz_to_partner", "cz_curr", "cz_exports_usd", "exports_usd")
+    import_cols = ("imp_total", "import_total", "partner_import_total", "imports_usd", "import_usd")
+    if mode == "peer_compare" or mode not in ("yoy_growth", "import_change"):
+        for c in export_cols:
+            if c in sub.columns:
+                val_col = c; break
+    else:
+        for c in import_cols:
+            if c in sub.columns:
+                val_col = c; break
+        if val_col is None:
+            for c in export_cols:
+                if c in sub.columns:
+                    val_col = c; break
+    if val_col is None:
+        return []
+    # peer filtering if requested
+    if mode == "peer_compare" and country:
+        iso3 = _normalize_iso(country)
+        if iso3:
+            peers = _resolve_peers(iso3, int(year), peer_group)
+            if peers:
+                sub = sub[sub["partner_iso3"].astype(str).isin(peers)]
+    # aggregate to partner
+    grp = (
+        sub.groupby("partner_iso3", as_index=False)
+           .agg({val_col: "sum"})
+           .rename(columns={val_col: "value"})
+    )
+    # ensure selected country exists in output
+    if country:
+        iso3 = _normalize_iso(country)
+        if iso3:
+            if grp.loc[grp["partner_iso3"] == iso3].empty:
+                grp = pd.concat([grp, pd.DataFrame({"partner_iso3":[iso3], "value":[0.0]})], ignore_index=True)
+    # sort + top N (but keep selected country by re-adding then resorting deterministically)
+    grp = grp.sort_values(["value","partner_iso3"], ascending=[False, True])
+    if isinstance(top, int) and top > 0:
+        head = grp.head(int(top))
+        if country:
+            iso3 = _normalize_iso(country)
+            if iso3 and head.loc[head["partner_iso3"] == iso3].empty:
+                extra = grp.loc[grp["partner_iso3"] == iso3]
+                head = pd.concat([head, extra], ignore_index=True).drop_duplicates(subset=["partner_iso3"])\
+                         .sort_values(["value","partner_iso3"], ascending=[False, True])
+        grp = head
+    # enrich names + fmt
+    rows = []
+    for r in grp.itertuples(index=False):
+        iso = str(getattr(r, "partner_iso3", ""))
+        name = ""
+        try:
+            rec = pycountry.countries.get(alpha_3=iso)
+            if rec:
+                name = rec.name
+        except Exception:
+            name = iso
+        val = float(getattr(r, "value", 0.0) or 0.0)
+        vf, unit = _fmt_value(val, "USD")
+        rows.append({"id": iso, "name": name, "value": val, "value_fmt": vf})
+    return rows
+
+# Expose correct ASGI app object for uvicorn/gunicorn
+app = APP

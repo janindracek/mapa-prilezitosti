@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECharts World Map Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h1>ECharts World Map Test</h1>
+        <div id="map" style="width: 100%; height: 600px; border: 1px solid #ccc;"></div>
+        
+        <div style="margin-top: 20px;">
+            <button onclick="loadOriginalMap()">Load Original Map (TopoJSON)</button>
+            <button onclick="loadGeoJSONMap()">Load GeoJSON Map</button>
+            <button onclick="loadNaturalEarthMap()">Load Natural Earth 50m</button>
+        </div>
+        
+        <div id="status" style="margin-top: 10px; color: #666;"></div>
+    </div>
+
+    <script>
+        const chart = echarts.init(document.getElementById('map'));
+        
+        // Dummy data for testing
+        const testData = [
+            { name: 'China', value: 1000 },
+            { name: 'United States of America', value: 800 },
+            { name: 'Germany', value: 600 },
+            { name: 'Russia', value: 400 },
+            { name: 'Japan', value: 300 },
+            { name: 'United Kingdom', value: 250 },
+            { name: 'France', value: 200 },
+            { name: 'Italy', value: 150 },
+            { name: 'Brazil', value: 100 },
+            { name: 'Fiji', value: 50 }
+        ];
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        function renderMap(mapName = 'world') {
+            const option = {
+                title: {
+                    text: `World Map Test - ${mapName}`,
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}'
+                },
+                visualMap: {
+                    min: 0,
+                    max: 1000,
+                    left: 'left',
+                    top: 'bottom',
+                    text: ['High', 'Low'],
+                    calculable: true,
+                    inRange: {
+                        color: ['#e0f3ff', '#0081cc']
+                    }
+                },
+                series: [{
+                    type: 'map',
+                    map: mapName,
+                    roam: true,
+                    scaleLimit: {
+                        min: 0.5,
+                        max: 5
+                    },
+                    emphasis: {
+                        label: {
+                            show: true
+                        },
+                        itemStyle: {
+                            areaColor: '#389BB7',
+                            borderWidth: 2
+                        }
+                    },
+                    data: testData
+                }]
+            };
+            
+            chart.setOption(option);
+        }
+
+        async function loadOriginalMap() {
+            try {
+                updateStatus('Loading TopoJSON world map...');
+                const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+                const topoData = await response.json();
+                
+                // We need topojson-client for this
+                const topojsonModule = await import('https://cdn.skypack.dev/topojson-client');
+                const geoData = topojsonModule.feature(topoData, topoData.objects.countries);
+                
+                // Clean problematic geometries
+                geoData.features = geoData.features.filter(f => {
+                    const props = f.properties || {};
+                    const name = props.NAME || props.name;
+                    return name && name !== "Antarctica";
+                });
+                
+                echarts.registerMap('world', geoData);
+                renderMap('world');
+                updateStatus('TopoJSON map loaded successfully');
+            } catch (error) {
+                updateStatus('Error loading TopoJSON map: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        async function loadGeoJSONMap() {
+            try {
+                updateStatus('Loading GeoJSON world map...');
+                const response = await fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson');
+                const geoData = await response.json();
+                
+                echarts.registerMap('world-geojson', geoData);
+                renderMap('world-geojson');
+                updateStatus('GeoJSON map loaded successfully');
+            } catch (error) {
+                updateStatus('Error loading GeoJSON map: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        async function loadNaturalEarthMap() {
+            try {
+                updateStatus('Loading Natural Earth 50m map...');
+                const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json');
+                const topoData = await response.json();
+                
+                const topojsonModule = await import('https://cdn.skypack.dev/topojson-client');
+                const geoData = topojsonModule.feature(topoData, topoData.objects.countries);
+                
+                // More aggressive filtering for problematic geometries
+                geoData.features = geoData.features.filter(f => {
+                    const props = f.properties || {};
+                    const name = props.NAME || props.name || '';
+                    const geometry = f.geometry;
+                    
+                    // Skip Antarctica
+                    if (name === "Antarctica") return false;
+                    
+                    // Skip features with invalid geometry
+                    if (!geometry || !geometry.coordinates) return false;
+                    
+                    // For Russia and other large countries, check for problematic coordinates
+                    if (name === "Russia") {
+                        console.log('Russia geometry type:', geometry.type);
+                        // Could add specific coordinate validation here
+                    }
+                    
+                    return true;
+                });
+                
+                echarts.registerMap('world-50m', geoData);
+                renderMap('world-50m');
+                updateStatus('Natural Earth 50m map loaded successfully');
+            } catch (error) {
+                updateStatus('Error loading Natural Earth 50m map: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        // Load the original map by default
+        loadOriginalMap();
+    </script>
+</body>
+</html>

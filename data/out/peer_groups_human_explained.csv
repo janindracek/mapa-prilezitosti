@@ -1,0 +1,24 @@
+grouping_no,grouping_name,countries,explanation
+0,EU Core West,"Belgium, Germany, Ireland, Luxembourg, Netherlands",Západní jádro EU s vysokou otevřeností a sofistikovanou poptávkou po průmyslových vstupech.
+1,EU Nordics,"Denmark, Finland, Iceland, Sweden","Severské ekonomiky s vysokou přidanou hodnotou, silná orientace na technologie a služby."
+2,Baltics,"Estonia, Latvia, Lithuania","Malé, velmi otevřené ekonomiky s rychlou integrací do EU hodnotových řetězců."
+3,Central Europe (V4+AT+SI),"Austria, Czechia, Hungary, Poland, Slovakia, Slovenia","Průmyslové jádro střední Evropy, vysoký podíl strojírenství a automobilového dodavatelského řetězce."
+4,Southern EU (Med EU),"Cyprus, Greece, Italy, Malta, Portugal, Spain","Mediterránní členové EU – smíšený profil (spotřeba, průmysl, stavebnictví)."
+5,UK & CH,United Kingdom,Velké finanční a obchodní huby s vyspělou poptávkou a vysokou kupní silou.
+6,Western Balkans,"Albania, Bosnia and Herzegovina, Montenegro, North Macedonia, Serbia",Přechodové ekonomiky s rostoucí poptávkou po investičním zboží a stavebních vstupech.
+7,Eastern Partnership & Caucasus,"Armenia, Azerbaijan, Belarus, Georgia, Moldova, Republic of, Ukraine","Východní partnerství a Kavkaz – tranzitní poloha, heterogenní profil, časté regulační frikce."
+8,Russia & Central Asia,"Kazakhstan, Kyrgyzstan, Russian Federation, Tajikistan, Turkmenistan, Uzbekistan","Rusko + Střední Asie – komoditní základna, importy strojírenských vstupů a spotřebního zboží."
+9,North America,"Canada, Mexico","Velké, bohaté trhy s vysokou diverzifikací dovozu."
+10,Central America & Caribbean,"Antigua and Barbuda, Bahamas, Barbados, Belize, Costa Rica, Cuba, Dominica, Dominican Republic, El Salvador, Grenada, Guatemala, Haiti, Honduras, Jamaica, Nicaragua, Panama, Saint Kitts and Nevis, Saint Lucia, Saint Vincent and the Grenadines, Trinidad and Tobago","Menší, často ostrovní ekonomiky, dovoz širokého spektra základních i spotřebních statků."
+11,South America,"Argentina, Bolivia, Plurinational State of, Brazil, Chile, Ecuador, Guyana, Paraguay, Peru, Suriname, Uruguay, Venezuela, Bolivarian Republic of","Středně velké až velké trhy, mix komoditních a průmyslových dovozů."
+12,GCC,"Bahrain, Kuwait, Oman, Qatar, Saudi Arabia, United Arab Emirates","Ropná jádra Perského zálivu – vysoká kupní síla, velká poptávka po stavebnictví a technologiích."
+13,Levant & Iran/Iraq/Yemen,"Iran, Islamic Republic of, Iraq, Israel, Jordan, Lebanon, Palestine, State of, Syrian Arab Republic, Yemen","Heterogenní, geopoliticky citlivý region, od high‑tech po základní statky."
+14,North Africa (Med non‑EU),"Algeria, Egypt, Libya, Morocco, Tunisia","Severní Afrika mimo EU – mix průmyslu, spotřeby a energetiky, různé překážky přístupu."
+15,East Asia Advanced,"Hong Kong, Japan, Korea, Republic of, Macao","Japonsko, Korea, Taiwan, Hongkong, Macao – vysoce technické hodnotové řetězce."
+16,China,China,Čína jako samostatný blok – obří a specifický importní profil.
+17,Southeast Asia,"Brunei Darussalam, Cambodia, Indonesia, Lao People's Democratic Republic, Malaysia, Myanmar, Philippines, Singapore, Thailand, Timor-Leste, Viet Nam","ASEAN – rychle rostoucí poptávka, silná výroba a diversifikace partnerů."
+18,South Asia,"Bangladesh, Bhutan, Maldives, Nepal, Pakistan, Sri Lanka","Jižní Asie – velké trhy, rostoucí průmysl a infrastruktura."
+19,Sub‑Saharan Africa – West,"Benin, Burkina Faso, Cabo Verde, Chad, Côte d'Ivoire, Gambia, Ghana, Guinea, Guinea-Bissau, Liberia, Niger, Nigeria, Senegal, Sierra Leone, Togo","Západní Afrika – rostoucí spotřeba, infrastrukturní potřeby, vyšší logistická frikce."
+20,Sub‑Saharan Africa – East & Horn,"Burundi, Djibouti, Eritrea, Ethiopia, Kenya, Rwanda, Somalia, South Sudan, Sudan, Tanzania, United Republic of, Uganda",Východní Afrika a Africký roh – růst populace a infrastruktury.
+21,Sub‑Saharan Africa – South,"Angola, Botswana, Cameroon, Central African Republic, Comoros, Congo, Equatorial Guinea, Eswatini, Gabon, Lesotho, Madagascar, Malawi, Mauritius, Mozambique, Namibia, Seychelles, South Africa, Zambia, Zimbabwe",Jižní Afrika + sousedé – větší průmyslová základna a regionální huby.
+22,Oceania & Pacific,"Australia, Fiji, Kiribati, Marshall Islands, Micronesia, Federated States of, Nauru, New Zealand, Palau, Papua New Guinea, Samoa, Solomon Islands, Tonga, Tuvalu, Vanuatu","Austrálie, NZ a Pacifik – vysoce otevřené trhy (ANZ) a malé ostrovní ekonomiky."

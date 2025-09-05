@@ -1,0 +1,11 @@
+{
+  "Baltics": ["EST", "LVA", "LTU"],
+  "Benelux": ["BEL", "NLD", "LUX"],
+  "Nordics": ["DNK", "FIN", "ISL", "NOR", "SWE"],
+  "V4": ["CZE", "SVK", "POL", "HUN"],
+  "Balkans": ["ALB", "BIH", "BGR", "HRV", "GRC", "MKD", "MNE", "ROU", "SRB", "SVN"],
+  "Central_America": ["MEX", "GTM", "HND", "SLV", "NIC", "CRI", "PAN"],
+  "Maghreb": ["MAR", "DZA", "TUN", "LBY", "MRT"],
+  "ASEAN": ["BRN", "KHM", "IDN", "LAO", "MYS", "MMR", "PHL", "SGP", "THA", "VNM"],
+  "_notes": "Upravte dle potřeby. Klíče jsou názvy peer skupin, hodnoty pole ISO3 kódů destinací."
+}

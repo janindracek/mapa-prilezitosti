@@ -1,0 +1,29 @@
+# === Signal thresholds (used by ETL/41_signals_with_peer.py and others) ===
+thresholds:
+  # Minimum absolute export value (USD) for considering a YoY change - VERY PERMISSIVE
+  MIN_EXPORT_USD: 10000
+  # Minimum partner total imports (USD) for considering a peer-gap signal - VERY PERMISSIVE  
+  MIN_IMPORT_USD: 500000
+  # Peer gap: require at least this absolute gap vs peer median (in fraction points, 0.01 = 1pp) - VERY PERMISSIVE
+  S1_REL_GAP_MIN: 0.001
+  # YoY % threshold for absolute exports (0.05 = 5%) - VERY PERMISSIVE
+  S2_YOY_THRESHOLD: 0.05
+  # YoY % threshold for partner share inside CZ exports (0.05 = 5%) - VERY PERMISSIVE
+  S3_YOY_SHARE_THRESHOLD: 0.05
+  # Max signals returned in total and per type - GENERATE MANY MORE
+  MAX_TOTAL: 5000
+  MAX_PER_TYPE: 2000
+
+# === Labels used by API /controls and UI tooltips ===
+metric_labels:
+  YoY_export_change: "Exports YoY"
+  YoY_partner_share_change: "Partner share YoY"
+  delta_vs_peer: "Gap vs peer median"
+  partner_share_in_cz_exports: "Partner share in CZ exports"
+  median_peer_share: "Peer median share"
+  podil_cz_na_importu: "CZ share of partner imports"
+  YoY_partner_share_change_short: "Partner share"
+  YoY_export_change_short: "Exports"
+  Peer_gap_human: "Gap vs human peer group"
+  Peer_gap_opportunity: "Gap vs opportunity peers"
+  Peer_gap_matching: "Gap vs current-setup peers"

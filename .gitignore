@@ -1,0 +1,41 @@
+# Large data files (too big for GitHub)
+data/parquet/BACI_HS22_*
+data/parquet/trade_by_*.parquet
+data/out/*.parquet
+data/backup_corrupted/
+data/raw/
+
+# Keep small essential files (exceptions to above rules)
+!data/parquet/product_codes_HS22.parquet
+!data/out/top_signals.parquet
+!data/out/signals_comprehensive.parquet
+!data/out/peer_groups_*.parquet
+
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+ui/dist/
+ui/build/
+
+# Logs
+*.log
+logs/

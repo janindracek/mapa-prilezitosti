@@ -1,0 +1,37 @@
+================================================================================
+data/parquet/product_codes_HS22.parquet
+code: int64
+description: string
+-- schema metadata --
+pandas: '{"index_columns": [], "column_indexes": [], "columns": [{"name":' + 302
+================================================================================
+data/parquet/trade_by_exporter.parquet
+year: int16
+exporter: int32
+value_usd: string
+-- schema metadata --
+pandas: '{"index_columns": [], "column_indexes": [], "columns": [{"name":' + 411
+================================================================================
+data/parquet/trade_by_hs2.parquet
+year: int16
+exporter: int32
+hs2: int64
+value_usd: string
+-- schema metadata --
+pandas: '{"index_columns": [], "column_indexes": [], "columns": [{"name":' + 514
+================================================================================
+data/parquet/trade_by_pair.parquet
+year: int16
+exporter: int32
+importer: int32
+value_usd: string
+-- schema metadata --
+pandas: '{"index_columns": [], "column_indexes": [], "columns": [{"name":' + 524
+================================================================================
+data/parquet/trade_by_product.parquet
+year: int16
+exporter: int32
+hs6: int64
+value_usd: string
+-- schema metadata --
+pandas: '{"index_columns": [], "column_indexes": [], "columns": [{"name":' + 514

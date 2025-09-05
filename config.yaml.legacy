@@ -1,0 +1,64 @@
+# --- Paths ---
+paths:
+  parquet_dir: "data/parquet"
+  ref_dir: "data/ref"
+  out_dir: "data/out"
+
+# --- Engine parameters (tune later) ---
+engine:
+  min_export_usd: 100000          # filter to avoid micro noise
+  min_import_usd: 5000000
+  yoy_export_threshold: 0.30       # 30%
+  yoy_partner_share_threshold: 0.20
+  peer_delta_threshold: 0.20       # 20% below peer median triggers a flag
+
+# --- Country of interest (we’ll build general, but default to CZE) ---
+country_cz_iso3: "CZE"
+
+# --- Column mappings by dataset ---
+columns_map:
+  product_codes_hs22:
+    file: "product_codes_HS22.parquet"
+    mapping:
+      hs6: "code"
+      product_name: "description"
+
+  trade_by_exporter:
+    file: "trade_by_exporter.parquet"
+    mapping:
+      year: "year"
+      exporter: "exporter"
+      trade_value_usd: "value_usd"
+    notes: "Aggregated exports by exporting country (int code), no HS or partner detail."
+
+  trade_by_pair:
+    file: "trade_by_pair.parquet"
+    mapping:
+      year: "year"
+      reporter_iso3: "exporter"
+      partner_iso3: "importer"
+      trade_value_usd: "value_usd"
+    notes: "Country-to-country trade values, no HS6 detail."
+
+  trade_by_product:
+    file: "trade_by_product.parquet"
+    mapping:
+      year: "year"
+      reporter_iso3: "exporter"
+      hs6: "hs6"
+      trade_value_usd: "value_usd"
+    notes: "Exports by HS6 for exporter country; no partner detail."
+
+  trade_by_hs2:
+    file: "trade_by_hs2.parquet"
+    mapping:
+      year: "year"
+      exporter: "exporter"
+      hs2: "hs2"
+      trade_value_usd: "value_usd"
+
+# --- Peer groups file ---
+peer_groups_file: "peer_groups.json"
+
+# --- Reference HS names file ---
+hs_names_file: "hs_names.csv"

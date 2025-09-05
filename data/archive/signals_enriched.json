@@ -1,0 +1,122 @@
+[
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "851713",
+    "partner_iso3": "RUS",
+    "intensity": 601.739848282017,
+    "value": 2701.48,
+    "yoy": 601.739848282017,
+    "product_name": "Telephone sets: smartphones for cellular or other wireless networks",
+    "country_name": "Russian Federation",
+    "label": "YoY_export_change \u2022 851713 (Telephone sets: smartphones for cellular or other wireless networks) \u2192 RUS (Russian Federation) \u2022 intensity 601.74"
+  },
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "870290",
+    "partner_iso3": "ITA",
+    "intensity": 571.1604361577422,
+    "value": 129345.449,
+    "yoy": 571.1604361577422,
+    "product_name": "Vehicles: public transport type (carries 10 or more persons, including driver), n.e.c. in heading 8702, new or used",
+    "country_name": "Italy",
+    "label": "YoY_export_change \u2022 870290 (Vehicles: public transport type (carries 10 or more persons, including driver), n.e.c. in heading 8702, new or used) \u2192 ITA (Italy) \u2022 intensity 571.16"
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "271000",
+    "partner_iso3": "CAN",
+    "intensity": 423.0929697535409,
+    "value": 0.0002769019021903413,
+    "yoy": 423.0929697535409,
+    "product_name": "Petroleum oils and oils from bituminous minerals, not crude: preparations n.e.c. containing by weight 70% or more of petroleum oils or oils from bituminous minerals: these being the basic constituents of the preparations: waste oils",
+    "country_name": "Canada",
+    "label": "YoY_partner_share_change \u2022 271000 (Petroleum oils and oils from bituminous minerals, not crude: preparations n.e.c. containing by weight 70% or more of petroleum oils or oils from bituminous minerals: these being the basic constituents of the preparations: waste oils) \u2192 CAN (Canada) \u2022 intensity 423.09"
+  },
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "870421",
+    "partner_iso3": "GBR",
+    "intensity": 407.1775221385418,
+    "value": 4932.009,
+    "yoy": 407.1775221385418,
+    "product_name": "Vehicles: with only compression-ignition internal combustion piston engine (diesel or semi-diesel), for transport of goods, (of a gvw not exceeding 5 tonnes), n.e.c. in item no 8704.1",
+    "country_name": "United Kingdom",
+    "label": "YoY_export_change \u2022 870421 (Vehicles: with only compression-ignition internal combustion piston engine (diesel or semi-diesel), for transport of goods, (of a gvw not exceeding 5 tonnes), n.e.c. in item no 8704.1) \u2192 GBR (United Kingdom) \u2022 intensity 407.18"
+  },
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "271000",
+    "partner_iso3": "CAN",
+    "intensity": 407.0794520547945,
+    "value": 446.847,
+    "yoy": 407.0794520547945,
+    "product_name": "Petroleum oils and oils from bituminous minerals, not crude: preparations n.e.c. containing by weight 70% or more of petroleum oils or oils from bituminous minerals: these being the basic constituents of the preparations: waste oils",
+    "country_name": "Canada",
+    "label": "YoY_export_change \u2022 271000 (Petroleum oils and oils from bituminous minerals, not crude: preparations n.e.c. containing by weight 70% or more of petroleum oils or oils from bituminous minerals: these being the basic constituents of the preparations: waste oils) \u2192 CAN (Canada) \u2022 intensity 407.08"
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "851713",
+    "partner_iso3": "RUS",
+    "intensity": 405.28714812889166,
+    "value": 0.0003232377485436583,
+    "yoy": 405.28714812889166,
+    "product_name": "Telephone sets: smartphones for cellular or other wireless networks",
+    "country_name": "Russian Federation",
+    "label": "YoY_partner_share_change \u2022 851713 (Telephone sets: smartphones for cellular or other wireless networks) \u2192 RUS (Russian Federation) \u2022 intensity 405.29"
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "870290",
+    "partner_iso3": "ITA",
+    "intensity": 381.0867957098218,
+    "value": 0.687259461019894,
+    "yoy": 381.0867957098218,
+    "product_name": "Vehicles: public transport type (carries 10 or more persons, including driver), n.e.c. in heading 8702, new or used",
+    "country_name": "Italy",
+    "label": "YoY_partner_share_change \u2022 870290 (Vehicles: public transport type (carries 10 or more persons, including driver), n.e.c. in heading 8702, new or used) \u2192 ITA (Italy) \u2022 intensity 381.09"
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "870421",
+    "partner_iso3": "GBR",
+    "intensity": 230.19268975143734,
+    "value": 0.025723496801545617,
+    "yoy": 230.19268975143734,
+    "product_name": "Vehicles: with only compression-ignition internal combustion piston engine (diesel or semi-diesel), for transport of goods, (of a gvw not exceeding 5 tonnes), n.e.c. in item no 8704.1",
+    "country_name": "United Kingdom",
+    "label": "YoY_partner_share_change \u2022 870421 (Vehicles: with only compression-ignition internal combustion piston engine (diesel or semi-diesel), for transport of goods, (of a gvw not exceeding 5 tonnes), n.e.c. in item no 8704.1) \u2192 GBR (United Kingdom) \u2022 intensity 230.19"
+  },
+  {
+    "type": "Peer_gap_below_median",
+    "year": 2023,
+    "hs6": "880240",
+    "partner_iso3": "IRL",
+    "intensity": 0.9999969806192531,
+    "value": 3.099713881175131e-07,
+    "peer_median": 0.10266058311168448,
+    "product_name": "Aeroplanes and other aircraft, except unmanned: of an unladen weight exceeding 15,000kg",
+    "country_name": "Ireland",
+    "label": "Peer_gap_below_median \u2022 880240 (Aeroplanes and other aircraft, except unmanned: of an unladen weight exceeding 15,000kg) \u2192 IRL (Ireland) \u2022 intensity 1.00"
+  },
+  {
+    "type": "Peer_gap_below_median",
+    "year": 2023,
+    "hs6": "270900",
+    "partner_iso3": "DEU",
+    "intensity": 0.9999955679926086,
+    "value": 9.591397061757009e-09,
+    "peer_median": 0.0021641202765548314,
+    "product_name": "Oils: petroleum oils and oils obtained from bituminous minerals, crude",
+    "country_name": "Germany",
+    "label": "Peer_gap_below_median \u2022 270900 (Oils: petroleum oils and oils obtained from bituminous minerals, crude) \u2192 DEU (Germany) \u2022 intensity 1.00"
+  }
+]

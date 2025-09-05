@@ -1,0 +1,92 @@
+[
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "851713",
+    "partner_iso3": "RUS",
+    "intensity": 601.739848282017,
+    "value": 2701.48,
+    "yoy": 601.739848282017
+  },
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "870290",
+    "partner_iso3": "ITA",
+    "intensity": 571.1604361577422,
+    "value": 129345.449,
+    "yoy": 571.1604361577422
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "271000",
+    "partner_iso3": "CAN",
+    "intensity": 423.0929697535409,
+    "value": 0.0002769019021903413,
+    "yoy": 423.0929697535409
+  },
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "870421",
+    "partner_iso3": "GBR",
+    "intensity": 407.1775221385418,
+    "value": 4932.009,
+    "yoy": 407.1775221385418
+  },
+  {
+    "type": "YoY_export_change",
+    "year": 2023,
+    "hs6": "271000",
+    "partner_iso3": "CAN",
+    "intensity": 407.0794520547945,
+    "value": 446.847,
+    "yoy": 407.0794520547945
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "851713",
+    "partner_iso3": "RUS",
+    "intensity": 405.28714812889166,
+    "value": 0.0003232377485436583,
+    "yoy": 405.28714812889166
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "870290",
+    "partner_iso3": "ITA",
+    "intensity": 381.0867957098218,
+    "value": 0.687259461019894,
+    "yoy": 381.0867957098218
+  },
+  {
+    "type": "YoY_partner_share_change",
+    "year": 2023,
+    "hs6": "870421",
+    "partner_iso3": "GBR",
+    "intensity": 230.19268975143734,
+    "value": 0.025723496801545617,
+    "yoy": 230.19268975143734
+  },
+  {
+    "type": "Peer_gap_below_median",
+    "year": 2023,
+    "hs6": "880240",
+    "partner_iso3": "IRL",
+    "intensity": 0.9999969806192531,
+    "value": 3.099713881175131e-07,
+    "peer_median": 0.10266058311168448
+  },
+  {
+    "type": "Peer_gap_below_median",
+    "year": 2023,
+    "hs6": "270900",
+    "partner_iso3": "DEU",
+    "intensity": 0.9999955679926086,
+    "value": 9.591397061757009e-09,
+    "peer_median": 0.0021641202765548314
+  }
+]

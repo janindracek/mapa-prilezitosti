@@ -1,0 +1,34 @@
+/* Phase 3: hard light theme so text is readable */
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  margin: 0;
+  background: #ffffff !important;
+  color: #111111 !important;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* Ensure children inherit readable text */
+* { color: inherit; }
+
+/* Basic UI elements */
+button, select, input, textarea {
+  background: #ffffff;
+  color: inherit;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+pre {
+  background: #f7f7f7;
+  color: #111111 !important;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+/* Small layout helper so things aren’t edge-to-edge */
+#root { padding: 12px; }
