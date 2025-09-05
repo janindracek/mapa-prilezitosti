@@ -6,7 +6,7 @@ services:
     region: oregon
     plan: free
     buildCommand: |
-      pip install -r requirements.txt &&
+      pip install --only-binary=all -r requirements.txt &&
       export TRADE_UNITS_SCALE=1000 &&
       python etl/01_build_base_facts.py &&
       python etl/02_compute_trade_metrics.py &&
