@@ -7,6 +7,7 @@ services:
     plan: free
     buildCommand: |
       pip install --only-binary=all -r requirements.txt &&
+      echo "PyArrow installation completed, starting ETL pipeline..." &&
       export TRADE_UNITS_SCALE=1000 &&
       python etl/01_build_base_facts.py &&
       python etl/02_compute_trade_metrics.py &&
