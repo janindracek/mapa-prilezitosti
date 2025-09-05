@@ -25,12 +25,18 @@ class DeploymentDataLoader:
     def core_trade(self) -> pd.DataFrame:
         """Full global trade data for map and trade endpoints"""
         if self._core_trade is None:
-            path = f"{self.base_path}/core_trade.parquet"
-            if os.path.exists(path):
-                self._core_trade = pd.read_parquet(path)
-                print(f"Loaded core trade data: {len(self._core_trade):,} rows")
+            csv_path = f"{self.base_path}/core_trade.csv"
+            parquet_path = f"{self.base_path}/core_trade.parquet"
+            
+            # Try CSV first (deployment), then parquet (development)
+            if os.path.exists(csv_path):
+                self._core_trade = pd.read_csv(csv_path)
+                print(f"Loaded core trade data from CSV: {len(self._core_trade):,} rows")
+            elif os.path.exists(parquet_path):
+                self._core_trade = pd.read_parquet(parquet_path)
+                print(f"Loaded core trade data from Parquet: {len(self._core_trade):,} rows")
             else:
-                print(f"Warning: {path} not found")
+                print(f"Warning: Neither {csv_path} nor {parquet_path} found")
                 self._core_trade = pd.DataFrame()
         return self._core_trade
         
@@ -38,12 +44,18 @@ class DeploymentDataLoader:
     def signals(self) -> pd.DataFrame:
         """Filtered signals data for signals endpoints"""
         if self._signals is None:
-            path = f"{self.base_path}/signals_filtered.parquet"
-            if os.path.exists(path):
-                self._signals = pd.read_parquet(path)
-                print(f"Loaded signals data: {len(self._signals):,} rows")
+            csv_path = f"{self.base_path}/signals_filtered.csv"
+            parquet_path = f"{self.base_path}/signals_filtered.parquet"
+            
+            # Try CSV first (deployment), then parquet (development)
+            if os.path.exists(csv_path):
+                self._signals = pd.read_csv(csv_path)
+                print(f"Loaded signals data from CSV: {len(self._signals):,} rows")
+            elif os.path.exists(parquet_path):
+                self._signals = pd.read_parquet(parquet_path)
+                print(f"Loaded signals data from Parquet: {len(self._signals):,} rows")
             else:
-                print(f"Warning: {path} not found")
+                print(f"Warning: Neither {csv_path} nor {parquet_path} found")
                 self._signals = pd.DataFrame()
         return self._signals
         
@@ -51,12 +63,18 @@ class DeploymentDataLoader:
     def peers(self) -> pd.DataFrame:
         """Peer relationships for all methodologies"""
         if self._peers is None:
-            path = f"{self.base_path}/peer_relationships.parquet"
-            if os.path.exists(path):
-                self._peers = pd.read_parquet(path)
-                print(f"Loaded peer relationships: {len(self._peers):,} rows")
+            csv_path = f"{self.base_path}/peer_relationships.csv"
+            parquet_path = f"{self.base_path}/peer_relationships.parquet"
+            
+            # Try CSV first (deployment), then parquet (development)
+            if os.path.exists(csv_path):
+                self._peers = pd.read_csv(csv_path)
+                print(f"Loaded peer relationships from CSV: {len(self._peers):,} rows")
+            elif os.path.exists(parquet_path):
+                self._peers = pd.read_parquet(parquet_path)
+                print(f"Loaded peer relationships from Parquet: {len(self._peers):,} rows")
             else:
-                print(f"Warning: {path} not found")
+                print(f"Warning: Neither {csv_path} nor {parquet_path} found")
                 self._peers = pd.DataFrame()
         return self._peers
         
@@ -64,25 +82,38 @@ class DeploymentDataLoader:
     def metadata(self) -> Dict[str, Any]:
         """Reference data: countries, HS6 names, configurations"""
         if self._metadata is None:
-            path = f"{self.base_path}/metadata.parquet"
-            if os.path.exists(path):
-                meta_df = pd.read_parquet(path)
+            csv_path = f"{self.base_path}/metadata.csv"
+            parquet_path = f"{self.base_path}/metadata.parquet"
+            
+            # Try CSV first (deployment), then parquet (development)
+            if os.path.exists(csv_path):
+                meta_df = pd.read_csv(csv_path)
                 self._metadata = meta_df.iloc[0].to_dict() if len(meta_df) > 0 else {}
-                print("Loaded metadata")
+                print("Loaded metadata from CSV")
+            elif os.path.exists(parquet_path):
+                meta_df = pd.read_parquet(parquet_path)
+                self._metadata = meta_df.iloc[0].to_dict() if len(meta_df) > 0 else {}
+                print("Loaded metadata from Parquet")
             else:
-                print(f"Warning: {path} not found")
+                print(f"Warning: Neither {csv_path} nor {parquet_path} found")
                 self._metadata = {'countries': [], 'hs6_names': {}, 'config': {}}
         return self._metadata
     
     @lru_cache(maxsize=100)
     def get_country_names(self) -> pd.DataFrame:
         """Get country ISO3 to name mapping"""
-        countries_data = self.metadata.get('countries', [])
-        if len(countries_data) > 0:
-            return pd.DataFrame(countries_data)
+        # Try to load from simple countries.csv file
+        countries_path = f"{self.base_path}/countries.csv"
+        if os.path.exists(countries_path):
+            return pd.read_csv(countries_path)
         else:
-            # Fallback to basic ISO3 codes
-            return pd.DataFrame({'iso3': [], 'name': []})
+            # Fallback to metadata approach
+            countries_data = self.metadata.get('countries', [])
+            if len(countries_data) > 0:
+                return pd.DataFrame(countries_data)
+            else:
+                # Final fallback: empty DataFrame
+                return pd.DataFrame({'iso3': [], 'name': []})
     
     def get_map_data(self, hs6: str = None, metric: str = 'export_cz_to_partner', year: int = 2023) -> List[Dict]:
         """
@@ -189,10 +220,19 @@ class DeploymentDataLoader:
         results = df.to_dict('records')
         
         # Add HS6 names if available
-        hs6_names = self.metadata.get('hs6_names', {})
-        for result in results:
-            if result.get('hs6') in hs6_names:
-                result['hs6_name'] = hs6_names[result['hs6']]
+        try:
+            hs6_names_path = f"{self.base_path}/hs6_names.csv"
+            if os.path.exists(hs6_names_path):
+                hs6_df = pd.read_csv(hs6_names_path)
+                hs6_names = dict(zip(hs6_df['hs6'], hs6_df['name']))
+            else:
+                hs6_names = self.metadata.get('hs6_names', {})
+                
+            for result in results:
+                if result.get('hs6') in hs6_names:
+                    result['hs6_name'] = hs6_names[result['hs6']]
+        except Exception as e:
+            print(f"Warning: Could not load HS6 names: {e}")
         
         return results
     
@@ -221,7 +261,16 @@ class DeploymentDataLoader:
         products = products.sort_values('export_cz_to_partner', ascending=False).head(top)
         
         # Format for display
-        hs6_names = self.metadata.get('hs6_names', {})
+        try:
+            hs6_names_path = f"{self.base_path}/hs6_names.csv"
+            if os.path.exists(hs6_names_path):
+                hs6_df = pd.read_csv(hs6_names_path)
+                hs6_names = dict(zip(hs6_df['hs6'], hs6_df['name']))
+            else:
+                hs6_names = self.metadata.get('hs6_names', {})
+        except Exception:
+            hs6_names = {}
+            
         results = []
         
         for _, row in products.iterrows():

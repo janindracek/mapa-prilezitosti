@@ -1,0 +1,1063 @@
+iso3,cluster,method,k,year,methodology,cluster_name,iso3_original
+BEL,0,human_geo_econ_v2,23.0,2023.0,human,,
+DEU,0,human_geo_econ_v2,23.0,2023.0,human,,
+IRL,0,human_geo_econ_v2,23.0,2023.0,human,,
+LUX,0,human_geo_econ_v2,23.0,2023.0,human,,
+NLD,0,human_geo_econ_v2,23.0,2023.0,human,,
+DNK,1,human_geo_econ_v2,23.0,2023.0,human,,
+FIN,1,human_geo_econ_v2,23.0,2023.0,human,,
+ISL,1,human_geo_econ_v2,23.0,2023.0,human,,
+SWE,1,human_geo_econ_v2,23.0,2023.0,human,,
+EST,2,human_geo_econ_v2,23.0,2023.0,human,,
+LVA,2,human_geo_econ_v2,23.0,2023.0,human,,
+LTU,2,human_geo_econ_v2,23.0,2023.0,human,,
+AUT,3,human_geo_econ_v2,23.0,2023.0,human,,
+CZE,3,human_geo_econ_v2,23.0,2023.0,human,,
+HUN,3,human_geo_econ_v2,23.0,2023.0,human,,
+POL,3,human_geo_econ_v2,23.0,2023.0,human,,
+SVK,3,human_geo_econ_v2,23.0,2023.0,human,,
+SVN,3,human_geo_econ_v2,23.0,2023.0,human,,
+CYP,4,human_geo_econ_v2,23.0,2023.0,human,,
+GRC,4,human_geo_econ_v2,23.0,2023.0,human,,
+ITA,4,human_geo_econ_v2,23.0,2023.0,human,,
+MLT,4,human_geo_econ_v2,23.0,2023.0,human,,
+PRT,4,human_geo_econ_v2,23.0,2023.0,human,,
+ESP,4,human_geo_econ_v2,23.0,2023.0,human,,
+GBR,5,human_geo_econ_v2,23.0,2023.0,human,,
+ALB,6,human_geo_econ_v2,23.0,2023.0,human,,
+BIH,6,human_geo_econ_v2,23.0,2023.0,human,,
+MNE,6,human_geo_econ_v2,23.0,2023.0,human,,
+MKD,6,human_geo_econ_v2,23.0,2023.0,human,,
+SRB,6,human_geo_econ_v2,23.0,2023.0,human,,
+ARM,7,human_geo_econ_v2,23.0,2023.0,human,,
+AZE,7,human_geo_econ_v2,23.0,2023.0,human,,
+BLR,7,human_geo_econ_v2,23.0,2023.0,human,,
+GEO,7,human_geo_econ_v2,23.0,2023.0,human,,
+MDA,7,human_geo_econ_v2,23.0,2023.0,human,,
+ALB,7,human_geo_econ_v2,23.0,2023.0,human,,
+UKR,7,human_geo_econ_v2,23.0,2023.0,human,,
+KAZ,8,human_geo_econ_v2,23.0,2023.0,human,,
+KGZ,8,human_geo_econ_v2,23.0,2023.0,human,,
+RUS,8,human_geo_econ_v2,23.0,2023.0,human,,
+TJK,8,human_geo_econ_v2,23.0,2023.0,human,,
+TKM,8,human_geo_econ_v2,23.0,2023.0,human,,
+UZB,8,human_geo_econ_v2,23.0,2023.0,human,,
+CAN,9,human_geo_econ_v2,23.0,2023.0,human,,
+MEX,9,human_geo_econ_v2,23.0,2023.0,human,,
+ATG,10,human_geo_econ_v2,23.0,2023.0,human,,
+BHS,10,human_geo_econ_v2,23.0,2023.0,human,,
+BRB,10,human_geo_econ_v2,23.0,2023.0,human,,
+BLZ,10,human_geo_econ_v2,23.0,2023.0,human,,
+CRI,10,human_geo_econ_v2,23.0,2023.0,human,,
+CUB,10,human_geo_econ_v2,23.0,2023.0,human,,
+DMA,10,human_geo_econ_v2,23.0,2023.0,human,,
+DOM,10,human_geo_econ_v2,23.0,2023.0,human,,
+SLV,10,human_geo_econ_v2,23.0,2023.0,human,,
+GRD,10,human_geo_econ_v2,23.0,2023.0,human,,
+GTM,10,human_geo_econ_v2,23.0,2023.0,human,,
+HTI,10,human_geo_econ_v2,23.0,2023.0,human,,
+HND,10,human_geo_econ_v2,23.0,2023.0,human,,
+JAM,10,human_geo_econ_v2,23.0,2023.0,human,,
+NIC,10,human_geo_econ_v2,23.0,2023.0,human,,
+PAN,10,human_geo_econ_v2,23.0,2023.0,human,,
+KNA,10,human_geo_econ_v2,23.0,2023.0,human,,
+LCA,10,human_geo_econ_v2,23.0,2023.0,human,,
+VCT,10,human_geo_econ_v2,23.0,2023.0,human,,
+TTO,10,human_geo_econ_v2,23.0,2023.0,human,,
+ARG,11,human_geo_econ_v2,23.0,2023.0,human,,
+BOL,11,human_geo_econ_v2,23.0,2023.0,human,,
+BOL,11,human_geo_econ_v2,23.0,2023.0,human,,
+BRA,11,human_geo_econ_v2,23.0,2023.0,human,,
+CHL,11,human_geo_econ_v2,23.0,2023.0,human,,
+ECU,11,human_geo_econ_v2,23.0,2023.0,human,,
+GUY,11,human_geo_econ_v2,23.0,2023.0,human,,
+PRY,11,human_geo_econ_v2,23.0,2023.0,human,,
+PER,11,human_geo_econ_v2,23.0,2023.0,human,,
+SUR,11,human_geo_econ_v2,23.0,2023.0,human,,
+URY,11,human_geo_econ_v2,23.0,2023.0,human,,
+VEN,11,human_geo_econ_v2,23.0,2023.0,human,,
+VEN,11,human_geo_econ_v2,23.0,2023.0,human,,
+BHR,12,human_geo_econ_v2,23.0,2023.0,human,,
+KWT,12,human_geo_econ_v2,23.0,2023.0,human,,
+OMN,12,human_geo_econ_v2,23.0,2023.0,human,,
+QAT,12,human_geo_econ_v2,23.0,2023.0,human,,
+SAU,12,human_geo_econ_v2,23.0,2023.0,human,,
+ARE,12,human_geo_econ_v2,23.0,2023.0,human,,
+IRN,13,human_geo_econ_v2,23.0,2023.0,human,,
+AFG,13,human_geo_econ_v2,23.0,2023.0,human,,
+IRQ,13,human_geo_econ_v2,23.0,2023.0,human,,
+ISR,13,human_geo_econ_v2,23.0,2023.0,human,,
+JOR,13,human_geo_econ_v2,23.0,2023.0,human,,
+LBN,13,human_geo_econ_v2,23.0,2023.0,human,,
+PSE,13,human_geo_econ_v2,23.0,2023.0,human,,
+ISR,13,human_geo_econ_v2,23.0,2023.0,human,,
+SYR,13,human_geo_econ_v2,23.0,2023.0,human,,
+YEM,13,human_geo_econ_v2,23.0,2023.0,human,,
+DZA,14,human_geo_econ_v2,23.0,2023.0,human,,
+EGY,14,human_geo_econ_v2,23.0,2023.0,human,,
+LBY,14,human_geo_econ_v2,23.0,2023.0,human,,
+MAR,14,human_geo_econ_v2,23.0,2023.0,human,,
+TUN,14,human_geo_econ_v2,23.0,2023.0,human,,
+HKG,15,human_geo_econ_v2,23.0,2023.0,human,,
+JPN,15,human_geo_econ_v2,23.0,2023.0,human,,
+PRK,15,human_geo_econ_v2,23.0,2023.0,human,,
+ALB,15,human_geo_econ_v2,23.0,2023.0,human,,
+MAC,15,human_geo_econ_v2,23.0,2023.0,human,,
+CHN,16,human_geo_econ_v2,23.0,2023.0,human,,
+BRN,17,human_geo_econ_v2,23.0,2023.0,human,,
+KHM,17,human_geo_econ_v2,23.0,2023.0,human,,
+IDN,17,human_geo_econ_v2,23.0,2023.0,human,,
+LAO,17,human_geo_econ_v2,23.0,2023.0,human,,
+MYS,17,human_geo_econ_v2,23.0,2023.0,human,,
+MMR,17,human_geo_econ_v2,23.0,2023.0,human,,
+PHL,17,human_geo_econ_v2,23.0,2023.0,human,,
+SGP,17,human_geo_econ_v2,23.0,2023.0,human,,
+THA,17,human_geo_econ_v2,23.0,2023.0,human,,
+TLS,17,human_geo_econ_v2,23.0,2023.0,human,,
+VNM,17,human_geo_econ_v2,23.0,2023.0,human,,
+BGD,18,human_geo_econ_v2,23.0,2023.0,human,,
+BTN,18,human_geo_econ_v2,23.0,2023.0,human,,
+MDV,18,human_geo_econ_v2,23.0,2023.0,human,,
+NPL,18,human_geo_econ_v2,23.0,2023.0,human,,
+PAK,18,human_geo_econ_v2,23.0,2023.0,human,,
+LKA,18,human_geo_econ_v2,23.0,2023.0,human,,
+BEN,19,human_geo_econ_v2,23.0,2023.0,human,,
+BFA,19,human_geo_econ_v2,23.0,2023.0,human,,
+CPV,19,human_geo_econ_v2,23.0,2023.0,human,,
+TCD,19,human_geo_econ_v2,23.0,2023.0,human,,
+CIV,19,human_geo_econ_v2,23.0,2023.0,human,,
+GMB,19,human_geo_econ_v2,23.0,2023.0,human,,
+GHA,19,human_geo_econ_v2,23.0,2023.0,human,,
+GIN,19,human_geo_econ_v2,23.0,2023.0,human,,
+GNB,19,human_geo_econ_v2,23.0,2023.0,human,,
+LBR,19,human_geo_econ_v2,23.0,2023.0,human,,
+NGA,19,human_geo_econ_v2,23.0,2023.0,human,,
+NGA,19,human_geo_econ_v2,23.0,2023.0,human,,
+SEN,19,human_geo_econ_v2,23.0,2023.0,human,,
+SLE,19,human_geo_econ_v2,23.0,2023.0,human,,
+TGO,19,human_geo_econ_v2,23.0,2023.0,human,,
+BDI,20,human_geo_econ_v2,23.0,2023.0,human,,
+DJI,20,human_geo_econ_v2,23.0,2023.0,human,,
+ERI,20,human_geo_econ_v2,23.0,2023.0,human,,
+ETH,20,human_geo_econ_v2,23.0,2023.0,human,,
+KEN,20,human_geo_econ_v2,23.0,2023.0,human,,
+RWA,20,human_geo_econ_v2,23.0,2023.0,human,,
+SOM,20,human_geo_econ_v2,23.0,2023.0,human,,
+SSD,20,human_geo_econ_v2,23.0,2023.0,human,,
+SDN,20,human_geo_econ_v2,23.0,2023.0,human,,
+TZA,20,human_geo_econ_v2,23.0,2023.0,human,,
+TZA,20,human_geo_econ_v2,23.0,2023.0,human,,
+UGA,20,human_geo_econ_v2,23.0,2023.0,human,,
+AGO,21,human_geo_econ_v2,23.0,2023.0,human,,
+BWA,21,human_geo_econ_v2,23.0,2023.0,human,,
+CMR,21,human_geo_econ_v2,23.0,2023.0,human,,
+CAF,21,human_geo_econ_v2,23.0,2023.0,human,,
+COM,21,human_geo_econ_v2,23.0,2023.0,human,,
+COG,21,human_geo_econ_v2,23.0,2023.0,human,,
+GNQ,21,human_geo_econ_v2,23.0,2023.0,human,,
+SWZ,21,human_geo_econ_v2,23.0,2023.0,human,,
+GAB,21,human_geo_econ_v2,23.0,2023.0,human,,
+LSO,21,human_geo_econ_v2,23.0,2023.0,human,,
+MDG,21,human_geo_econ_v2,23.0,2023.0,human,,
+MWI,21,human_geo_econ_v2,23.0,2023.0,human,,
+MUS,21,human_geo_econ_v2,23.0,2023.0,human,,
+MOZ,21,human_geo_econ_v2,23.0,2023.0,human,,
+NAM,21,human_geo_econ_v2,23.0,2023.0,human,,
+SYC,21,human_geo_econ_v2,23.0,2023.0,human,,
+ZAF,21,human_geo_econ_v2,23.0,2023.0,human,,
+ZMB,21,human_geo_econ_v2,23.0,2023.0,human,,
+ZWE,21,human_geo_econ_v2,23.0,2023.0,human,,
+AUS,22,human_geo_econ_v2,23.0,2023.0,human,,
+FJI,22,human_geo_econ_v2,23.0,2023.0,human,,
+KIR,22,human_geo_econ_v2,23.0,2023.0,human,,
+MHL,22,human_geo_econ_v2,23.0,2023.0,human,,
+FSM,22,human_geo_econ_v2,23.0,2023.0,human,,
+FSM,22,human_geo_econ_v2,23.0,2023.0,human,,
+NRU,22,human_geo_econ_v2,23.0,2023.0,human,,
+NZL,22,human_geo_econ_v2,23.0,2023.0,human,,
+PLW,22,human_geo_econ_v2,23.0,2023.0,human,,
+PNG,22,human_geo_econ_v2,23.0,2023.0,human,,
+WSM,22,human_geo_econ_v2,23.0,2023.0,human,,
+SLB,22,human_geo_econ_v2,23.0,2023.0,human,,
+TON,22,human_geo_econ_v2,23.0,2023.0,human,,
+TUV,22,human_geo_econ_v2,23.0,2023.0,human,,
+VUT,22,human_geo_econ_v2,23.0,2023.0,human,,
+ATG,0,,,,hs2,Commodity-heavy & emerging importers,
+AUT,0,,,,hs2,Commodity-heavy & emerging importers,
+BRA,0,,,,hs2,Commodity-heavy & emerging importers,
+KHM,0,,,,hs2,Commodity-heavy & emerging importers,
+COK,0,,,,hs2,Commodity-heavy & emerging importers,
+CRI,0,,,,hs2,Commodity-heavy & emerging importers,
+DMA,0,,,,hs2,Commodity-heavy & emerging importers,
+GMB,0,,,,hs2,Commodity-heavy & emerging importers,
+GIB,0,,,,hs2,Commodity-heavy & emerging importers,
+GRD,0,,,,hs2,Commodity-heavy & emerging importers,
+GIN,0,,,,hs2,Commodity-heavy & emerging importers,
+MNG,0,,,,hs2,Commodity-heavy & emerging importers,
+NIC,0,,,,hs2,Commodity-heavy & emerging importers,
+PLW,0,,,,hs2,Commodity-heavy & emerging importers,
+PNG,0,,,,hs2,Commodity-heavy & emerging importers,
+KNA,0,,,,hs2,Commodity-heavy & emerging importers,
+LCA,0,,,,hs2,Commodity-heavy & emerging importers,
+VCT,0,,,,hs2,Commodity-heavy & emerging importers,
+WSM,0,,,,hs2,Commodity-heavy & emerging importers,
+STP,0,,,,hs2,Commodity-heavy & emerging importers,
+SXM,0,,,,hs2,Commodity-heavy & emerging importers,
+ZMB,0,,,,hs2,Commodity-heavy & emerging importers,
+ZWE,0,,,,hs2,Commodity-heavy & emerging importers,
+ABW,1,,,,hs2,Small island & service-oriented economies,
+BOL,1,,,,hs2,Small island & service-oriented economies,
+BWA,1,,,,hs2,Small island & service-oriented economies,
+CPV,1,,,,hs2,Small island & service-oriented economies,
+CYM,1,,,,hs2,Small island & service-oriented economies,
+CXR,1,,,,hs2,Small island & service-oriented economies,
+GRL,1,,,,hs2,Small island & service-oriented economies,
+JOR,1,,,,hs2,Small island & service-oriented economies,
+KWT,1,,,,hs2,Small island & service-oriented economies,
+MDV,1,,,,hs2,Small island & service-oriented economies,
+MSR,1,,,,hs2,Small island & service-oriented economies,
+PCN,1,,,,hs2,Small island & service-oriented economies,
+SPM,1,,,,hs2,Small island & service-oriented economies,
+SYC,1,,,,hs2,Small island & service-oriented economies,
+SDN,1,,,,hs2,Small island & service-oriented economies,
+TON,1,,,,hs2,Small island & service-oriented economies,
+DZA,2,,,,hs2,Resource exporters with narrow import needs,
+BRN,2,,,,hs2,Resource exporters with narrow import needs,
+CMR,2,,,,hs2,Resource exporters with narrow import needs,
+COM,2,,,,hs2,Resource exporters with narrow import needs,
+GNQ,2,,,,hs2,Resource exporters with narrow import needs,
+GUY,2,,,,hs2,Resource exporters with narrow import needs,
+HTI,2,,,,hs2,Resource exporters with narrow import needs,
+NFK,2,,,,hs2,Resource exporters with narrow import needs,
+SLB,2,,,,hs2,Resource exporters with narrow import needs,
+VUT,2,,,,hs2,Resource exporters with narrow import needs,
+ARM,3,,,,hs2,Large diversified importers,
+AUS,3,,,,hs2,Large diversified importers,
+BLR,3,,,,hs2,Large diversified importers,
+BLZ,3,,,,hs2,Large diversified importers,
+BEN,3,,,,hs2,Large diversified importers,
+BIH,3,,,,hs2,Large diversified importers,
+CAN,3,,,,hs2,Large diversified importers,
+CAF,3,,,,hs2,Large diversified importers,
+TCD,3,,,,hs2,Large diversified importers,
+DJI,3,,,,hs2,Large diversified importers,
+ECU,3,,,,hs2,Large diversified importers,
+EGY,3,,,,hs2,Large diversified importers,
+SLV,3,,,,hs2,Large diversified importers,
+FJI,3,,,,hs2,Large diversified importers,
+PYF,3,,,,hs2,Large diversified importers,
+GHA,3,,,,hs2,Large diversified importers,
+GTM,3,,,,hs2,Large diversified importers,
+HND,3,,,,hs2,Large diversified importers,
+HKG,3,,,,hs2,Large diversified importers,
+ISL,3,,,,hs2,Large diversified importers,
+IRN,3,,,,hs2,Large diversified importers,
+JAM,3,,,,hs2,Large diversified importers,
+KAZ,3,,,,hs2,Large diversified importers,
+KGZ,3,,,,hs2,Large diversified importers,
+LAO,3,,,,hs2,Large diversified importers,
+LVA,3,,,,hs2,Large diversified importers,
+LBN,3,,,,hs2,Large diversified importers,
+MDG,3,,,,hs2,Large diversified importers,
+MRT,3,,,,hs2,Large diversified importers,
+MUS,3,,,,hs2,Large diversified importers,
+MEX,3,,,,hs2,Large diversified importers,
+MNE,3,,,,hs2,Large diversified importers,
+NAM,3,,,,hs2,Large diversified importers,
+NLD,3,,,,hs2,Large diversified importers,
+MKD,3,,,,hs2,Large diversified importers,
+PAN,3,,,,hs2,Large diversified importers,
+PER,3,,,,hs2,Large diversified importers,
+QAT,3,,,,hs2,Large diversified importers,
+SAU,3,,,,hs2,Large diversified importers,
+SEN,3,,,,hs2,Large diversified importers,
+THA,3,,,,hs2,Large diversified importers,
+TCA,3,,,,hs2,Large diversified importers,
+TUR,3,,,,hs2,Large diversified importers,
+UGA,3,,,,hs2,Large diversified importers,
+UKR,3,,,,hs2,Large diversified importers,
+URY,3,,,,hs2,Large diversified importers,
+ALB,4,,,,hs2,European core & advanced Asia,
+AGO,4,,,,hs2,European core & advanced Asia,
+AZE,4,,,,hs2,European core & advanced Asia,
+BHR,4,,,,hs2,European core & advanced Asia,
+BMU,4,,,,hs2,European core & advanced Asia,
+BGR,4,,,,hs2,European core & advanced Asia,
+CHL,4,,,,hs2,European core & advanced Asia,
+CYP,4,,,,hs2,European core & advanced Asia,
+CZE,4,,,,hs2,European core & advanced Asia,
+DNK,4,,,,hs2,European core & advanced Asia,
+DOM,4,,,,hs2,European core & advanced Asia,
+ETH,4,,,,hs2,European core & advanced Asia,
+DEU,4,,,,hs2,European core & advanced Asia,
+GNB,4,,,,hs2,European core & advanced Asia,
+HUN,4,,,,hs2,European core & advanced Asia,
+IRQ,4,,,,hs2,European core & advanced Asia,
+JPN,4,,,,hs2,European core & advanced Asia,
+LTU,4,,,,hs2,European core & advanced Asia,
+LUX,4,,,,hs2,European core & advanced Asia,
+MDA,4,,,,hs2,European core & advanced Asia,
+MOZ,4,,,,hs2,European core & advanced Asia,
+NZL,4,,,,hs2,European core & advanced Asia,
+NGA,4,,,,hs2,European core & advanced Asia,
+PAK,4,,,,hs2,European core & advanced Asia,
+POL,4,,,,hs2,European core & advanced Asia,
+SRB,4,,,,hs2,European core & advanced Asia,
+SVN,4,,,,hs2,European core & advanced Asia,
+SWE,4,,,,hs2,European core & advanced Asia,
+TUV,4,,,,hs2,European core & advanced Asia,
+YEM,4,,,,hs2,European core & advanced Asia,
+AND,5,,,,hs2,Niche small markets,
+BHS,5,,,,hs2,Niche small markets,
+SWZ,5,,,,hs2,Niche small markets,
+ISR,5,,,,hs2,Niche small markets,
+BEL,6,,,,hs2,Mediterranean & mid-tier emerging,
+COL,6,,,,hs2,Mediterranean & mid-tier emerging,
+COG,6,,,,hs2,Mediterranean & mid-tier emerging,
+CUB,6,,,,hs2,Mediterranean & mid-tier emerging,
+GRC,6,,,,hs2,Mediterranean & mid-tier emerging,
+IDN,6,,,,hs2,Mediterranean & mid-tier emerging,
+IRL,6,,,,hs2,Mediterranean & mid-tier emerging,
+ITA,6,,,,hs2,Mediterranean & mid-tier emerging,
+LBY,6,,,,hs2,Mediterranean & mid-tier emerging,
+MWI,6,,,,hs2,Mediterranean & mid-tier emerging,
+MYS,6,,,,hs2,Mediterranean & mid-tier emerging,
+MLI,6,,,,hs2,Mediterranean & mid-tier emerging,
+MLT,6,,,,hs2,Mediterranean & mid-tier emerging,
+MAR,6,,,,hs2,Mediterranean & mid-tier emerging,
+NER,6,,,,hs2,Mediterranean & mid-tier emerging,
+PRT,6,,,,hs2,Mediterranean & mid-tier emerging,
+ROU,6,,,,hs2,Mediterranean & mid-tier emerging,
+RWA,6,,,,hs2,Mediterranean & mid-tier emerging,
+SMR,6,,,,hs2,Mediterranean & mid-tier emerging,
+SLE,6,,,,hs2,Mediterranean & mid-tier emerging,
+SGP,6,,,,hs2,Mediterranean & mid-tier emerging,
+ZAF,6,,,,hs2,Mediterranean & mid-tier emerging,
+ESP,6,,,,hs2,Mediterranean & mid-tier emerging,
+SYR,6,,,,hs2,Mediterranean & mid-tier emerging,
+TGO,6,,,,hs2,Mediterranean & mid-tier emerging,
+TUN,6,,,,hs2,Mediterranean & mid-tier emerging,
+GBR,6,,,,hs2,Mediterranean & mid-tier emerging,
+VNM,6,,,,hs2,Mediterranean & mid-tier emerging,
+AFG,7,,,,hs2,Frontier & low-income,
+ARG,7,,,,hs2,Frontier & low-income,
+BRB,7,,,,hs2,Frontier & low-income,
+BFA,7,,,,hs2,Frontier & low-income,
+COG,7,,,,hs2,Frontier & low-income,
+HRV,7,,,,hs2,Frontier & low-income,
+CIV,7,,,,hs2,Frontier & low-income,
+EST,7,,,,hs2,Frontier & low-income,
+GEO,7,,,,hs2,Frontier & low-income,
+LBR,7,,,,hs2,Frontier & low-income,
+MAC,7,,,,hs2,Frontier & low-income,
+MMR,7,,,,hs2,Frontier & low-income,
+NCL,7,,,,hs2,Frontier & low-income,
+OMN,7,,,,hs2,Frontier & low-income,
+PRY,7,,,,hs2,Frontier & low-income,
+SVK,7,,,,hs2,Frontier & low-income,
+TJK,7,,,,hs2,Frontier & low-income,
+TZA,7,,,,hs2,Frontier & low-income,
+TLS,7,,,,hs2,Frontier & low-income,
+TTO,7,,,,hs2,Frontier & low-income,
+ASM,8,,,,hs2,Island & remote economies,
+AIA,8,,,,hs2,Island & remote economies,
+IOT,8,,,,hs2,Island & remote economies,
+BDI,8,,,,hs2,Island & remote economies,
+CCK,8,,,,hs2,Island & remote economies,
+CUW,8,,,,hs2,Island & remote economies,
+ERI,8,,,,hs2,Island & remote economies,
+FLK,8,,,,hs2,Island & remote economies,
+ATF,8,,,,hs2,Island & remote economies,
+GUM,8,,,,hs2,Island & remote economies,
+KIR,8,,,,hs2,Island & remote economies,
+LSO,8,,,,hs2,Island & remote economies,
+MHL,8,,,,hs2,Island & remote economies,
+NRU,8,,,,hs2,Island & remote economies,
+NIU,8,,,,hs2,Island & remote economies,
+MNP,8,,,,hs2,Island & remote economies,
+BLM,8,,,,hs2,Island & remote economies,
+SOM,8,,,,hs2,Island & remote economies,
+SSD,8,,,,hs2,Island & remote economies,
+LKA,8,,,,hs2,Island & remote economies,
+SUR,8,,,,hs2,Island & remote economies,
+TKL,8,,,,hs2,Island & remote economies,
+TKM,8,,,,hs2,Island & remote economies,
+VEN,8,,,,hs2,Island & remote economies,
+WLF,8,,,,hs2,Island & remote economies,
+BGD,9,,,,hs2,China-linked / Northern cluster,
+BTN,9,,,,hs2,China-linked / Northern cluster,
+CHN,9,,,,hs2,China-linked / Northern cluster,
+FIN,9,,,,hs2,China-linked / Northern cluster,
+GAB,9,,,,hs2,China-linked / Northern cluster,
+KEN,9,,,,hs2,China-linked / Northern cluster,
+NPL,9,,,,hs2,China-linked / Northern cluster,
+PHL,9,,,,hs2,China-linked / Northern cluster,
+RUS,9,,,,hs2,China-linked / Northern cluster,
+ARE,9,,,,hs2,China-linked / Northern cluster,
+UZB,9,,,,hs2,China-linked / Northern cluster,
+BGR,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MMR,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BDI,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BLR,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+KHM,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+DZA,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CMR,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CAN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CPV,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CYM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CAF,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LKA,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TCD,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CHL,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CHN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ASM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CXR,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CCK,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+COL,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+COM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+COG,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+COD,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+COK,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CRI,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+HRV,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CUB,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CYP,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+AND,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CZE,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BEN,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+DNK,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+DMA,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+DOM,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ECU,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SLV,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GNQ,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ETH,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ERI,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+EST,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+FLK,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+AGO,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+FJI,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+FIN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+251,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PYF,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ATF,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+DJI,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GAB,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GEO,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GMB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PSE,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+DEU,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ATG,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GHA,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GIB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+KIR,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GRC,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GRL,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GRD,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+AZE,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GUM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ARG,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GTM,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GIN,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GUY,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+HTI,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+HND,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+HKG,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+HUN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ISL,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+AUS,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+IDN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+IRN,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+IRQ,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+IRL,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ISR,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ITA,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CIV,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+JAM,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+JPN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+KAZ,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+AFG,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+AUT,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+JOR,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+KEN,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PRK,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+KOR,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+KWT,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+KGZ,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LAO,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LBN,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LSO,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LVA,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LBR,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LBY,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BHS,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LTU,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LUX,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MAC,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MDG,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MWI,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MYS,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MDV,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MLI,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MLT,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MRT,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BHR,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MUS,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MEX,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+490,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MNG,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MDA,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MNE,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BGD,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MSR,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MAR,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MOZ,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ARM,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+OMN,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NAM,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BRB,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NRU,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NPL,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NLD,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+CUW,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ABW,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SXM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BES,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NCL,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+VUT,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NZL,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NIC,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BEL,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NER,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NGA,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NIU,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+NFK,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+579,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MNP,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+FSM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MHL,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PLW,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PAK,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PAN,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PNG,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BMU,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PRY,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PER,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PHL,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PCN,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+POL,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+PRT,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GNB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TLS,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+QAT,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BTN,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ROU,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+RUS,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+RWA,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BLM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SHN,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+KNA,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+AIA,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+LCA,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SPM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+VCT,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SMR,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+STP,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BOL,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SAU,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SEN,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SRB,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SYC,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SLE,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+699,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BIH,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SGP,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SVK,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+VNM,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SVN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SOM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ZAF,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ZWE,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BWA,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ESP,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SSD,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SDN,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SUR,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SWZ,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SWE,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+757,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BRA,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SYR,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TJK,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+THA,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TGO,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TKL,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TON,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TTO,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ARE,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TUN,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TUR,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TKM,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TCA,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TUV,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ALB,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+UGA,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+UKR,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+MKD,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+EGY,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+GBR,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+TZA,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BLZ,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+842,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BFA,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+URY,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+IOT,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+UZB,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+VEN,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+WLF,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+WSM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+YEM,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+ZMB,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+SLB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+VGB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+BRN,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,opportunity,,
+KHM,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,116
+COK,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,184
+CRI,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,188
+DMA,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,212
+GMB,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,270
+ATG,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,28
+GIB,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,292
+GRD,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,308
+GIN,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,324
+AUT,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,40
+MNG,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,496
+SXM,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,534
+NIC,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,558
+PLW,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,585
+PNG,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,598
+KNA,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,659
+LCA,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,662
+VCT,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,670
+STP,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,678
+ZWE,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,716
+BRA,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,76
+WSM,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,882
+ZMB,0,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,894
+CPV,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,132
+CYM,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,136
+CXR,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,162
+GRL,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,304
+JOR,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,400
+KWT,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,414
+MDV,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,462
+MSR,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,500
+ABW,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,533
+PCN,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,612
+SPM,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,666
+BOL,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,68
+SYC,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,690
+BWA,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,72
+SDN,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,729
+TON,1,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,776
+DZA,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,12
+CMR,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,120
+COM,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,174
+GNQ,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,226
+GUY,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,328
+HTI,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,332
+VUT,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,548
+NFK,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,574
+SLB,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,90
+BRN,2,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,96
+BLR,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,112
+CAN,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,124
+CAF,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,140
+TCD,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,148
+BEN,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,204
+ECU,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,218
+SLV,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,222
+FJI,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,242
+PYF,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,258
+DJI,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,262
+GHA,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,288
+GTM,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,320
+HND,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,340
+HKG,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,344
+ISL,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,352
+AUS,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,36
+IRN,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,364
+JAM,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,388
+KAZ,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,398
+KOR,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,410
+KGZ,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,417
+LAO,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,418
+LBN,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,422
+LVA,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,428
+MDG,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,450
+MRT,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,478
+MUS,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,480
+MEX,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,484
+MNE,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,499
+ARM,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,51
+NAM,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,516
+NLD,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,528
+PAN,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,591
+PER,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,604
+QAT,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,634
+SAU,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,682
+SEN,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,686
+BIH,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,70
+THA,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,764
+TUR,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,792
+TCA,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,796
+UGA,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,800
+UKR,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,804
+MKD,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,807
+EGY,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,818
+BLZ,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,84
+URY,3,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,858
+BGR,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,100
+CHL,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,152
+CYP,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,196
+CZE,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,203
+DNK,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,208
+DOM,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,214
+ETH,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,231
+AGO,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,24
+DEU,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,276
+AZE,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,31
+HUN,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,348
+IRQ,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,368
+JPN,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,392
+LTU,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,440
+LUX,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,442
+BHR,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,48
+MDA,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,498
+MOZ,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,508
+NZL,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,554
+NGA,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,566
+PAK,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,586
+BMU,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,60
+POL,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,616
+GNB,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,624
+SRB,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,688
+SVN,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,705
+SWE,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,752
+TUV,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,798
+ALB,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,8
+YEM,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,887
+VGB,4,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,92
+AND,5,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,20
+ISR,5,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,376
+BHS,5,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,44
+SWZ,5,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,748
+COL,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,170
+COG,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,178
+CUB,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,192
+PSE,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,275
+GRC,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,300
+IDN,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,360
+IRL,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,372
+ITA,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,380
+LBY,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,434
+MWI,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,454
+MYS,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,458
+MLI,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,466
+MLT,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,470
+MAR,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,504
+BEL,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,56
+NER,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,562
+PRT,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,620
+ROU,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,642
+RWA,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,646
+SMR,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,674
+SLE,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,694
+SGP,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,702
+VNM,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,704
+ZAF,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,710
+ESP,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,724
+SYR,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,760
+TGO,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,768
+TUN,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,788
+GBR,6,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,826
+MMR,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,104
+COD,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,180
+HRV,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,191
+EST,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,233
+GEO,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,268
+ARG,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,32
+CIV,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,384
+AFG,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,4
+LBR,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,430
+MAC,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,446
+OMN,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,512
+BRB,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,52
+NCL,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,540
+PRY,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,600
+TLS,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,626
+SVK,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,703
+TJK,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,762
+TTO,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,780
+TZA,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,834
+BFA,7,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,854
+BDI,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,108
+LKA,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,144
+ASM,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,16
+CCK,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,166
+ERI,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,232
+FLK,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,238
+ATF,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,260
+KIR,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,296
+GUM,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,316
+PRK,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,408
+LSO,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,426
+NRU,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,520
+CUW,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,531
+BES,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,535
+NIU,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,570
+MNP,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,580
+FSM,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,583
+MHL,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,584
+BLM,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,652
+SHN,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,654
+AIA,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,660
+SOM,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,706
+SSD,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,728
+SUR,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,740
+TKL,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,772
+TKM,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,795
+IOT,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,86
+VEN,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,862
+WLF,8,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,876
+CHN,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,156
+FIN,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,246
+GAB,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,266
+KEN,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,404
+BGD,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,50
+NPL,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,524
+PHL,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,608
+BTN,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,64
+RUS,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,643
+ARE,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,784
+UZB,9,kmeans_cosine_hs2_shares,10.0,2023.0,statistical,,860
+BGR,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MMR,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BDI,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BLR,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+KHM,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+DZA,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CMR,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CAN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CPV,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CYM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CAF,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LKA,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TCD,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CHL,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CHN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ASM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CXR,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CCK,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+COL,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+COM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+COG,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+COD,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+COK,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CRI,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+HRV,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CUB,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CYP,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+AND,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CZE,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BEN,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+DNK,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+DMA,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+DOM,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ECU,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SLV,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GNQ,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ETH,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ERI,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+EST,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+FLK,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+AGO,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+FJI,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+FIN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PYF,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ATF,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+DJI,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GAB,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GEO,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GMB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PSE,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+DEU,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ATG,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GHA,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GIB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+KIR,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GRC,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GRL,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GRD,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+AZE,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GUM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ARG,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GTM,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GIN,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GUY,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+HTI,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+HND,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+HKG,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+HUN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ISL,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+AUS,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+IDN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+IRN,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+IRQ,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+IRL,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ISR,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ITA,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CIV,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+JAM,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+JPN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+KAZ,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+AFG,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+AUT,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+JOR,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+KEN,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PRK,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+KOR,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+KWT,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+KGZ,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LAO,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LBN,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LSO,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LVA,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LBR,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LBY,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BHS,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LTU,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LUX,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MAC,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MDG,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MWI,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MYS,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MDV,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MLI,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MLT,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MRT,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BHR,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MUS,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MEX,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MNG,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MDA,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MNE,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BGD,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MSR,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MAR,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MOZ,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ARM,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+OMN,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NAM,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BRB,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NRU,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NPL,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NLD,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+CUW,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ABW,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SXM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BES,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NCL,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+VUT,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NZL,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NIC,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BEL,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NER,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NGA,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NIU,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+NFK,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MNP,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+FSM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MHL,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PLW,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PAK,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PAN,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PNG,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BMU,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PRY,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PER,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PHL,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PCN,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+POL,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+PRT,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GNB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TLS,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+QAT,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BTN,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ROU,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+RUS,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+RWA,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BLM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SHN,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+KNA,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+AIA,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+LCA,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SPM,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+VCT,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SMR,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+STP,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BOL,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SAU,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SEN,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SRB,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SYC,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SLE,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BIH,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SGP,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SVK,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+VNM,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SVN,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SOM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ZAF,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ZWE,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BWA,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ESP,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SSD,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SDN,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SUR,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SWZ,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SWE,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BRA,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SYR,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TJK,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+THA,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TGO,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TKL,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TON,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TTO,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ARE,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TUN,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TUR,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TKM,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TCA,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TUV,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ALB,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+UGA,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+UKR,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+MKD,0,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+EGY,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+GBR,6,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+TZA,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BLZ,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BFA,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+URY,4,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+IOT,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+UZB,9,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+VEN,1,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+WLF,8,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+WSM,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+YEM,7,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+ZMB,3,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+SLB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+VGB,2,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,
+BRN,5,kmeans_cosine_opportunity(HS6_shares+CAGR+openness),10.0,2023.0,statistical,,

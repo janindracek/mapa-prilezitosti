@@ -1,0 +1,5 @@
+countries,hs6_names,config
+"[{'iso3': 'CZE', 'name': 'Czechia'} {'iso3': 'DEU', 'name': 'Germany'}
+ {'iso3': 'VNM', 'name': 'Vietnam'}
+ {'iso3': 'USA', 'name': 'United States'}
+ {'iso3': 'POL', 'name': 'Poland'} {'iso3': 'SVK', 'name': 'Slovakia'}]","{'Horses': ' live pure-bred breeding', 'Portable digital automatic data processing machines': None, 'Structures and parts of structures of iron or steel': None}","{'metric_labels': {'Peer_gap_human': 'Gap vs human peer group', 'Peer_gap_matching': 'Gap vs current-setup peers', 'Peer_gap_opportunity': 'Gap vs opportunity peers', 'YoY_export_change': 'Exports YoY', 'YoY_export_change_short': 'Exports', 'YoY_partner_share_change': 'Partner share YoY', 'YoY_partner_share_change_short': 'Partner share', 'delta_vs_peer': 'Gap vs peer median', 'median_peer_share': 'Peer median share', 'partner_share_in_cz_exports': 'Partner share in CZ exports', 'podil_cz_na_importu': 'CZ share of partner imports'}, 'thresholds': {'MAX_PER_TYPE': 2000, 'MAX_TOTAL': 5000, 'MIN_EXPORT_USD': 10000, 'MIN_IMPORT_USD': 500000, 'S1_REL_GAP_MIN': 0.001, 'S2_YOY_THRESHOLD': 0.05, 'S3_YOY_SHARE_THRESHOLD': 0.05}}"

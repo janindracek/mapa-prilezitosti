@@ -10,6 +10,7 @@ data/out/debug_*.csv
 
 # Keep deployment data (optimized for production)
 !data/deployment/*.parquet
+!data/deployment/*.csv
 !data/deployment/*.json
 
 # Keep reference data
