@@ -5,16 +5,7 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: |
-      pip install --only-binary=all -r requirements.txt &&
-      echo "PyArrow installation completed, starting ETL pipeline..." &&
-      export TRADE_UNITS_SCALE=1000 &&
-      python etl/01_build_base_facts.py &&
-      python etl/02_compute_trade_metrics.py &&
-      python etl/03b_compute_all_peer_medians.py &&
-      python etl/04b_enrich_metrics_with_all_peers.py &&
-      python etl/05_build_map_data.py &&
-      python etl/06b_generate_comprehensive_signals.py
+    buildCommand: pip install -r requirements-deployment.txt
     startCommand: uvicorn api.server_full:APP --host 0.0.0.0 --port $PORT
     envVars:
       - key: TRADE_UNITS_SCALE

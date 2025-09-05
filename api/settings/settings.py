@@ -5,10 +5,17 @@ from typing import Dict, Any
 class Settings:
     """Centralized configuration for the API"""
     
-    # Data paths
-    BACI_PARQUET_PATH: str = os.getenv("BACI_PARQUET", "data/parquet/baci.parquet")
-    MAP_PARQUET_PATH: str = "data/out/ui_shapes/map_rows.parquet"
-    METRICS_PARQUET_PATH: str = "data/out/metrics_enriched.parquet"
+    # Deployment data paths
+    DEPLOYMENT_DATA_PATH: str = "data/deployment"
+    CORE_TRADE_PATH: str = "data/deployment/core_trade.parquet"
+    SIGNALS_PATH: str = "data/deployment/signals_filtered.parquet" 
+    PEERS_PATH: str = "data/deployment/peer_relationships.parquet"
+    METADATA_PATH: str = "data/deployment/metadata.parquet"
+    
+    # Legacy paths for backward compatibility
+    BACI_PARQUET_PATH: str = CORE_TRADE_PATH
+    MAP_PARQUET_PATH: str = CORE_TRADE_PATH
+    METRICS_PARQUET_PATH: str = CORE_TRADE_PATH
     HS6_REF_PATH: str = "data/ref/hs_mapping.csv"
     
     # UI shapes paths

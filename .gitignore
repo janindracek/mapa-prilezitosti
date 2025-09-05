@@ -8,11 +8,15 @@ data/raw/
 # Exclude large debug/temp CSV files
 data/out/debug_*.csv
 
-# Keep small essential files (exceptions to above rules)
+# Keep deployment data (optimized for production)
+!data/deployment/*.parquet
+!data/deployment/*.json
+
+# Keep reference data
 !data/parquet/product_codes_HS22.parquet
-!data/out/top_signals.parquet
-!data/out/signals_comprehensive.parquet
-!data/out/peer_groups_*.parquet
+
+# Development data excluded from deployment (use data/deployment/ instead)
+data/out/*.parquet
 
 # Dependencies
 node_modules/

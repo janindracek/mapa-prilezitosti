@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import APIRouter
 
 from api.services.signals_unified import UnifiedSignalsService
+from api.data.deployment_loader import deployment_data
 
 router = APIRouter()
 signals_service = UnifiedSignalsService()
@@ -9,6 +10,33 @@ signals_service = UnifiedSignalsService()
 
 @router.get("/signals")
 def signals(
+    country: str | None = None,
+    hs6: str | None = None,
+    type: str | None = None,
+    method: str | None = None,
+    limit: int = 10,
+):
+    """
+    Unified signals endpoint using deployment data
+    Returns filtered signals from the deployment dataset
+    """
+    try:
+        # Use deployment data loader for consistent access
+        signals_data = deployment_data.get_signals_data(
+            country=country, 
+            hs6=hs6, 
+            type=type,
+            limit=limit
+        )
+        return signals_data
+        
+    except Exception as e:
+        print(f"Error in signals endpoint: {e}")
+        return []
+
+
+@router.get("/signals_unified") 
+def signals_unified(
     country: str | None = None,
     hs6: str | None = None,
     type: str | None = None,

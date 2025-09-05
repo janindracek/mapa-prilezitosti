@@ -5,6 +5,18 @@ from typing import Dict, Optional, Set
 from api.settings import settings
 
 
+def load_parquet_safe(filepath: str, fallback_data=None) -> Optional[pd.DataFrame]:
+    """Load parquet file with graceful error handling for deployment"""
+    try:
+        if not os.path.isfile(filepath):
+            print(f"Warning: Data file not found: {filepath}")
+            return fallback_data
+        return pd.read_parquet(filepath)
+    except Exception as e:
+        print(f"Error loading {filepath}: {e}")
+        return fallback_data
+
+
 def load_json(path: str) -> list:
     """Load JSON file with error handling"""
     try:

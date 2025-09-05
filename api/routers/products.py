@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from api.services.bars import BarsService
 from api.helpers import build_trend
 from api.data_access import get_metrics_cached, metrics_mtime_key
+from api.data.deployment_loader import deployment_data
 
 router = APIRouter()
 bars_service = BarsService()
@@ -11,18 +12,33 @@ bars_service = BarsService()
 
 @router.get("/products")
 def product_bars(
-    year: Optional[int] = None,
+    year: Optional[int] = 2023,
     top: int = 10,
     country: Optional[str] = None,
     hs2: Optional[str | int] = None,
 ):
     """
-    Product bars with optional country/HS2 filters.
-    - Without filters: top HS6 by CZ exports for the year.
-    - With country: top HS6 only to that partner.
-    - With hs2: restrict candidates to that 2-digit chapter.
+    Products endpoint using deployment data
+    Returns top HS6 products by export value
     """
-    return bars_service.get_product_bars(year=year, top=top, country=country, hs2=str(hs2) if hs2 else None)
+    try:
+        # Use deployment data loader
+        products_data = deployment_data.get_products_data(
+            country=country, 
+            top=top, 
+            year=year or 2023
+        )
+        
+        # Apply HS2 filter if specified
+        if hs2:
+            hs2_str = str(hs2).zfill(2)  # Pad to 2 digits
+            products_data = [p for p in products_data if p['id'][:2] == hs2_str]
+            
+        return products_data
+        
+    except Exception as e:
+        print(f"Error in products endpoint: {e}")
+        return []
 
 
 @router.get("/trend")
