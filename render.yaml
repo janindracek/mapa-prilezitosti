@@ -13,18 +13,16 @@ services:
       - key: PORT
         value: "8000"
 
-  # Frontend static site  
-  - type: web
+  # Frontend static site using Node.js server
+  - type: web  
     name: mapa-prilezitosti-ui
-    env: static
-    buildCommand: npm install --prefix ui && npm run build --prefix ui
-    staticPublishPath: ui/dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    env: node
+    buildCommand: cd ui && npm install && npm run build
+    startCommand: cd ui && npx serve dist -s -p $PORT
     envVars:
       - key: NODE_VERSION
         value: "20"
       - key: VITE_API_BASE
         value: https://mapa-prilezitosti-api.onrender.com
+      - key: PORT
+        value: "3000"
