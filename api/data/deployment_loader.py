@@ -118,6 +118,17 @@ class DeploymentDataLoader:
         """
         df = self.core_trade.copy()
         
+        # Map UI metric names to deployment data column names
+        metric_mapping = {
+            'cz_share_in_partner_import': 'podil_cz_na_importu',
+            'export_value_usd': 'export_cz_to_partner'
+        }
+        
+        # Use mapped column name if available
+        original_metric = metric
+        if metric in metric_mapping:
+            metric = metric_mapping[metric]
+        
         # Apply filters
         if hs6:
             # Handle HS6 as both string and int formats
@@ -148,8 +159,10 @@ class DeploymentDataLoader:
                 right_on='iso3', 
                 how='left'
             )
+            # Fill missing names with ISO3 codes
+            map_data['name'] = map_data['name'].fillna(map_data['partner_iso3'])
         else:
-            # Fallback: use ISO3 as name and add basic pycountry lookup
+            # Use ISO3 as name (UI will handle the mapping)
             map_data['name'] = map_data['partner_iso3']
         
         # Format for map display
@@ -164,7 +177,7 @@ class DeploymentDataLoader:
             elif value >= 1_000_000:
                 value_fmt = f"{value/1_000_000:.1f}M"
                 unit = "USD" if "export" in metric or "import" in metric else ""
-            elif "podil" in metric or "share" in metric:
+            elif "podil" in metric or "share" in metric or "share" in original_metric:
                 value_fmt = f"{value:.2%}"
                 unit = ""
             else:

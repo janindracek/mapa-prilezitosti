@@ -5,7 +5,7 @@ import MethodologyOverlay from './MethodologyOverlay.jsx';
 // Signal type translations to Czech
 const SIGNAL_TYPE_TRANSLATIONS = {
   'YoY_export_change': 'Nárůst exportu',
-  'YoY_partner_share_change': 'Změna podílu partnera', 
+  'YoY_partner_share_change': 'Změna českého podílu na importu', 
   'Peer_gap_below_median': 'Mezera pod peer mediánem',
   'Peer_gap_matching': 'Mezera - strukturálně podobné země',
   'Peer_gap_opportunity': 'Mezera - země s podobnými příležitostmi',
@@ -15,7 +15,7 @@ const SIGNAL_TYPE_TRANSLATIONS = {
 // Signal explanations in Czech
 const SIGNAL_EXPLANATIONS = {
   'YoY_export_change': 'Významná změna hodnoty exportu mezi roky - indikuje rostoucí nebo klesající obchodní vztahy.',
-  'YoY_partner_share_change': 'Významná změna podílu partnera na celkovém českém exportu - ukazuje přesuny v exportních prioritách.',
+  'YoY_partner_share_change': 'Významná změna podílu Česka na celkovém importu partnera - indikuje rostoucí nebo klesající konkurenceschopnost na daném trhu.',
   'Peer_gap_below_median': 'Český export je pod mediánem srovnatelných zemí - identifikuje potenciální příležitosti.',
   'Peer_gap_matching': 'Český export je pod mediánem zemí s podobnou exportní strukturou - ukazuje nevyužité možnosti.',
   'Peer_gap_opportunity': 'Český export je pod mediánem zemí s podobnými příležitostmi - signalizuje konkurenční nevýhody.',

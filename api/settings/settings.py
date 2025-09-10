@@ -5,18 +5,36 @@ from typing import Dict, Any
 class Settings:
     """Centralized configuration for the API"""
     
-    # Deployment data paths
-    DEPLOYMENT_DATA_PATH: str = "data/deployment"
-    CORE_TRADE_PATH: str = "data/deployment/core_trade.parquet"
-    SIGNALS_PATH: str = "data/deployment/signals_filtered.parquet" 
-    PEERS_PATH: str = "data/deployment/peer_relationships.parquet"
-    METADATA_PATH: str = "data/deployment/metadata.parquet"
-    
-    # Legacy paths for backward compatibility
-    BACI_PARQUET_PATH: str = CORE_TRADE_PATH
-    MAP_PARQUET_PATH: str = CORE_TRADE_PATH
-    METRICS_PARQUET_PATH: str = CORE_TRADE_PATH
-    HS6_REF_PATH: str = "data/ref/hs_mapping.csv"
+    def __init__(self):
+        # Check if deployment data is available
+        self.DEPLOYMENT_AVAILABLE = os.path.exists("data/deployment/core_trade.csv")
+        
+        if self.DEPLOYMENT_AVAILABLE:
+            # Deployment: Use CSV-based data
+            self.DEPLOYMENT_DATA_PATH = "data/deployment"
+            self.CORE_TRADE_PATH = "data/deployment/core_trade.parquet"
+            self.SIGNALS_PATH = "data/deployment/signals_filtered.parquet" 
+            self.PEERS_PATH = "data/deployment/peer_relationships.parquet"
+            self.METADATA_PATH = "data/deployment/metadata.parquet"
+            
+            # Point to deployment data
+            self.BACI_PARQUET_PATH = self.CORE_TRADE_PATH
+            self.MAP_PARQUET_PATH = self.CORE_TRADE_PATH
+            self.METRICS_PARQUET_PATH = self.CORE_TRADE_PATH
+        else:
+            # Local development: Use original parquet system
+            self.DEPLOYMENT_DATA_PATH = "data/deployment"
+            self.CORE_TRADE_PATH = "data/out/fact_base.parquet"
+            self.SIGNALS_PATH = "data/out/signals_comprehensive.parquet" 
+            self.PEERS_PATH = "data/out/peer_groups_statistical.parquet"
+            self.METADATA_PATH = "data/out/metadata.parquet"
+            
+            # Point to original development data
+            self.BACI_PARQUET_PATH = self.CORE_TRADE_PATH
+            self.MAP_PARQUET_PATH = "data/out/ui_shapes/map_rows.parquet"
+            self.METRICS_PARQUET_PATH = "data/out/metrics_enriched.parquet"
+        
+        self.HS6_REF_PATH = "data/ref/hs_mapping.csv"
     
     # UI shapes paths
     UI_SIGNALS_ENRICHED_PATH: str = "data/out/ui_shapes/signals_enriched.json"

@@ -9,7 +9,7 @@ The UI is built with React 18 and Vite, consuming data from a FastAPI backend.
 ### Key Components
 
 #### 📊 **Main Dashboard Components**
-- **`App.jsx`**: Main application container with modular architecture (reduced from 844 to ~230 lines)
+- **`App.jsx`**: Main application container with modular architecture
 - **`Controls.jsx`**: Country selection and HS6 manual input interface
 - **`SignalsList.jsx`**: Displays trade opportunity signals with filtering
 - **`WorldMap.jsx`**: ECharts world map visualization
@@ -29,13 +29,10 @@ The UI is built with React 18 and Vite, consuming data from a FastAPI backend.
 - **`lib/constants.js`**: Application constants and configuration
 - **`lib/api.js`**: API client functions (existing)
 
-#### 🔍 **Benchmark Analysis**
-- **`BenchmarkGroup.jsx`**: **Complete peer group transparency component**
-  - Shows all countries in statistical peer groups
-  - Visual distinction: **Black** = trades in product, **Grey** = doesn't trade
-  - Organizes countries by continent with Czech translations
-  - Displays benchmark methodology (Geographic, Opportunity, Structural)
-  - Sources complete peer group data via `/peer_groups/complete` API
+#### 🔍 **Analysis Components**
+- **`SignalInfo.jsx`**: Signal information and methodology explanations
+- **`KeyData.jsx`**: Key metrics display with trade statistics
+- **Modular architecture**: Separated concerns with custom hooks
 
 ### 📡 **API Integration**
 
@@ -50,7 +47,7 @@ The UI is built with React 18 and Vite, consuming data from a FastAPI backend.
 1. **Signal Selection**: User selects trade signal or manual HS6 code
 2. **Data Fetching**: Parallel API calls for map, chart, and peer group data  
 3. **Visual Updates**: Components update with Czech localization and formatting
-4. **Peer Group Display**: BenchmarkGroup shows complete statistical universe
+4. **Signal Information**: SignalInfo provides methodology context and explanations
 
 ### 🌍 **Localization**
 
@@ -60,20 +57,14 @@ The UI is built with React 18 and Vite, consuming data from a FastAPI backend.
 - **Country Names**: Czech country names from `/ref/country_names_cz.json`
 - **Product Names**: Czech HS6 labels from `/ref/hs6_labels.json`
 
-### 🎨 **Peer Group Visualization**
+### 🎨 **Data Visualization**
 
-The **BenchmarkGroup** component implements complete statistical transparency:
+The UI provides comprehensive trade data visualization:
 
-```javascript
-// Example: Western Balkans peer group display
-Európa: ALB (grey), BGR (black), BIH (black), MKD (black), MNE (black), SRB (black)
-
-// Legend: 
-// Black = countries that trade in this HS6 product
-// Grey = countries that don't trade in this HS6 product
-```
-
-This ensures users understand the complete universe of countries used for benchmark analysis.
+- **WorldMap**: Interactive choropleth with country-level trade metrics
+- **ProductBarChart**: Top trading partners with value comparisons
+- **SignalInfo**: Contextual information about trade opportunities
+- **KeyData**: Summary statistics in tile format
 
 ## 🚀 **Development**
 
@@ -114,17 +105,17 @@ npm run dev
 - Utility functions centralized for consistent behavior
 
 ### **Maintainability**
-- Main App.jsx focuses on layout and coordination (down from 844 lines to ~230)
+- Main App.jsx focuses on layout and coordination with modular structure
 - Changes localized to specific modules
 
 ## 📝 **Component Props**
 
-### BenchmarkGroup
+### SignalInfo
 ```javascript
-<BenchmarkGroup 
-  signal={selectedSignal}           // Current signal object
-  productData={barChartData}        // Countries with trade data
-  country={selectedCountry}         // Target country ISO3
+<SignalInfo
+  signal={selectedSignal}          // Current signal object
+  country={selectedCountry}        // Target country ISO3  
+  year={selectedYear}              // Year for context
 />
 ```
 

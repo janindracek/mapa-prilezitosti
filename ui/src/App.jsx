@@ -5,8 +5,6 @@ import WorldMap from "./components/WorldMap.jsx";
 import ProductBarChart from "./components/ProductBarChart.jsx";
 import KeyData from "./components/KeyData.jsx";
 import SignalInfo from "./components/SignalInfo.jsx";
-// TODO: Re-enable when BenchmarkGroup is needed
-// import BenchmarkGroup from "./components/BenchmarkGroup.jsx";
 
 // Hooks and utilities
 import { useAppData } from "./hooks/useAppData.js";

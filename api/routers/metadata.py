@@ -1,9 +1,19 @@
 import pandas as pd
 from fastapi import APIRouter
+import os
 
 from api.config import load_config
-from api.data.deployment_loader import deployment_data
 from api.services import PeerGroupsService
+
+# Import both systems and choose based on available data
+try:
+    from api.data.deployment_loader import deployment_data
+    DEPLOYMENT_AVAILABLE = os.path.exists("data/deployment/core_trade.csv")
+except ImportError:
+    DEPLOYMENT_AVAILABLE = False
+
+if not DEPLOYMENT_AVAILABLE:
+    from api.data_access import get_metrics_cached, metrics_mtime_key
 
 router = APIRouter()
 peer_groups_service = PeerGroupsService()
@@ -29,8 +39,12 @@ def controls_with_labels():
         "metric_labels": { [metric]: string }
       }
     """
-    # Use deployment data loader
-    df = deployment_data.core_trade
+    # Use appropriate data source
+    if DEPLOYMENT_AVAILABLE:
+        df = deployment_data.core_trade
+    else:
+        df = get_metrics_cached(metrics_mtime_key())
+    
     countries = sorted(pd.Series(df["partner_iso3"]).dropna().unique().tolist())
     years = sorted(int(y) for y in pd.Series(df["year"]).dropna().unique().tolist())
 

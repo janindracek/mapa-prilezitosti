@@ -1,6 +1,7 @@
 import pandas as pd
 from fastapi import APIRouter
 
+import os
 from api.settings import settings
 from api.insights_text import generate_insights, extract_context
 
@@ -10,7 +11,9 @@ router = APIRouter()
 @router.get("/insights")
 def get_insights(importer: str, hs6: str, year: int):
     """Generate insights text for a specific importer/hs6/year combination"""
-    text = generate_insights(settings.METRICS_PARQUET_PATH, importer, hs6, year)
+    # Force using local metrics for insights (deployment data doesn't have compatible schema)
+    metrics_path = "data/out/metrics_enriched.parquet"
+    text = generate_insights(metrics_path, importer, hs6, year)
     return {"insight": text}
 
 
@@ -20,7 +23,9 @@ def get_insights_data(importer: str, hs6: str, year: int):
     Return structured data for KeyData component.
     Returns the context data needed for UI calculations.
     """
-    df = pd.read_parquet(settings.METRICS_PARQUET_PATH, columns=[
+    # Force using local metrics for insights (deployment data doesn't have compatible schema)
+    metrics_path = "data/out/metrics_enriched.parquet"
+    df = pd.read_parquet(metrics_path, columns=[
         "year", "partner_iso3", "hs6",
         "import_partner_total", "export_cz_to_partner", "export_cz_total_for_hs6"
     ])

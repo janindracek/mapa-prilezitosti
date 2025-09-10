@@ -18,7 +18,7 @@ services:
     name: mapa-prilezitosti-ui
     env: node
     buildCommand: cd ui && npm install && npm run build
-    startCommand: cd ui && npx serve dist -s -p $PORT
+    startCommand: cd ui && node server.js
     envVars:
       - key: NODE_VERSION
         value: "20"

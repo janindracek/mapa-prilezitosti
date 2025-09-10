@@ -19,15 +19,15 @@ def main():
     df["prev_export"] = df.groupby(["hs6","partner_iso3"])["export_cz_to_partner"].shift(1)
     df["YoY_export_change"] = safe_div(df["export_cz_to_partner"] - df["prev_export"], df["prev_export"])
 
-    # 3) Partner share in CZ exports
+    # 3) Partner share in CZ exports (for other analytics)
     df["partner_share_in_cz_exports"] = safe_div(df["export_cz_to_partner"], df["export_cz_total_for_hs6"])
 
-    # 4) YoY share change
-    df["prev_share"] = df.groupby(["hs6","partner_iso3"])["partner_share_in_cz_exports"].shift(1)
-    df["YoY_partner_share_change"] = safe_div(df["partner_share_in_cz_exports"] - df["prev_share"], df["prev_share"])
+    # 4) YoY change in Czech share of partner imports (CORRECTED LOGIC)
+    df["prev_cz_import_share"] = df.groupby(["hs6","partner_iso3"])["podil_cz_na_importu"].shift(1)
+    df["YoY_partner_share_change"] = safe_div(df["podil_cz_na_importu"] - df["prev_cz_import_share"], df["prev_cz_import_share"])
 
     # Clean up temp helpers
-    df.drop(columns=["prev_export","prev_share"], inplace=True)
+    df.drop(columns=["prev_export","prev_cz_import_share"], inplace=True)
 
     # Save
     df.to_parquet(OUTPUT, index=False)

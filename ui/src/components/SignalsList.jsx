@@ -96,7 +96,7 @@ export default function SignalsList({
   ];
   const sectionTitle = (t) =>
     t === "YoY_export_change" ? "Nárůst exportu" :
-    t === "YoY_partner_share_change" ? "Navýšení podílu na exportu" :
+    t === "YoY_partner_share_change" ? "Navýšení podílu na importu" :
     t === "Peer_gap_opportunity" ? "Benchmark (statistický, pohled vpřed)" :
     t === "Peer_gap_matching" ? "Benchmark (statistický, pohled současný)" :
     t === "Peer_gap_human" ? "Benchmark (geografický)" : "Jiné";

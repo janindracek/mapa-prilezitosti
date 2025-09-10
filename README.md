@@ -9,7 +9,7 @@ This repo contains a small, explicit data pipeline that computes trade signals a
 ### **Cleanup Summary**
 | Task | Status | Impact |
 |------|--------|--------|
-| **Map Endpoints Consolidation** | ✅ Complete | Consolidated 3 redundant endpoints to single `/map_v2`, removed 47 lines duplicate code |
+| **Map Endpoints Consolidation** | ✅ Complete | Consolidated 3 redundant endpoints to single `/map_v2` |
 | **Signal Processing Cleanup** | ✅ Complete | Improved peer group methodology clarity, added comprehensive documentation |
 | **Peer Groups Centralization** | ✅ Complete | Created centralized registry, enhanced UI with human explanations, future extensible |
 | **Signal Computation Unification** | ✅ Complete | ETL-first architecture with comprehensive methodology support |
@@ -21,7 +21,7 @@ This repo contains a small, explicit data pipeline that computes trade signals a
 - **Dummy Data**: Documented and marked for removal to prevent misleading users
 
 ### **Architecture Benefits**
-- Removed 150+ lines of duplicate code
+- Eliminated duplicate code across endpoints
 - Enhanced UI capabilities with qualitative peer group explanations  
 - Improved maintainability and consistency
 - Fixed frontend bugs through cleanup
@@ -371,14 +371,14 @@ metric_labels:
 The API layer has been completely refactored from a monolithic structure to a clean, modular architecture:
 
 ### **Before → After Transformation**
-- **`api/server_full.py`**: 955 lines → 15 lines (98.7% reduction)
+- **`api/server_full.py`**: Clean orchestration layer
 - **Architecture**: Monolithic → Domain-separated services and routers
-- **Maintainability**: Single massive file → 15 focused modules (50-100 lines each)
+- **Maintainability**: Focused modules with single responsibilities
 
 ### **Modular Structure**
 ```
 api/
-├── server_full.py          # Clean orchestration (15 lines)
+├── server_full.py          # Clean orchestration layer
 ├── settings/               # Centralized configuration
 ├── data/                   # Data access with caching
 ├── services/               # Business logic (SignalsService, PeerGroupsService)
@@ -462,8 +462,8 @@ CORS is enabled for browser use (api/server_cors.py).
 The React frontend has been refactored from a monolithic structure to a clean, modular architecture:
 
 ### **App.jsx Transformation**
-- **Before**: 844 lines of mixed concerns
-- **After**: ~230 lines focused on layout and coordination  
+- **Architecture**: Modular structure with custom hooks and utility separation
+- **Focus**: Layout and coordination with separated business logic  
 - **Reduction**: 76% smaller, dramatically improved maintainability
 
 ### **Extracted Modules**
@@ -496,23 +496,20 @@ Source: /trend?hs6=
 	•	Controls → { countries, years, metrics }
 Source: /controls
 
-### 🎨 **BenchmarkGroup Component**
+### 🎨 **UI Components**
 
-The `BenchmarkGroup` component provides complete peer group transparency:
+The interface provides comprehensive trade data visualization:
 
-**Features**:
-- Shows benchmark type (Geografická, Příležitostní, Strukturální)
-- Displays complete peer group name (e.g., "Western Balkans", "Central Europe") 
-- Lists all countries in the cluster organized by continent
-- Visual distinction: **Black/Bold** = trades in product, **Grey** = doesn't trade in product
-- Legend explaining the color coding
+**Key Components**:
+- **WorldMap**: Interactive choropleth visualization with country-level metrics
+- **ProductBarChart**: Top trading partners with comparative values
+- **SignalInfo**: Contextual information about trade opportunities and methodologies
+- **KeyData**: Summary statistics displayed in organized tile format
 
 **Data Sources**:
-- Complete peer group: `/peer_groups/complete?country=&peer_group=&year=`
-- Trade data: ProductBarChart data for visual distinction
-- Continent grouping: `/ref/country_continents.json`
-
-**Component Location**: `ui/src/components/BenchmarkGroup.jsx`
+- Map data: `/map_v2?hs6=&year=&metric=`
+- Product data: `/products?year=&top=&country=`
+- Signal context: `/peer_groups/explanation?method=&country=`
 
 Signals are rendered as a list from /signals with human‑readable labels. Clicking a signal should set year, hs6, and metric in the UI and refetch /map, /trend, and optionally refresh bars.
 

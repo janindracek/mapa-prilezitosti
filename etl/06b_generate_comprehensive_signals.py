@@ -286,7 +286,7 @@ def generate_yoy_share_signals(df, thresholds):
             'hs6': str(row['hs6']).zfill(6),
             'partner_iso3': str(row['partner_iso3']),
             'intensity': float(row['intensity']),
-            'value': float(row.get('partner_share_in_cz_exports', 0)),
+            'value': float(row.get('podil_cz_na_importu', 0)),
             'yoy': float(row['YoY_partner_share_change']),
             'peer_median': None,
             'delta_vs_peer': None,
