@@ -1,28 +1,12 @@
 services:
-  # Backend API service
   - type: web
-    name: mapa-prilezitosti-api
+    name: mapa-prilezitosti
     env: python
-    region: oregon
     plan: free
     buildCommand: ./deploy/build.sh
     startCommand: uvicorn api.server_full:app --host 0.0.0.0 --port $PORT
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
       - key: TRADE_UNITS_SCALE
         value: "1000"
-      - key: PORT
-        value: "8000"
-
-  # Frontend static site using Node.js server
-  - type: web  
-    name: mapa-prilezitosti-ui
-    env: node
-    buildCommand: cd ui && npm install && npm run build
-    startCommand: cd ui && node server.js
-    envVars:
-      - key: NODE_VERSION
-        value: "20"
-      - key: VITE_API_BASE
-        value: https://mapa-prilezitosti-api.onrender.com
-      - key: PORT
-        value: "3000"

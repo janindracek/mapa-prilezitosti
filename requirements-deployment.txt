@@ -1,6 +1,7 @@
-# Conservative versions to avoid PyArrow dependencies
-pandas==1.5.3
-fastapi==0.95.0
-uvicorn==0.20.0
-pycountry==20.7.3
-pyyaml==5.4.1
+# Production-safe dependencies for Render deployment
+pandas>=2.0,<3.0
+pyarrow>=18.0.0,<22.0.0  # Use latest version with Python 3.13 support
+fastapi>=0.104.0,<1.0
+uvicorn[standard]>=0.24.0,<1.0
+pycountry>=22.0,<24.0
+pyyaml>=6.0,<7.0
