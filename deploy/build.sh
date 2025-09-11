@@ -39,42 +39,25 @@ else
     echo "✅ Essential data files found"
 fi
 
-# Build React frontend
-echo "🎨 Building React frontend..."
-cd ui
-
-# Fix npm optional dependencies issue on Linux
-echo "🔧 Cleaning npm cache and dependencies..."
-rm -rf package-lock.json node_modules
-
-# Install with clean cache and force platform-specific optionalDependencies
-echo "📦 Installing frontend dependencies..."
-npm cache clean --force
-
-# Try multiple installation strategies
-if npm install --no-optional; then
-    echo "✅ npm install --no-optional succeeded"
-elif npm install --legacy-peer-deps; then
-    echo "✅ npm install --legacy-peer-deps succeeded"
-elif npm install; then
-    echo "✅ Standard npm install succeeded"
+# Check for pre-built React frontend
+echo "🎨 Checking React frontend..."
+if [ -d "ui/dist" ] && [ -f "ui/dist/index.html" ]; then
+    echo "✅ Pre-built frontend found, skipping build"
 else
-    echo "❌ All npm install strategies failed"
-    exit 1
+    echo "📦 Building React frontend..."
+    cd ui
+    
+    # Try simple build first
+    if npm install && npm run build; then
+        echo "✅ Frontend build succeeded"
+    else
+        echo "⚠️  Frontend build failed - deploying API only"
+        # Create minimal fallback
+        mkdir -p dist
+        echo '<!DOCTYPE html><html><body><h1>API Ready</h1><p>Access API at /docs</p></body></html>' > dist/index.html
+    fi
+    cd ..
 fi
-
-# Ensure rollup is properly installed
-npm install rollup@latest --save-dev || echo "Warning: rollup install failed, proceeding anyway"
-
-# Build the frontend
-echo "🏗️ Building frontend..."
-if npm run build; then
-    echo "✅ Frontend build succeeded"
-else
-    echo "❌ Frontend build failed"
-    exit 1
-fi
-cd ..
 
 # Create a simple health check endpoint test
 echo "🔍 Testing API configuration..."

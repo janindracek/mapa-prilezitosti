@@ -1,0 +1,14 @@
+[
+  { "code": "CZE", "name": "Česko", "continent": "Europe" },
+  { "code": "DEU", "name": "Německo", "continent": "Europe" },
+  { "code": "POL", "name": "Polsko", "continent": "Europe" },
+  { "code": "USA", "name": "Spojené státy", "continent": "North America" },
+  { "code": "MEX", "name": "Mexiko", "continent": "North America" },
+  { "code": "BRA", "name": "Brazílie", "continent": "South America" },
+  { "code": "EGY", "name": "Egypt", "continent": "Africa" },
+  { "code": "ZAF", "name": "Jihoafrická republika", "continent": "Africa" },
+  { "code": "CHN", "name": "Čína", "continent": "Asia" },
+  { "code": "JPN", "name": "Japonsko", "continent": "Asia" },
+  { "code": "AUS", "name": "Austrálie", "continent": "Oceania" },
+  { "code": "NZL", "name": "Nový Zéland", "continent": "Oceania" }
+]
