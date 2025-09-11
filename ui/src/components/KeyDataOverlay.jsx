@@ -150,8 +150,7 @@ export default function KeyDataOverlay({
                 marginBottom: 8,
                 fontSize: 16,
                 color: '#008C00',
-                margin: 0,
-                marginBottom: 8
+                margin: 0
               }}>
                 {metric.title}
               </h3>

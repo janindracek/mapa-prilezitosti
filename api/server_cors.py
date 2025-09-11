@@ -1,7 +1,15 @@
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi import FastAPI
 
 APP = FastAPI(title="trade-engine API")
+
+# GZip compression (must be added first to wrap all responses)
+APP.add_middleware(
+    GZipMiddleware,
+    minimum_size=1000,  # Only compress responses larger than 1KB
+    compresslevel=6     # Good balance of compression vs CPU (1-9, 6 is default)
+)
 
 # CORS (browsers)
 APP.add_middleware(
