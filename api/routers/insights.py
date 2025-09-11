@@ -25,10 +25,8 @@ def get_insights_data(importer: str, hs6: str, year: int):
     """
     # Force using local metrics for insights (deployment data doesn't have compatible schema)
     metrics_path = "data/out/metrics_enriched.parquet"
-    df = pd.read_parquet(metrics_path, columns=[
-        "year", "partner_iso3", "hs6",
-        "import_partner_total", "export_cz_to_partner", "export_cz_total_for_hs6"
-    ])
+    # Load all columns first, then filter to avoid column name issues
+    df = pd.read_parquet(metrics_path)
     
     context = extract_context(df, importer, hs6, year, lookback=5)
     
