@@ -42,8 +42,38 @@ fi
 # Build React frontend
 echo "🎨 Building React frontend..."
 cd ui
-npm install
-npm run build
+
+# Fix npm optional dependencies issue on Linux
+echo "🔧 Cleaning npm cache and dependencies..."
+rm -rf package-lock.json node_modules
+
+# Install with clean cache and force platform-specific optionalDependencies
+echo "📦 Installing frontend dependencies..."
+npm cache clean --force
+
+# Try multiple installation strategies
+if npm install --no-optional; then
+    echo "✅ npm install --no-optional succeeded"
+elif npm install --legacy-peer-deps; then
+    echo "✅ npm install --legacy-peer-deps succeeded"
+elif npm install; then
+    echo "✅ Standard npm install succeeded"
+else
+    echo "❌ All npm install strategies failed"
+    exit 1
+fi
+
+# Ensure rollup is properly installed
+npm install rollup@latest --save-dev || echo "Warning: rollup install failed, proceeding anyway"
+
+# Build the frontend
+echo "🏗️ Building frontend..."
+if npm run build; then
+    echo "✅ Frontend build succeeded"
+else
+    echo "❌ Frontend build failed"
+    exit 1
+fi
 cd ..
 
 # Create a simple health check endpoint test
