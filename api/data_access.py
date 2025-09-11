@@ -4,8 +4,8 @@ from api.settings import settings
 
 
 # Cesty k parquetům
-METRICS_ENR = Path(settings.METRICS_ENRICHED_PATH)
-METRICS_FALLBACK = Path(settings.METRICS_PATH)
+METRICS_ENR = Path("data/out/metrics_enriched.parquet")
+METRICS_FALLBACK = Path("data/out/metrics.parquet")
 
 def metrics_mtime_key() -> tuple[float, float]:
     """
