@@ -302,9 +302,9 @@ class DeploymentDataLoader:
                 value_fmt = f"{value:,.0f} USD"
             
             results.append({
-                'id': hs6,
+                'id': str(hs6),  # Ensure string type for HS6
                 'name': hs6_names.get(hs6, f"HS6 {hs6}"),
-                'value': float(value),
+                'value': float(value) if value is not None else 0.0,  # Robust float conversion
                 'value_fmt': value_fmt,
                 'unit': 'USD'
             })
