@@ -35,7 +35,8 @@ def build_peer_gap(sub: pd.DataFrame,
             peer_gap_blocks.append(_pg)
 
     # B) dopočet z peer_groups.parquet (pokud existuje) a je požadován
-    pg_path = "data/out/peer_groups_statistical.parquet"
+    from api.settings import settings
+    pg_path = settings.PEERS_PATH
     if os.path.isfile(pg_path) and (wants_all_groups or (peer_group and peer_group != "default")):
         try:
             pg = pd.read_parquet(pg_path)

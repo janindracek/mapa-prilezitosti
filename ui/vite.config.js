@@ -5,8 +5,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   esbuild: {
-    // Remove console statements in production builds only
-    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
+    // Only remove console in actual deployment (keep for local debugging)
+    drop: process.env.RENDER === 'true' ? ['console', 'debugger'] : []
   },
   server: {
     proxy: {

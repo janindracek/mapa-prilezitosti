@@ -28,8 +28,8 @@ class UnifiedSignalsService:
     
     def __init__(self):
         # Paths to comprehensive data - ONLY these are permitted
-        self.comprehensive_signals_path = "data/out/signals_comprehensive.parquet"
-        self.comprehensive_metrics_path = "data/out/metrics_all_peers.parquet"
+        self.comprehensive_signals_path = settings.SIGNALS_COMPREHENSIVE_PATH
+        self.comprehensive_metrics_path = settings.METRICS_ALL_PEERS_PATH
         
         # Cache for loaded data
         self._signals_cache = None

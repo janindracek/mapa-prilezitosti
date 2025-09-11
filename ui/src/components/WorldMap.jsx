@@ -337,8 +337,8 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
     
     // Add data mappings (from current data)
     safeData.forEach(item => {
-      if (item.name && data) {
-        const originalItem = data.find(d => d.name === item.name || d.iso3 === item.name);
+      if (item.name && data && Array.isArray(data)) {
+        const originalItem = data.find(d => d && (d.name === item.name || d.iso3 === item.name));
         if (originalItem?.iso3) {
           mapping.set(item.name, originalItem.iso3);
         }

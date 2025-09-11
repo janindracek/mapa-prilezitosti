@@ -1,10 +1,11 @@
 from pathlib import Path
 from functools import lru_cache
 import pandas as pd
+from api.settings import settings
 
-# Paths to UI shape files
-MAP_ROWS_PATH = Path("data/out/ui_shapes/map_rows.parquet")
-PRODUCT_ROWS_PATH = Path("data/out/ui_shapes/product_rows.parquet")
+# Paths to UI shape files - use settings for deployment/local compatibility
+MAP_ROWS_PATH = Path(settings.MAP_PARQUET_PATH)
+PRODUCT_ROWS_PATH = Path(settings.METRICS_PARQUET_PATH)  # Fallback to metrics for product data
 
 def map_cache_key() -> float:
     """Cache key for map data based on file modification time."""

@@ -1,10 +1,11 @@
 from pathlib import Path
 from functools import lru_cache
+from api.settings import settings
 
 
 # Cesty k parquetům
-METRICS_ENR = Path("data/out/metrics_enriched.parquet")
-METRICS_FALLBACK = Path("data/out/metrics.parquet")
+METRICS_ENR = Path(settings.METRICS_ENRICHED_PATH)
+METRICS_FALLBACK = Path(settings.METRICS_PATH)
 
 def metrics_mtime_key() -> tuple[float, float]:
     """
