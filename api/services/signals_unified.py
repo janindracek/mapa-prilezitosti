@@ -106,8 +106,10 @@ class UnifiedSignalsService:
         # Filter signals
         filtered = signals_df.copy()
         
-        # CRITICAL: Filter by country (partner_iso3) - signals FOR this country
-        if 'partner_iso3' in filtered.columns:
+        # CRITICAL: Filter by country logic
+        # If country='CZE', return signals for ALL partners (Czech export opportunities)  
+        # If country is a specific partner, filter for that partner only
+        if 'partner_iso3' in filtered.columns and iso3 != 'CZE':
             filtered = filtered[filtered['partner_iso3'] == iso3]
         
         # Filter by methodology

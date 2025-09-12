@@ -92,13 +92,13 @@ def extract_context_from_deployment(trade_data: pd.DataFrame, importer: str, hs6
         
         # Map deployment data columns to expected KeyData format with proper type conversion
         return {
-            "c_import_total": float(row.get('import_partner_total', 0) or 0),
+            "c_import_total": float(row.get('import_partner_total_x', 0) or 0),
             "cz_share_in_c": float(row.get('podil_cz_na_importu', 0) or 0),
             "median_peer_share": 0.0,  # Not available in core_trade
-            "import_yoy_change": 0.0,  # Not available in core_trade 
+            "import_yoy_change": float(row.get('YoY_export_change', 0) or 0),
             "cz_to_c": float(row.get('export_cz_to_partner', 0) or 0),
-            "cz_world_total": float(row.get('export_cz_global_for_hs6', 0) or 0),
-            "cz_delta_pct": 0.0  # Not available in core_trade
+            "cz_world_total": float(row.get('export_cz_total_for_hs6', 0) or 0),
+            "cz_delta_pct": float(row.get('YoY_export_change', 0) or 0)  # Use YoY as delta
         }
         
     except Exception as e:
