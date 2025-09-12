@@ -76,41 +76,41 @@ def extract_context_from_deployment(trade_data: pd.DataFrame, importer: str, hs6
         ]
         
         if filtered_data.empty:
-            # Return fallback data structure
+            # Return fallback data structure with proper types
             return {
-                "c_import_total": 0,
-                "cz_share_in_c": 0,
-                "median_peer_share": 0,
-                "import_yoy_change": 0,
-                "cz_to_c": 0,
-                "cz_world_total": 0,
-                "cz_delta_pct": 0
+                "c_import_total": 0.0,
+                "cz_share_in_c": 0.0,
+                "median_peer_share": 0.0,
+                "import_yoy_change": 0.0,
+                "cz_to_c": 0.0,
+                "cz_world_total": 0.0,
+                "cz_delta_pct": 0.0
             }
         
         # Extract available metrics from core_trade data
         row = filtered_data.iloc[0]  # Take first row if multiple
         
-        # Map deployment data columns to expected KeyData format
+        # Map deployment data columns to expected KeyData format with proper type conversion
         return {
-            "c_import_total": row.get('import_partner_total', 0),
-            "cz_share_in_c": row.get('podil_cz_na_importu', 0),
-            "median_peer_share": 0,  # Not available in core_trade
-            "import_yoy_change": 0,  # Not available in core_trade 
-            "cz_to_c": row.get('export_cz_to_partner', 0),
-            "cz_world_total": row.get('export_cz_global_for_hs6', 0),
-            "cz_delta_pct": 0  # Not available in core_trade
+            "c_import_total": float(row.get('import_partner_total', 0) or 0),
+            "cz_share_in_c": float(row.get('podil_cz_na_importu', 0) or 0),
+            "median_peer_share": 0.0,  # Not available in core_trade
+            "import_yoy_change": 0.0,  # Not available in core_trade 
+            "cz_to_c": float(row.get('export_cz_to_partner', 0) or 0),
+            "cz_world_total": float(row.get('export_cz_global_for_hs6', 0) or 0),
+            "cz_delta_pct": 0.0  # Not available in core_trade
         }
         
     except Exception as e:
-        # Return safe fallback on any error
+        # Return safe fallback on any error with proper types
         return {
-            "c_import_total": 0,
-            "cz_share_in_c": 0,
-            "median_peer_share": 0,
-            "import_yoy_change": 0,
-            "cz_to_c": 0,
-            "cz_world_total": 0,
-            "cz_delta_pct": 0
+            "c_import_total": 0.0,
+            "cz_share_in_c": 0.0,
+            "median_peer_share": 0.0,
+            "import_yoy_change": 0.0,
+            "cz_to_c": 0.0,
+            "cz_world_total": 0.0,
+            "cz_delta_pct": 0.0
         }
 
 
