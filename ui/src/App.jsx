@@ -107,11 +107,11 @@ export default function App() {
   const selectedCountry = state.country || null;
 
   // Get selected signal - either from signals list or create synthetic for HS6 selection
-  let selectedSignal = signals.find((x) => x.id === selectedId) || null;
+  let selectedSignal = Array.isArray(signals) ? signals.find((x) => x.id === selectedId) || null : null;
   
   // If no signal selected but HS6 is selected, create synthetic signal for display
   if (!selectedSignal && selectedHS6) {
-    const hs6Item = savedHS6Codes.find(c => c.code === selectedHS6);
+    const hs6Item = Array.isArray(savedHS6Codes) ? savedHS6Codes.find(c => c.code === selectedHS6) : null;
     if (hs6Item) {
       selectedSignal = {
         id: `hs6_synthetic_${selectedHS6}`,
@@ -160,7 +160,7 @@ export default function App() {
                 selectedHS6={selectedHS6}
                 onHS6Change={(action, data) => {
                   if (action === 'add' || action === 'select') {
-                    const codeItem = action === 'add' ? data : savedHS6Codes.find(c => c.code === data);
+                    const codeItem = action === 'add' ? data : (Array.isArray(savedHS6Codes) ? savedHS6Codes.find(c => c.code === data) : null);
                     if (codeItem) {
                       handleHS6Selection(codeItem.code, codeItem.label, state);
                     }

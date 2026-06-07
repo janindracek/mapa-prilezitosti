@@ -9,7 +9,7 @@ export function useInsights(selectedId, selectedHS6, panelVM, state, signals) {
   useEffect(() => {
     const selectedCountry = state?.country;
     const selectedYear = state?.year;
-    const selSignal = signals.find(x => x.id === selectedId) || null;
+    const selSignal = Array.isArray(signals) ? signals.find(x => x.id === selectedId) || null : null;
     const hasSignalSelection = !!selectedId;
     const hasHS6Selection = !!selectedHS6;
     const hasUserSelection = hasSignalSelection || hasHS6Selection;

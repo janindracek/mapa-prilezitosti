@@ -74,13 +74,13 @@ export function useSignalHandling(adaptSignals) {
       
     } else if (action === 'select') {
       setSelectedHS6(data);
-      const codeItem = savedHS6Codes.find(c => c.code === data);
+      const codeItem = Array.isArray(savedHS6Codes) ? savedHS6Codes.find(c => c.code === data) : null;
       if (codeItem) {
         handleHS6Selection(data, codeItem.label);
       }
       
     } else if (action === 'delete') {
-      setSavedHS6Codes(prev => prev.filter(c => c.code !== data));
+      setSavedHS6Codes(prev => Array.isArray(prev) ? prev.filter(c => c.code !== data) : []);
       if (selectedHS6 === data) {
         setSelectedHS6(null);
       }
@@ -258,7 +258,7 @@ export function useSignalHandling(adaptSignals) {
     }
 
     // Get HS6 label for display
-    const hs6Item = selectedHS6 ? savedHS6Codes.find(c => c.code === selectedHS6) : null;
+    const hs6Item = selectedHS6 && Array.isArray(savedHS6Codes) ? savedHS6Codes.find(c => c.code === selectedHS6) : null;
     const hs6Label = hs6Item?.label || referenceData.hs6Labels?.[currentHs6] || currentHs6;
 
     // Create synthetic signal combining clicked country + current HS6
