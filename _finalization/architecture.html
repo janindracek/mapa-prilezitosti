@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa příležitostí — Holistic Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f7f3ec; --panel:#fffdf9; --ink:#2b2620; --muted:#6b6256;
+    --amber:#b8762a; --amber-soft:#e8c896; --line:#e3d8c6;
+    --bad:#b23a3a; --good:#3a7d44; --warn:#c08a1e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  header{padding:28px 36px 18px;border-bottom:2px solid var(--amber-soft);background:var(--panel);}
+  h1{margin:0 0 4px;font-size:24px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:14px}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 36px 70px}
+  nav{margin:18px 0 0;font-size:13px}
+  nav a{color:var(--amber);text-decoration:none;margin-right:16px;font-weight:600}
+  section{margin-top:34px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:22px 26px;box-shadow:0 1px 2px rgba(80,60,30,.04);scroll-margin-top:16px}
+  h2{margin:0 0 6px;font-size:19px}
+  h2 .tag{font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;vertical-align:middle;margin-left:10px}
+  .tag.cur{background:#f6dada;color:var(--bad)} .tag.tgt{background:#dcecdf;color:var(--good)} .tag.det{background:#eadff3;color:#7a4ba0}
+  h3{margin:18px 0 4px;font-size:15.5px}
+  .note{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .mermaid{background:#fffefb;border:1px dashed var(--line);border-radius:10px;padding:14px;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:6px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#f3ead9;font-weight:700}
+  td code,th code{background:#f1ebdf;padding:1px 5px;border-radius:4px;font-size:12px}
+  .legend span{display:inline-block;margin-right:18px;font-size:13.5px}
+  .kept{color:var(--good);font-weight:600}.lost{color:var(--bad);font-weight:600}
+  .pill{font-size:11px;padding:1px 7px;border-radius:10px;font-weight:700;white-space:nowrap}
+  .pill.c{background:#f6dada;color:var(--bad)}.pill.b{background:#fbeccd;color:var(--warn)}.pill.k{background:#dcecdf;color:var(--good)}
+  .ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+  footer{color:var(--muted);font-size:12.5px;margin-top:30px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Mapa příležitostí — Holistic Architecture</h1>
+  <div class="sub">Target on top · how peer groups are built &amp; described · everything the app consumes · the defective current state for contrast</div>
+  <nav>
+    <a href="#legend">Legend</a>
+    <a href="#target">① Target</a>
+    <a href="#peers">② Peer groups</a>
+    <a href="#app">③ What the app consumes</a>
+    <a href="#current">④ Current (defective)</a>
+    <a href="#ref">⑤ Reference tables</a>
+  </nav>
+</header>
+<div class="wrap">
+
+  <section id="legend">
+    <h2>Legend — transformation markers</h2>
+    <div class="legend">
+      <span>💲 <b>Dollar scaling</b> (kUSD→USD)</span>
+      <span>🌍 <b>Country-code conversion</b></span>
+      <span>🔻 <b>Signal filtering</b></span>
+      <span>📝 <b>Descriptor</b> (human-readable text)</span>
+      <span>⚠️ <b>Defect</b></span>
+      <span>✅ real · ❌ faked/missing</span>
+    </div>
+  </section>
+
+  <!-- ========================= TARGET ON TOP ========================= -->
+  <section id="target">
+    <h2>① Target architecture <span class="tag tgt">TO-BE · one clean source</span></h2>
+    <p class="note">Heavy ETL runs locally ~once a year and emits a small serving layer; the hosted API reads only that. Peer-group creation (detailed in §②) feeds both the medians and the app descriptors from one shared source.</p>
+    <div class="mermaid">
+flowchart TD
+  subgraph LOCAL["LOCAL ETL — run ~once a year (gigabytes stay here)"]
+    direction TB
+    BACI["BACI raw bilateral flows — kUSD"]
+    CCS["🌍 Centralized country-code module<br/>(one source of truth, none dropped)"]
+    PEERDEF["Peer-group definitions + 📝 descriptors<br/>(statistics · geographic · AI — see §②)"]
+    BACI --> CORE["Core facts<br/>💲 ONE scale point<br/>⚙️ OUTER-join: all importers<br/>per (year,hs6,partner)"]
+    CCS --> CORE
+    CORE --> MED["Peer medians ×3 methods<br/>✅ really computed"]
+    PEERDEF --> MED
+    CORE --> SIG["Signals (FULL, un-capped)<br/>strong + permissive bands"]
+    MED --> SIG
+    CORE --> SERV
+    MED --> SERV
+    SIG --> SERV
+    PEERDEF --> SERV["data/serving/*.parquet ~60–150MB<br/>core_trade · medians · signals · peer memberships+📝 · names"]
+  end
+  SERV -->|upload yearly| REL["GitHub Release asset"]
+  REL -->|build.sh downloads| LOADER
+  subgraph HOST["HOSTED — single code path"]
+    LOADER["one loader (parquet at startup)"] --> API["API — dynamic maps · two-tier signals · descriptors · analytics"]
+  end
+  API --> UI["React UI (see §③)"]
+    </div>
+  </section>
+
+  <!-- ========================= PEER GROUPS ========================= -->
+  <section id="peers">
+    <h2>② How peer groups are created &amp; described <span class="tag det">the missing piece</span></h2>
+    <p class="note">Three independent ways to decide "which countries are comparable." Each produces a membership map AND a human-readable descriptor, from one shared document (the <code>*_explained</code> source). That same descriptor is what the app shows. Creation is a once-run step; results are frozen and versioned.</p>
+    <div class="mermaid">
+flowchart LR
+  subgraph IN["Inputs"]
+    HS2["HS2 import-share profiles"]
+    HS6["HS6 shares + CAGR + openness"]
+    EXP["Expert geographic / development knowledge"]
+  end
+  HS2 --> M1["STATISTICS<br/>k-means cosine"]
+  HS6 --> M3["AI / ALGORITHMIC<br/>k-means cosine"]
+  EXP --> M2["GEOGRAPHIC<br/>expert curation"]
+  M1 --> C1["trade_structure<br/>10 clusters + 📝 name+explanation (EN)"]
+  M2 --> C2["human / geo<br/>23 clusters + 📝 name+explanation (CZ)"]
+  M3 --> C3["opportunity<br/>10 clusters ❌ NO descriptor"]
+  C1 --> CONV["converters → parquet"]
+  C2 --> CONV
+  C3 --> CONV
+  CONV --> USE1["→ peer medians (the benchmark)"]
+  CONV --> USE2["→ 📝 app descriptors (why these peers)"]
+    </div>
+    <h3>The three methods (verify)</h3>
+    <table>
+      <tr><th>Method <code>(app id)</code></th><th>How groups formed</th><th>Inputs</th><th>#</th><th>Czechia's group</th><th>Descriptor</th></tr>
+      <tr><td><b>Trade-structure</b> <code>trade_structure</code> → signal <code>Peer_gap_matching</code></td><td>k-means cosine ("statistics")</td><td>HS2 import-share profiles</td><td>10</td><td>#4 "European core &amp; advanced Asia"</td><td class="ok">✅ name + EN prose</td></tr>
+      <tr><td><b>Geographic / human</b> <code>human</code> → <code>Peer_gap_human</code></td><td>expert hand-curation</td><td>geography + development level</td><td>23</td><td>#3 "Central &amp; Eastern Europe"</td><td class="ok">✅ name + CZ prose</td></tr>
+      <tr><td><b>Opportunity</b> <code>opportunity</code> → <code>Peer_gap_opportunity</code></td><td>k-means cosine ("AI-generated")</td><td>HS6 shares + CAGR (growth) + trade openness</td><td>10</td><td>numeric-coded (TBD)</td><td class="no">❌ none</td></tr>
+      <tr style="background:#faf6ee"><td><i>Legacy</i> <code>peer_groups.json</code></td><td>hand-made named lists</td><td>Baltics, Benelux, V4, Nordics, ASEAN…</td><td>8</td><td>V4</td><td>names only — likely retire</td></tr>
+    </table>
+    <p class="note" style="margin-top:12px"><b>Gaps to fix in M3:</b> opportunity has no name+explanation · ALL descriptors must be Czech prose (trade-structure is EN today) · the medians on top of these groups are currently faked (human ×0.85, opportunity ×1.15) · stray numeric codes still mixed into trade-structure membership · the k-means creation code is archived (must be recovered/re-run to be reproducible).</p>
+  </section>
+
+  <!-- ========================= APP CONSUMPTION ========================= -->
+  <section id="app">
+    <h2>③ Everything the app consumes <span class="tag det">block-by-block</span></h2>
+    <p class="note">Each UI block needs a different shape of data. The map carries TWO logics (a share choropleth and an absolute-value choropleth). Holistic list below.</p>
+    <div class="mermaid">
+flowchart LR
+  SERV["data/serving + API"]
+  SERV --> B1["Pre-selections<br/>(controls)"]
+  SERV --> B2["Clicking<br/>(interactions)"]
+  SERV --> B3["📝 Descriptors"]
+  SERV --> B4["Chart (bars)<br/>3 modes"]
+  SERV --> B5["Map · logic 1<br/>SHARE choropleth"]
+  SERV --> B6["Map · logic 2<br/>ABSOLUTE choropleth"]
+  SERV --> B7["Trend mini"]
+  SERV --> B8["KeyData tiles"]
+  SERV --> B9["Insight text"]
+    </div>
+    <table>
+      <tr><th>Block</th><th>What it does</th><th>Data it needs</th><th>Endpoint</th></tr>
+      <tr><td><b>Pre-selections</b> (controls)</td><td>country / year / metric dropdowns + defaults</td><td>country list, available years, metric list, default selection (today: BEL / 2023, fallback HS6 851713)</td><td><code>/controls</code>, <code>/meta</code></td></tr>
+      <tr><td><b>Clicking</b> (interactions)</td><td>signal click → sets year+hs6+metric+country &amp; refetches; map country-click → synthesizes a signal; bar click → sets hs6</td><td>full signal records with all keys (year, hs6, partner, type, method, intensity)</td><td><code>/top_signals</code>, <code>/signals</code></td></tr>
+      <tr><td><b>📝 Descriptors</b></td><td>explains the selected method+country: why these peers, who's in the group</td><td>group name + explanation prose + peer country list (the §② descriptors)</td><td><code>/peer_groups/explanation</code>, <code>/peer_groups/complete</code></td></tr>
+      <tr><td><b>Chart (bars)</b></td><td>3 modes: <i>products</i> (top HS6 by CZ export), <i>partners</i> (top markets for an HS6), <i>peer_compare</i> (CZ vs each peer)</td><td>per-(hs6,partner) CZ export value; peer membership for filtering</td><td><code>/bars?mode=</code></td></tr>
+      <tr><td><b>Map · logic 1</b> (share)</td><td>choropleth: CZ's share of each country's imports for the HS6</td><td>per-(hs6,partner,year) <code>podil_cz_na_importu</code> — % scale, all countries (grey = no trade)</td><td><code>/map_v2?metric=cz_share_in_partner_import</code></td></tr>
+      <tr><td><b>Map · logic 2</b> (absolute)</td><td>choropleth: CZ's export value to each country for the HS6</td><td>per-(hs6,partner,year) <code>export_cz_to_partner</code> — USD scale</td><td><code>/map_v2?metric=export_value_usd</code></td></tr>
+      <tr><td><b>Trend mini</b></td><td>time series of the selected HS6 across years</td><td>per-(hs6,year) aggregate (needs BOTH 2022 &amp; 2023)</td><td><code>/trend</code></td></tr>
+      <tr><td><b>KeyData tiles</b></td><td>summary stats for the current selection</td><td>structured numbers for the (importer,hs6,year)</td><td><code>/insights_data</code></td></tr>
+      <tr><td><b>Insight text</b></td><td>narrative paragraph (today OpenAI / template; → Claude in M6)</td><td>generated text + 📝 disclaimer banner</td><td><code>/insights</code></td></tr>
+    </table>
+  </section>
+
+  <!-- ========================= CURRENT ========================= -->
+  <section id="current">
+    <h2>④ Current architecture <span class="tag cur">AS-IS · defective (contrast)</span></h2>
+    <p class="note">Kept for contrast: dollars scaled twice, map from a different raw source, methodologies faked, signals triple-filtered, three inconsistent serving paths.</p>
+    <div class="mermaid">
+flowchart TD
+  BACI["BACI HS22 Y22/Y23 CSV — kUSD"]
+  BACI --> E01["01 build_base_facts<br/>💲 SCALE #1 · 🌍 drops unmatched<br/>⚠️ LEFT-join: only 205 partners"]
+  E01 --> FB[fact_base] --> E02[02 metrics] --> M[metrics.parquet]
+  PGS["trade_structure (k-means HS2) 📝EN"] --> E03["03/03b peer medians<br/>✅ statistical real<br/>❌ human = ×0.85<br/>❌ opportunity = ×1.15<br/>❌ geographic = stub<br/>🌍 iso3 vs numeric mismatch"]
+  PGH["human/geo (curated) 📝CZ"] --> E03
+  PGO["opportunity (k-means HS6+CAGR) ❌no 📝"] --> E03
+  E03 --> PM[peer_medians] --> E04[04/04b enrich] --> ME[metrics_all_peers]
+  M --> E04
+  BACI --> E05["05 build_map_data<br/>⚠️ reads RAW trade_by_pair<br/>💲 SCALE #2 DOUBLE"]
+  E05 --> MR["map_rows.parquet ❌ NOT ON DISK"]
+  ME --> E06["06b signals 🔻cap 3/country/method"]
+  E06 --> SC["signals_comprehensive 5,595"]
+  ME --> E99["99 deployment 🔻top-3, 2023-only, →CSV"]
+  SC --> E99
+  E99 --> DEP["data/deployment/ — 2,329 signals"]
+  DEP --> DL[deployment_loader]
+  DL --> R1["/map_v2 /signals /products"]
+  SC --> R2["/signals_unified /top_signals ⚠️different dataset"]
+  R1 --> UI2[React UI]
+  R2 --> UI2
+    </div>
+  </section>
+
+  <!-- ========================= REFERENCE ========================= -->
+  <section id="ref">
+    <h2>⑤ Reference tables</h2>
+    <h3>Where each transformation happens</h3>
+    <table>
+      <tr><th>Transformation</th><th>Current</th><th>Target</th><th>Fix in</th></tr>
+      <tr><td>💲 Dollar scale</td><td><code>etl/01:41</code> AND <code>etl/05:90</code></td><td><code>etl/01</code> only</td><td><span class="pill c">M4a</span></td></tr>
+      <tr><td>🌍 Country codes</td><td>scattered + hardcoded <code>iso=='203'</code> + 10 dropped</td><td>one central module</td><td><span class="pill c">M4a</span></td></tr>
+      <tr><td>⚙️ All-country coverage</td><td>LEFT-join → 205</td><td>OUTER-join → all importers</td><td><span class="pill b">M4a</span></td></tr>
+      <tr><td>✅ Peer medians ×3</td><td>1 real + 2 faked + 1 stub</td><td>3 genuinely computed</td><td><span class="pill c">M3</span></td></tr>
+      <tr><td>📝 Descriptors</td><td>2 of 3 (EN+CZ mix), opportunity missing</td><td>all 3 — <b>Czech prose</b>, from shared source</td><td><span class="pill c">M3</span></td></tr>
+      <tr><td>🔻 Signal filtering</td><td>3× narrowing</td><td>full set served; tier at request time</td><td><span class="pill b">M4b</span></td></tr>
+      <tr><td>🗺️ Map source</td><td>raw <code>trade_by_pair</code></td><td>slice of one core table</td><td><span class="pill b">M4b</span></td></tr>
+      <tr><td>🔀 Serving paths</td><td>3 inconsistent</td><td>1 loader, 1 source</td><td><span class="pill c">M4b</span></td></tr>
+    </table>
+    <h3 style="margin-top:20px">Serving layer — keeps vs drops</h3>
+    <table>
+      <tr><th class="lost">DROPPED — safe (~1.4 GB, ETL input only)</th><th class="kept">KEPT — serving layer (~60–150 MB)</th></tr>
+      <tr>
+        <td>full bilateral matrix (every exporter×importer×HS6) · intermediate pivots (<code>trade_by_*</code>) · raw CSVs · <code>backup_corrupted/</code></td>
+        <td>per (year,hs6,partner): CZ export, partner import total, CZ HS6 total, shares+YoY, <code>delta_vs_peer</code>×3, <code>peer_median</code>×3, memberships×3+📝 · FULL signal set · all HS6 &amp; country names</td>
+      </tr>
+    </table>
+    <p class="note" style="margin-top:12px"><b>Today's subset wrongly drops:</b> 101 of ~5,500 HS6 names · 2023 only · signals cut to 2,329 · all-country coverage · plus an <code>import_partner_total_x/_y</code> collision bug.</p>
+
+    <h3 style="margin-top:20px">📝 Label registry — one concept, many surfaces</h3>
+    <p class="note">Each concept (signal type · methodology · map metric · metric) is shown with different strings per surface. One canonical source: <code>data/ref/labels.csv</code> — one row per concept, one column per surface. The UI imports it (generated JSON) instead of hardcoding strings; methodology full-text cells are the M3 descriptors (Czech).</p>
+    <table>
+      <tr><th>concept</th><th>section_header</th><th>badge</th><th>short</th><th>full_description</th></tr>
+      <tr><td><code>Peer_gap_matching</code></td><td>Benchmark (strukturální)</td><td>Benchmark (strukturální)</td><td>Strukturální</td><td>tooltip/prose</td></tr>
+      <tr><td><code>Peer_gap_human</code></td><td>Benchmark (geografický)</td><td>Benchmark (geografický)</td><td>Geografický</td><td>peer descriptor (CZ)</td></tr>
+      <tr><td><code>Peer_gap_opportunity</code></td><td>Benchmark (příležitostní)</td><td>Benchmark (příležitostní)</td><td>Příležitostní</td><td>peer descriptor (CZ, M3 builds)</td></tr>
+      <tr><td><code>cz_share_in_partner_import</code></td><td>—</td><td>—</td><td>Podíl ČR</td><td>Český podíl na importu</td></tr>
+    </table>
+    <p class="note" style="margin-top:8px"><b>Why it exists:</b> today the section header and badge for the same signal type literally disagree (header "statistický pohled současný/vpřed" vs badge "strukturální/příležitostní"). The registry is the fix.</p>
+  </section>
+
+  <footer>⚙ Holistic architecture guide · build artifact — regenerate if the architecture changes · source plan: <code>~/.claude/plans/so-of-course-this-mossy-lecun.md</code></footer>
+</div>
+<script>
+  mermaid.initialize({startOnLoad:true, theme:'base', themeVariables:{
+    primaryColor:'#fff7e9', primaryBorderColor:'#b8762a', primaryTextColor:'#2b2620',
+    lineColor:'#9a8a72', fontSize:'12px'
+  }});
+</script>
+</body>
+</html>

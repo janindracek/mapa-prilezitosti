@@ -1,0 +1,15 @@
+id,kind,section_header,badge,card_title,short_label,tooltip,full_description,map_title,status,notes
+Peer_gap_matching,signal_type,Benchmark (strukturální),Benchmark (strukturální),Pod mediánem strukturálních peers,Strukturální,"Trh, kde má ČR nižší podíl než medián strukturálně podobných zemí.",TBD,,review,"method=trade_structure; code currently also says 'statistický, pohled současný' in section header — unify to this"
+Peer_gap_human,signal_type,Benchmark (geografický),Benchmark (geografický),Pod mediánem geografických peers,Geografický,"Trh, kde má ČR nižší podíl než medián geograficky/ekonomicky podobných zemí.",TBD,,review,"method=human"
+Peer_gap_opportunity,signal_type,Benchmark (příležitostní),Benchmark (příležitostní),Pod mediánem příležitostních peers,Příležitostní,"Trh, kde má ČR nižší podíl než medián zemí s podobným růstovým profilem.",TBD,,review,"method=opportunity; code currently also says 'statistický, pohled vpřed' in section header — unify to this"
+YoY_export_change,signal_type,Nárůst exportu,Export roste,Nárůst exportu (meziročně),Export YoY,Meziroční změna českého exportu do dané země.,TBD,,review,
+YoY_partner_share_change,signal_type,Navýšení podílu na importu,Podíl roste,Navýšení podílu (meziročně),Podíl YoY,Meziroční změna podílu země na českém exportu daného produktu.,TBD,,review,
+trade_structure,methodology,,,,Strukturální,,TBD – česká próza (přeložit z EN v peer_groups_hs2_explained.csv),,review,"k-means na HS2 import-share profilech; ČR ve skupině #4"
+human,methodology,,,,Geografický,,"<z peer_groups_human_explained.csv – už v češtině>",,review,"expert-curated; ČR ve skupině #3"
+opportunity,methodology,,,,Příležitostní,,TBD – vytvořit český název + popis (dnes žádný),,todo,"k-means na HS6 share + CAGR + openness; M3 vytvoří"
+cz_share_in_partner_import,map_metric,,,,Podíl ČR,,Český podíl na importu,"Český podíl na importu HS6 {hs6}, {year}",ok,= podil_cz_na_importu
+export_value_usd,map_metric,,,,Hodnota exportu,,Celková hodnota exportu,"Celková hodnota exportu HS6 {hs6}, {year}",ok,= export_cz_to_partner
+podil_cz_na_importu,metric,,,,Podíl ČR na importu,Podíl ČR na celkovém importu dané země pro daný produkt.,Český podíl na importu partnera,,ok,fact-base field
+partner_share_in_cz_exports,metric,,,,Podíl na exportu ČR,Podíl dané země na celkovém českém exportu daného produktu.,Podíl partnera na exportu ČR,,ok,fact-base field
+delta_vs_peer,metric,,,,Odstup od peers,Rozdíl mezi podílem ČR a mediánem peer skupiny (záporné = podpenetrace).,Odstup od mediánu peer skupiny,,ok,fact-base field
+peer_median_share,metric,,,,Medián peers,Medián podílu na importu napříč peer skupinou.,Mediánový podíl peer skupiny,,ok,fact-base field
