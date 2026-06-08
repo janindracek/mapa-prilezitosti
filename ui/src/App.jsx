@@ -11,13 +11,10 @@ import { useAppData } from "./hooks/useAppData.js";
 import { useSignalHandling } from "./hooks/useSignalHandling.js";
 import { useInsights } from "./hooks/useInsights.js";
 import { barChartTitle, barChartSubtitle } from "./lib/chartHelpers.js";
-import { ISO3_TO_NAME, SHOW_SKELETON } from "./lib/constants.js";
-
+import { ISO3_TO_NAME } from "./lib/constants.js";
 
 
 export default function App() {
-  console.log("[UI] App mounted");
-  
   // Use custom hooks
   const { controls, referenceData, state, setState, worldData, productData, adaptSignals, loadMapData, loadProductData } = useAppData();
   
@@ -143,9 +140,7 @@ export default function App() {
         Obchodní příležitosti Česka
       </h1>
 
-      {/* STEP 1: Empty layout skeleton for the new design (no behavior change) */}
-      {SHOW_SKELETON && (
-        <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 0, marginBottom: 16 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 0, marginBottom: 16 }}>
           {/* Left column skeleton */}
           <div style={{ display: "grid", gap: 12, gridTemplateRows: "auto 1fr auto", paddingRight: 8 }}>
             <div>
@@ -202,13 +197,6 @@ export default function App() {
               onSaveCode={handleHS6Change}
               savedHS6Codes={savedHS6Codes}
             />
-            {/* TODO: Re-enable BenchmarkGroup component later */}
-            {/* <BenchmarkGroup
-              signal={selectedSignal}
-              productData={(panelVM.barData && panelVM.barData.length) ? panelVM.barData : productData}
-              country={state.country}
-              referenceData={referenceData}
-            /> */}
             <div>
               <ProductBarChart
                 data={(panelVM.barData && panelVM.barData.length) ? panelVM.barData : productData}
@@ -253,20 +241,19 @@ export default function App() {
                 </div>
               </div>
               
-              {import.meta?.env?.DEV && console.debug('[WorldMap data sample]', worldData?.[0])}
               <WorldMap
                 data={worldData}
                 metric={mapMetric}
                 nameMap={ISO3_TO_NAME}
+                czechNames={referenceData.countryNames}
                 nameField='name'
                 meta={{ hs6: selectedHS6 || hs6, year: state.year }}
                 onCountryClick={(countryIso3, countryName) => handleCountryClick(countryIso3, countryName, savedHS6Codes, referenceData, state)}
               />
-              
+
             </div>
           </div>
         </div>
-      )}
 
       {/* Bottom insights section with title and warning */}
       <div style={{ border: "1px solid #eee", borderRadius: 6, padding: 12, background: "#fff", minHeight: 220 }}>

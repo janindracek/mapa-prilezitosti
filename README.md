@@ -210,6 +210,14 @@ cd ui && npm run dev                                                            
 ```
 Use the repo `.venv` (Python 3.13; has the deps). `ui/.env.local`: `VITE_API_BASE=http://localhost:8000`.
 
+To check the **production build** (not the dev server) end-to-end, double-click **`build-ui.command`**: it runs `npm ci && npm run build` and serves the built `ui/dist/` *through the API* on :8000 — same as the deploy — so you can confirm there's no blank page and data still loads.
+
+### Frontend build & assets (M5 chrome)
+- **Build-on-deploy.** `ui/dist/` is gitignored and never committed; `deploy/build.sh` rebuilds the UI fresh every deploy (`npm ci && npm run build`, with `RENDER=true` so console/debug are stripped). The API serves `ui/dist/` at `/`. This avoids the stale-`dist` blank-page that a committed build artifact caused. A build failure fails the whole deploy on purpose.
+- **World map geometry is bundled** at `ui/public/world.json` (served at `/world.json`), not fetched from `raw.githubusercontent.com` — so the map works on restricted/offline (ministry) networks.
+- **ECharts is tree-shaken** (`ui/src/lib/echarts.js` registers only the map/bar charts + needed components) — the echarts chunk dropped ~1.05 MB → ~562 kB.
+- Map tooltips show **Czech** country names (from `/ref/country_names_cz.json`).
+
 ---
 
 ## 11. Where things are
@@ -218,6 +226,8 @@ Use the repo `.venv` (Python 3.13; has the deps). `ui/.env.local`: `VITE_API_BAS
 |---|---|
 | `etl/` | the pipeline (current happy path: `01, 02, 03b, 04b, 05, 06b`; `archive/` = legacy) |
 | `api/` | FastAPI: `server_full.py` (entry), `routers/`, `services/`, `data/`, `settings/` |
-| `ui/` | React + Vite + ECharts |
+| `ui/` | React + Vite + ECharts (`ui/dist/` is gitignored — built on deploy; geometry bundled at `ui/public/world.json`) |
+| `deploy/build.sh` | deploy build: installs deps, builds the UI fresh, validates the API |
+| `run-local.command` · `build-ui.command` | double-click: boot dev (API+UI) · build prod UI and serve it through the API |
 | `data/deployment/` | **[current]** hand-built serving subset (→ replaced by `data/serving/` in M4b) |
 | `_finalization/` | the rebuild workspace: `00_INDEX.md`, `architecture.html`, module briefs, drift register, logs |

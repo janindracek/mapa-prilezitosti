@@ -1,19 +1,18 @@
 import React, { useMemo } from "react";
-import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import echarts from "../lib/echarts.js";
 
-// Use Natural Earth data which has better antimeridian handling
-// This is a cleaner GeoJSON source without the geometry issues
+// World geometry is bundled in ui/public/world.json (served at /world.json) so the
+// map works on restricted/offline networks — no live raw.githubusercontent.com call.
 let worldMapRegistered = false;
 
 async function loadCleanWorldMap() {
   if (worldMapRegistered) return;
-  
+
   try {
-    // Use alternative GeoJSON source that renders correctly
-    const response = await fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson');
+    const response = await fetch(`${import.meta.env.BASE_URL || "/"}world.json`);
     const geoData = await response.json();
-    
+
     // Clean up problematic geometries
     geoData.features = geoData.features.filter(f => {
       const props = f.properties || {};
@@ -21,13 +20,12 @@ async function loadCleanWorldMap() {
       // Skip problematic features that cause rendering issues
       return name && name !== "Antarctica";
     });
-    
+
     echarts.registerMap("world", geoData);
     buildNameMappings(geoData); // Build the country name mappings
     worldMapRegistered = true;
-    console.log('Clean world map registered with alternative GeoJSON');
   } catch (error) {
-    console.warn('Failed to load clean world map:', error);
+    console.warn("Failed to load bundled world map:", error);
   }
 }
 
@@ -105,11 +103,10 @@ function buildNameMappings(geoData) {
   } catch (_) {}
   
   __NAME_BY = { byIso3, byNumeric, nameSet };
-  console.log('[WorldMap] Built mappings - numeric entries:', byNumeric.size, 'known names:', nameSet.size);
   return __NAME_BY;
 }
 
-export default function WorldMap({ data = [], metric = "value", nameMap = null, nameField = 'name', meta = {}, onCountryClick = null }) {
+export default function WorldMap({ data = [], metric = "value", nameMap = null, czechNames = null, nameField = 'name', meta = {}, onCountryClick = null }) {
   function formatHs6Dot(code) {
     const raw = String(code ?? '').trim();
     const digits = raw.replace(/\D/g, '');
@@ -137,11 +134,6 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
     }
     return `World — ${metric}`;
   }
-
-  // Debug: treat these metrics as shares - but API already returns percentages (0.5029 = 50.29%)
-  const isShareMetric =
-    metric === "cz_share_in_partner_import" ||
-    metric === "partner_share_in_cz_exports";
 
   // Defensive: normalize data to an array of {name, value:number} using robust resolution
   const safeData = Array.isArray(data)
@@ -171,50 +163,27 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         }
         const num = Number(item?.value);
         const valueNum = Number.isFinite(num) ? num : null; // keep nulls → map leaves region uncolored
-        return { name: String(resolved || ''), value: valueNum };
+        const iso3 = (iso3Field || candidate || "").toUpperCase();
+        const iso3Code = /^[A-Z]{3}$/.test(iso3) ? iso3 : null;
+        return { name: String(resolved || ''), value: valueNum, iso3: iso3Code };
       })
     : [];
 
-  if (process.env.NODE_ENV !== 'production') {
-    const known = safeData.filter(d => __NAME_BY.nameSet.has(d.name)).length;
-    const unknown = safeData.filter(d => !__NAME_BY.nameSet.has(d.name));
-    console.debug('[WorldMap] rows:', safeData.length, 'mapped-to-known-names:', known);
-    console.debug('[WorldMap] metric:', metric, 'isShareMetric:', isShareMetric);
-    if (unknown.length) {
-      console.warn('[WorldMap] Unknown region names (first 5):', unknown.slice(0, 5));
-      // Extra debug for numeric-ID resolution
-      try {
-        const numericKeysSample = Array.from(__NAME_BY.byNumeric.keys()).slice(0, 10);
-        console.debug('[WorldMap] byNumeric size:', __NAME_BY.byNumeric.size, 'sample keys:', numericKeysSample);
-        unknown.slice(0, 5).forEach((u) => {
-          const k = String(u.name);
-          console.debug('[WorldMap] numeric lookup for', k, 'exists?', __NAME_BY.byNumeric.has(k), '→', __NAME_BY.byNumeric.get(k));
-        });
-      } catch (_) {}
+  // English region name → Czech name, so tooltips read in Czech on the Czech UI.
+  const nameToCzech = useMemo(() => {
+    const m = new Map();
+    // From current data rows (uses the same resolution as the series → covers e.g. "USA").
+    safeData.forEach((d) => {
+      if (d.name && d.iso3 && czechNames && czechNames[d.iso3]) m.set(d.name, czechNames[d.iso3]);
+    });
+    // Fallback for every country via nameMap (iso3→English) + czechNames (iso3→Czech).
+    if (nameMap && czechNames) {
+      Object.entries(nameMap).forEach(([iso3, eng]) => {
+        if (!m.has(eng) && czechNames[iso3]) m.set(eng, czechNames[iso3]);
+      });
     }
-    // Log a small sample of the data coming into the map
-    if (safeData.length) {
-      console.debug('[WorldMap] sample:', safeData.slice(0, 3));
-      console.debug('[WorldMap] raw sample:', Array.isArray(data) ? data.slice(0, 3) : data);
-    }
-    // Debug value ranges for all metrics
-    const values = safeData
-      .map(d => (Number.isFinite(Number(d.value)) ? Number(d.value) : null))
-      .filter(v => v != null);
-    if (values.length) {
-      const minVal = Math.min(...values);
-      const maxVal = Math.max(...values);
-      if (isShareMetric) {
-        console.debug(`[WorldMap] Share metric range: ${minVal.toFixed(4)} to ${maxVal.toFixed(4)} (API returns percentages as decimals)`);
-      } else {
-        console.debug(`[WorldMap] Non-share metric range: ${minVal.toFixed(2)} to ${maxVal.toFixed(2)} (absolute values)`);
-        if (maxVal > 100) {
-          console.warn(`[WorldMap] Large values detected - ensure not applying percentage formatting to non-share metric`);
-        }
-      }
-    }
-  }
-
+    return m;
+  }, [safeData, nameMap, czechNames]);
 
   // Map option: choropleth over the registered "world" map
   const option = useMemo(() => {
@@ -269,7 +238,10 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         borderColor: "#777",
         borderWidth: 1,
         textStyle: { color: "#fff" },
-        formatter: (p) => `<b>${p.name}</b><br/>${tooltipFmt(Number.isFinite(Number(p.value)) ? Number(p.value) : null)}`,
+        formatter: (p) => {
+          const label = nameToCzech.get(p.name) || p.name;
+          return `<b>${label}</b><br/>${tooltipFmt(Number.isFinite(Number(p.value)) ? Number(p.value) : null)}`;
+        },
       },
       visualMap: {
         show: false, // Hide the color slider
@@ -288,10 +260,6 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
           scaleLimit: {
             min: 0.7,
             max: 8
-          },
-          projection: {
-            type: 'mercator',
-            center: [20, 30], // Center on Europe/Middle East
           },
           zoom: 1.2,
           left: 10,
@@ -325,7 +293,7 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         },
       ],
     };
-  }, [safeData, metric, meta]);
+  }, [safeData, metric, meta, nameToCzech]);
 
 
 
@@ -368,10 +336,7 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         const iso3 = nameToIso3.get(countryName);
         
         if (iso3) {
-          console.log('[WorldMap] Country clicked:', countryName, '→', iso3);
           onCountryClick(iso3, countryName);
-        } else {
-          console.warn('[WorldMap] Could not find ISO3 code for country:', countryName);
         }
       }
     }
@@ -397,9 +362,10 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         </div>
       ) : (
         <div>
-          <ReactECharts 
-            data-testid="echart" 
-            option={option} 
+          <ReactEChartsCore
+            echarts={echarts}
+            data-testid="echart"
+            option={option}
             style={{ height: "400px", width: "100%" }}
             onEvents={onEvents}
           />

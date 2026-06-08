@@ -4,6 +4,28 @@ Newest first. One entry per working session: what changed, what was decided, wha
 
 ---
 
+## 2026-06-07 — M5 frontend-chrome ✅ (Track B, parallel to M4a; branch `m5-frontend-chrome`)
+
+Scope: **UI chrome only** — independent of the data track (M4a/M3/M4b). Touched only `ui/`, `deploy/build.sh`, and a new root `build-ui.command`. Data-dependent M5 features (two-tier signals, analytics tab, label-registry wiring) deliberately left for a later M5-data session (need M4b).
+
+**Done**
+- **World geometry bundled.** Saved the exact GeoJSON the app used (holtzy `world.geojson`, 177 features, 252 KB) to `ui/public/world.json` (the old `world.json` was a 65-byte error-string stub). `WorldMap.jsx` now fetches `/world.json`, not `raw.githubusercontent.com` → no blank map on a firewalled/offline ministry network. Same source = no name-matching regression.
+- **Build ships correctly (build-on-deploy, Jan's pick).** `ui/dist/` was gitignored yet 9 stale files were tracked — incl. an `index.html` pointing at JS bundles that were **never committed** → Render's `build.sh` saw `dist/index.html`, *skipped the build*, and served a blank page. Fix: `git rm --cached ui/dist` (stays ignored); `deploy/build.sh` now **always** rebuilds (`npm ci && npm run build`, `RENDER=true` to strip console), fails the deploy on build error (no silent stub fallback), and errors clearly if Node/npm is absent. Added double-clickable **`build-ui.command`** (builds + serves `dist/` through the API on :8000, true prod parity).
+- **ECharts tree-shaken.** New `ui/src/lib/echarts.js` imports `echarts/core` + only MapChart/BarChart/Tooltip/VisualMap/Grid/CanvasRenderer; `WorldMap`/`ProductBarChart` use `echarts-for-react/lib/core`. echarts chunk **~1.05 MB → 562 kB** (gzip 188 kB). (`EChart.jsx` keeps the full import but is test-only — not in the app bundle.)
+- **Czech map tooltips.** Region English name → Czech via `referenceData.countryNames` (`/ref/country_names_cz.json`). Verified live: hovering shows "Gruzie"/"Estonsko", not "Georgia"/"Estonia".
+- **Dead code / console cleanup.** Removed `SHOW_SKELETON` flag (layout now unconditional, visually identical), the commented `BenchmarkGroup` block, the `main.jsx` "TEMP API SMOKE TEST", and ~50 debug `console.*` (kept genuine `warn`/`error`). Also removed an **invalid `projection:{type:'mercator'}`** map config that was silently ignored but spamming ~500 `[ECharts] project and unproject…` warnings per render (map view unchanged — the nested `center` was never applied).
+
+**Verified**
+- `RENDER=true npm run build` clean: all 4 assets present & referenced by `index.html`, **0 `console.` in the built app chunk**, `world.json` (252 KB) in `dist`, no iCloud `* 2.js` dupes.
+- Live (dev :5173 + API :8000): full page renders, map colored from bundled geometry, Czech tooltips, signals/bars/controls all work. Before/after screenshots captured inline (M1 PNGs in `screenshots/` remain the on-disk baseline).
+- Tests: `npm run test` = **5 failed / 10 passed**, identical to `main` — all 5 are pre-existing stale placeholder tests (assert text like "Regions: 3" the current components never render). Not introduced here; left for a test-cleanup pass.
+
+**Flagged (out of scope, pre-existing):** `KeyData.jsx:157` calls `.toLocaleString()` on null, so a failed/empty `/insights_data` fetch crashes the whole app via the ErrorBoundary (observed during a transient API blip). Not a file this track touched — flagged as a separate task.
+
+**Next:** merge branch `m5-frontend-chrome`. Remaining M5 (two-tier display, analytics tab, consume `data/ref/labels.csv`) is an **M5-data** session after **M4b**.
+
+---
+
 ## 2026-06-07 — M2 intent pass ✅ (README rewritten, same session)
 
 **Done**

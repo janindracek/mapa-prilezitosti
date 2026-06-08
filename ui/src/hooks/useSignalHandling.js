@@ -7,7 +7,6 @@ async function tryFetchTopSignals(country) {
   try {
     const data = await fetchTopSignals({ country });
     if (!Array.isArray(data)) return null;
-    console.debug("[top_signals] rows:", data.length, data.slice(0, 2));
     return data;
   } catch (e) {
     console.warn("[top_signals] fetch failed:", e);
@@ -120,22 +119,17 @@ export function useSignalHandling(adaptSignals) {
       console.warn(`[signals] No precomputed signals for ${country}, using empty array`);
       rows = [];
     }
-    console.debug("[signals] before adapt:", rows?.length, rows?.map(r => r?.type));
     const adapted = adaptSignals(rows);
-    console.debug('[signals] adapted:', adapted?.length, adapted?.slice(0, 2));
     setSignals(adapted);
   }, [adaptSignals]);
 
   const handleRealSignalClick = useCallback(async (signal, state) => {
-    console.group('[handleRealSignalClick] Processing signal:', signal);
-    
     const curHs6 = signal.hs6;
     const curPartner = signal.partner_iso3;
     const curYear = signal.year || state.year;
-    
+
     if (!curHs6 || !curPartner || !curYear) {
       console.warn('Missing required fields:', { curHs6, curPartner, curYear });
-      console.groupEnd();
       return;
     }
 
@@ -143,16 +137,13 @@ export function useSignalHandling(adaptSignals) {
       // Fetch complete insights data for KeyData component
       const base = API_BASE || 'http://127.0.0.1:8000';
       const url = `${base}/insights_data?importer=${encodeURIComponent(curPartner)}&hs6=${encodeURIComponent(curHs6)}&year=${encodeURIComponent(curYear)}`;
-      
-      console.log('Fetching insights data from:', url);
+
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       const insightsData = await response.json();
-      
-      console.log('Received insights data:', insightsData);
-      
+
       // Create comprehensive keyData with all required fields
       const keyData = {
         // Basic bilateral data from insights_data endpoint  
@@ -167,9 +158,7 @@ export function useSignalHandling(adaptSignals) {
         // YoY percentage from signal (only if it's a valid number)
         cz_delta_pct: (typeof (signal.yoy || signal.intensity) === 'number' && !isNaN(signal.yoy || signal.intensity)) ? (signal.yoy || signal.intensity) : null
       };
-      
-      console.log('Constructed keyData:', keyData);
-      
+
       // Fetch bar data for the signal type only
       let barData = [];
       let partnerCounts = {};
@@ -222,9 +211,7 @@ export function useSignalHandling(adaptSignals) {
         meta: { hs6: curHs6, year: curYear, signalType: signal.type },
         partnerCounts
       });
-      
-      console.log('Updated panelVM with new keyData and set hs6 to:', curHs6);
-      
+
     } catch (error) {
       console.error('Failed to handle signal click:', error);
       
@@ -245,8 +232,6 @@ export function useSignalHandling(adaptSignals) {
         partnerCounts: {}
       }));
     }
-    
-    console.groupEnd();
   }, []);
 
   // Handle country click from WorldMap - create synthetic signal
@@ -275,8 +260,6 @@ export function useSignalHandling(adaptSignals) {
       year: state.year,
       label: `${currentHs6} - ${hs6Label} → ${countryName}`
     };
-
-    console.log('[Country Click] Creating synthetic signal:', syntheticSignal);
 
     // Add the synthetic signal to the signals list so it shows as selected
     setSignals(prevSignals => {

@@ -1,5 +1,6 @@
 import React from "react";
-import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from "echarts-for-react/lib/core";
+import echarts from "../lib/echarts.js";
 
 /**
  * Props:
@@ -13,31 +14,17 @@ import ReactECharts from "echarts-for-react";
 // Input: raw API value in thousands USD (e.g., 116264)  
 // Output: formatted display string (e.g., "116,3")
 function formatChartValue(x) {
-  console.debug('[formatChartValue] input:', x);
   if (x == null || Number.isNaN(x)) return "0";
   try {
     // Chart receives actual USD values, no additional scaling needed
     const millions = x / 1e6;
-    console.debug('[formatChartValue] millions:', millions);
-    
     if (millions >= 1) {
-      const formatted = millions.toLocaleString("cs-CZ", { 
-        minimumFractionDigits: 1, 
-        maximumFractionDigits: 1 
-      });
-      console.debug('[formatChartValue] formatted:', formatted);
-      return formatted; // Just return the number, unit added separately
-    } else {
-      // For values below 1 million, show 2 decimal places for better precision
-      const formatted = millions.toLocaleString("cs-CZ", { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-      });
-      console.debug('[formatChartValue] small value with 2 decimals:', formatted);
-      return formatted;
+      // Just return the number, unit added separately
+      return millions.toLocaleString("cs-CZ", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
     }
-  } catch (e) {
-    console.debug('[formatChartValue] error:', e);
+    // For values below 1 million, show 2 decimal places for better precision
+    return millions.toLocaleString("cs-CZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  } catch {
     return "0";
   }
 }
@@ -56,7 +43,6 @@ export default function ProductBarChart({
   const czechNames = referenceData.countryNames;
 
   const items = Array.isArray(data) ? data : [];
-  console.debug('[ProductBarChart] input data:', items?.slice(0, 3));
   const seriesData = items
     .map((b) => {
       // Convert ISO3 country codes to Czech names if possible
@@ -77,9 +63,7 @@ export default function ProductBarChart({
       };
     })
     .sort((a, b) => b.value - a.value);  // Sort descending (largest first)
-  
-  console.debug('[ProductBarChart] processed seriesData:', seriesData?.slice(0, 3));
-  
+
   // For horizontal bar chart: reverse arrays so largest values appear at top
   const categories = seriesData.map((d) => d.name).reverse();  
   const reversedSeriesData = [...seriesData].reverse();
@@ -160,7 +144,8 @@ export default function ProductBarChart({
       {items.length === 0 ? (
         <div style={{ padding: "6px 8px", color: "#666" }}>Vyberte signál pro zobrazení detailů</div>
       ) : (
-        <ReactECharts
+        <ReactEChartsCore
+          echarts={echarts}
           option={option}
           notMerge={true}
           lazyUpdate={true}

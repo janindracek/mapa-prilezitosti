@@ -167,6 +167,7 @@ flowchart LR
   <section id="current">
     <h2>④ Current architecture <span class="tag cur">AS-IS · defective (contrast)</span></h2>
     <p class="note">Kept for contrast: dollars scaled twice, map from a different raw source, methodologies faked, signals triple-filtered, three inconsistent serving paths.</p>
+    <p class="note"><b>M5 frontend-chrome (Track B · done 2026-06-07):</b> world geometry now served from bundled <code>ui/public/world.json</code> (was a live <code>raw.githubusercontent.com</code> fetch — ministry-firewall risk); UI builds fresh on every deploy (stale <code>ui/dist/</code> untracked + <code>deploy/build.sh</code> always rebuilds) — fixes the blank-page on deploy; ECharts tree-shaken (~1.05 MB → 562 kB chunk); Czech map tooltips; invalid <code>projection</code> config + <code>SHOW_SKELETON</code> + dead code removed; console cleaned. Data-dependent M5 features (two-tier signals, analytics tab, label-registry wiring) still wait on M4b.</p>
     <div class="mermaid">
 flowchart TD
   BACI["BACI HS22 Y22/Y23 CSV — kUSD"]

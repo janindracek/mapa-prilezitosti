@@ -29,7 +29,7 @@ Each module is sized to fit one focused session. Do not chain modules in a singl
 | M4a | Foundation: country codes + all-country coverage | 🔄 launched (own session, Track A) | M2 (intent) | all-country coverage + single $-scale point, integrity check |
 | M3 | Methodology rebuild (3 real methods) | ⬜ | M4a | before/after table: 3 distinct defensible methods + per-view validation |
 | M4b | Serving layer + path unification | ⬜ | M3 | `rebuild-all.command` raw→serving with assertions; API one source |
-| M5 | Frontend finalization | 🔄 chrome track launched (own session, Track B) · data features wait for M4b | M1 (data features after M4b) | clean build + screenshots + `build-ui.command` |
+| M5 | Frontend finalization | 🔄 chrome ✅ done (Track B, branch `m5-frontend-chrome`: bundled world.json, build-on-deploy, ECharts tree-shake, Czech tooltips, dead-code/console cleanup) · data features wait for M4b | M1 (data features after M4b) | clean build + screenshots + `build-ui.command` ✅ |
 | M6 | Insights re-engineering (OpenAI→Claude) | ⬜ deferred | M2; pre-deploy | decision + impl + banner correct |
 | M7 | Hosting & deploy | ⬜ last | M3, M4b, M5, M6 | live URL + smoke-test + redeploy runbook |
 

@@ -33,51 +33,25 @@ export function useAppData() {
         setState({ country, year });
 
         // Load reference data once centrally
-        console.log('[Reference Data] Loading reference files...');
+        const loadRef = (path) =>
+          fetch(path)
+            .then(r => (r.ok ? r.json() : {}))
+            .catch(e => {
+              console.error(`[Reference Data] ${path} failed:`, e);
+              return {};
+            });
         const [countryNamesRes, hs6LabelsRes, continentsRes] = await Promise.all([
-          fetch('/ref/country_names_cz.json')
-            .then(r => {
-              console.log('[Reference Data] country_names_cz.json response:', r.status, r.ok);
-              return r.ok ? r.json() : {};
-            })
-            .catch(e => {
-              console.error('[Reference Data] country_names_cz.json failed:', e);
-              return {};
-            }),
-          fetch('/ref/hs6_labels.json')
-            .then(r => {
-              console.log('[Reference Data] hs6_labels.json response:', r.status, r.ok);
-              return r.ok ? r.json() : {};
-            })
-            .catch(e => {
-              console.error('[Reference Data] hs6_labels.json failed:', e);
-              return {};
-            }),
-          fetch('/ref/country_continents.json')
-            .then(r => {
-              console.log('[Reference Data] country_continents.json response:', r.status, r.ok);
-              return r.ok ? r.json() : {};
-            })
-            .catch(e => {
-              console.error('[Reference Data] country_continents.json failed:', e);
-              return {};
-            })
+          loadRef('/ref/country_names_cz.json'),
+          loadRef('/ref/hs6_labels.json'),
+          loadRef('/ref/country_continents.json'),
         ]);
 
-        const finalReferenceData = {
+        setReferenceData({
           countryNames: countryNamesRes || {},
           hs6Labels: hs6LabelsRes || {},
           continents: continentsRes || {},
           loading: false
-        };
-        
-        console.log('[Reference Data] Final data loaded:', {
-          countryNames: Object.keys(finalReferenceData.countryNames).length,
-          hs6Labels: Object.keys(finalReferenceData.hs6Labels).length,
-          continents: Object.keys(finalReferenceData.continents).length
         });
-        
-        setReferenceData(finalReferenceData);
 
       } catch (e) {
         console.error("[controls/reference] failed", e);
@@ -114,9 +88,7 @@ export function useAppData() {
 
   const loadMapData = useCallback(async (year, hs6, mapMetric) => {
     if (!year || !hs6) return;
-    console.log(`[Map Data] Fetching map data: year=${year}, hs6=${hs6}, metric=${mapMetric}`);
     const world = await fetchMap({ year, hs6, metric: mapMetric });
-    console.log(`[Map Data] Received ${world?.length || 0} map data points:`, world?.slice(0, 3));
     setWorldData(world);
   }, []);
 

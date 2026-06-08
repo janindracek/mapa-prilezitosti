@@ -39,25 +39,23 @@ else
     echo "✅ Essential data files found"
 fi
 
-# Check for pre-built React frontend
-echo "🎨 Checking React frontend..."
-if [ -d "ui/dist" ] && [ -f "ui/dist/index.html" ]; then
-    echo "✅ Pre-built frontend found, skipping build"
-else
-    echo "📦 Building React frontend..."
-    cd ui
-    
-    # Try simple build first
-    if npm install && npm run build; then
-        echo "✅ Frontend build succeeded"
-    else
-        echo "⚠️  Frontend build failed - deploying API only"
-        # Create minimal fallback
-        mkdir -p dist
-        echo '<!DOCTYPE html><html><body><h1>API Ready</h1><p>Access API at /docs</p></body></html>' > dist/index.html
-    fi
-    cd ..
+# Build the React frontend fresh every deploy.
+# ui/dist is gitignored and never committed, so the served bundle always matches the
+# committed source — no stale-dist blank page. A build failure fails the whole deploy
+# (set -e) on purpose: better to keep the last good version than ship a broken page.
+echo "🎨 Building React frontend (fresh)..."
+if ! command -v npm >/dev/null 2>&1; then
+    echo "❌ npm/Node not available in the build environment."
+    echo "   build-on-deploy needs Node 20. On Render's Python runtime this may be absent —"
+    echo "   add a Node toolchain to the build env (M7 hosting task)."
+    exit 1
 fi
+export RENDER=true   # tells vite.config.js to drop console/debugger in the deployed bundle
+cd ui
+npm ci
+npm run build
+cd ..
+echo "✅ Frontend build succeeded"
 
 # Create a simple health check endpoint test
 echo "🔍 Testing API configuration..."
