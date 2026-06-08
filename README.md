@@ -90,7 +90,7 @@ The names below are carried from the fact-base through the API to the UI. This s
 | `delta_vs_peer` (×3 methods) | `podil_cz_na_importu − peer_median_share` (negative ⇒ under-penetration) | fraction |
 | `peer_median_share` (×3 methods) | Peer-group median of CZ-import share | fraction |
 
-Dollars are scaled **kUSD → USD exactly once**, in `etl/01` (`TRADE_UNITS_SCALE`, default 1000). **[current]** a duplicate scale exists in `etl/05` — being removed (M4a). Country codes are normalized through **one central module** **[target]**; **[current]** they are scattered (numeric vs alpha-3) and ~10 codes are dropped (M4a).
+Dollars are scaled **kUSD → USD exactly once**, in `etl/01` (`TRADE_UNITS_SCALE`, default 1000) — the duplicate scale formerly in `etl/05` was removed in **M4a** (✓); `etl/05` now reshapes `metrics.parquet` instead of re-reading raw. Country codes are normalized through **one central module** (`country_ref`, backed by BACI's own committed code table `data/ref/baci_country_codes.csv`) — done in **M4a** (✓). The prior pycountry path silently dropped the ~6 BACI codes that deviate from ISO-3166 (**USA=842, France=251, Norway=579, Switzerland=757, India=699**, + the "Other Asia, nes" aggregate `S19`); now **zero dropped**.
 
 ### Signal record (e.g. `/top_signals`)
 | Field | Meaning |
@@ -172,14 +172,16 @@ Czech UI. Blocks: **pre-selections** (`/controls`, defaults), **clicking/interac
 
 ```bash
 export TRADE_UNITS_SCALE=1000
-python etl/01_build_base_facts.py            # raw BACI → fact_base (only $-scale point; all-country coverage [target])
-python etl/02_compute_trade_metrics.py       # shares + YoY → metrics
+python etl/01_build_base_facts.py            # raw BACI → fact_base — only $-scale point; OUTER-join → all 226 importers (M4a ✓)
+python etl/02_compute_trade_metrics.py       # shares + YoY + prior-year/delta columns → metrics
+python etl/05_build_map_data.py              # reshape metrics → ui_shapes/map_rows (no re-scale; M4a ✓)
 # peer groups: recover/rebuild membership + descriptors, then real medians ×3 [M3]
 python etl/03b_compute_all_peer_medians.py
 python etl/04b_enrich_metrics_with_all_peers.py
 python etl/06b_generate_comprehensive_signals.py   # FULL set, no premature caps [target]
 # [target] final stage: emit data/serving/*.parquet ; one rebuild-all.command runs the whole chain with assertions [M4b]
 ```
+> **M4a verification:** double-click `_finalization/verify-M4a.command` — rebuilds 01→02→05 from raw and asserts all-country coverage (205→226), single dollar-scale point, zero dropped codes, and integrity (no bilateral exceeds the partner's import or CZ's world total).
 **[current]** there is no single orchestrator and several documented steps reference moved/archived scripts; `rebuild-all.command` (M4b) makes the chain reproducible. Refresh procedure: run the ETL locally → upload `data/serving/` as a Release asset → redeploy pulls it.
 
 ---
@@ -216,6 +218,7 @@ Use the repo `.venv` (Python 3.13; has the deps). `ui/.env.local`: `VITE_API_BAS
 
 | Path | What |
 |---|---|
+| `country_ref.py` | **single source of truth for country codes** (BACI numeric ↔ ISO3 ↔ name), backed by committed `data/ref/baci_country_codes.csv`. Used by `etl/01, 03b, 05`. (M4a) |
 | `etl/` | the pipeline (current happy path: `01, 02, 03b, 04b, 05, 06b`; `archive/` = legacy) |
 | `api/` | FastAPI: `server_full.py` (entry), `routers/`, `services/`, `data/`, `settings/` |
 | `ui/` | React + Vite + ECharts |

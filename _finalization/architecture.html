@@ -166,7 +166,7 @@ flowchart LR
   <!-- ========================= CURRENT ========================= -->
   <section id="current">
     <h2>④ Current architecture <span class="tag cur">AS-IS · defective (contrast)</span></h2>
-    <p class="note">Kept for contrast: dollars scaled twice, map from a different raw source, methodologies faked, signals triple-filtered, three inconsistent serving paths.</p>
+    <p class="note">Pre-rebuild baseline, kept for contrast: dollars scaled twice, map from a different raw source, methodologies faked, signals triple-filtered, three inconsistent serving paths. <b>Note:</b> the 💲 double-scale, 🌍 country-code drops and ⚠️ LEFT-join (205) shown below are <b>resolved by M4a</b> — see the status table in §⑤; the rest remain for M3/M4b.</p>
     <div class="mermaid">
 flowchart TD
   BACI["BACI HS22 Y22/Y23 CSV — kUSD"]
@@ -198,9 +198,9 @@ flowchart TD
     <h3>Where each transformation happens</h3>
     <table>
       <tr><th>Transformation</th><th>Current</th><th>Target</th><th>Fix in</th></tr>
-      <tr><td>💲 Dollar scale</td><td><code>etl/01:41</code> AND <code>etl/05:90</code></td><td><code>etl/01</code> only</td><td><span class="pill c">M4a</span></td></tr>
-      <tr><td>🌍 Country codes</td><td>scattered + hardcoded <code>iso=='203'</code> + 10 dropped</td><td>one central module</td><td><span class="pill c">M4a</span></td></tr>
-      <tr><td>⚙️ All-country coverage</td><td>LEFT-join → 205</td><td>OUTER-join → all importers</td><td><span class="pill b">M4a</span></td></tr>
+      <tr><td>💲 Dollar scale</td><td><code>etl/01</code> only ✅</td><td><code>etl/01</code> only</td><td><span class="pill ok">M4a ✅</span></td></tr>
+      <tr><td>🌍 Country codes</td><td><code>country_ref</code> (BACI code table); 0 dropped ✅</td><td>one central module</td><td><span class="pill ok">M4a ✅</span></td></tr>
+      <tr><td>⚙️ All-country coverage</td><td>OUTER-join → 226 importers ✅</td><td>OUTER-join → all importers</td><td><span class="pill ok">M4a ✅</span></td></tr>
       <tr><td>✅ Peer medians ×3</td><td>1 real + 2 faked + 1 stub</td><td>3 genuinely computed</td><td><span class="pill c">M3</span></td></tr>
       <tr><td>📝 Descriptors</td><td>2 of 3 (EN+CZ mix), opportunity missing</td><td>all 3 — <b>Czech prose</b>, from shared source</td><td><span class="pill c">M3</span></td></tr>
       <tr><td>🔻 Signal filtering</td><td>3× narrowing</td><td>full set served; tier at request time</td><td><span class="pill b">M4b</span></td></tr>
