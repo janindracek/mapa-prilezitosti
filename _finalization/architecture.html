@@ -76,7 +76,7 @@ flowchart TD
   subgraph LOCAL["LOCAL ETL — run ~once a year (gigabytes stay here)"]
     direction TB
     BACI["BACI raw bilateral flows — kUSD"]
-    CCS["🌍 Centralized country-code module<br/>(one source of truth, none dropped)"]
+    CCS["🌍 Centralized country-code module<br/>BACI↔ISO-3166 crosswalk (both numerics)<br/>(one source of truth, none dropped)"]
     PEERDEF["Peer-group definitions + 📝 descriptors<br/>(statistics · geographic · AI — see §②)"]
     BACI --> CORE["Core facts<br/>💲 ONE scale point<br/>⚙️ OUTER-join: all importers<br/>per (year,hs6,partner)"]
     CCS --> CORE
@@ -166,7 +166,7 @@ flowchart LR
   <!-- ========================= CURRENT ========================= -->
   <section id="current">
     <h2>④ Current architecture <span class="tag cur">AS-IS · defective (contrast)</span></h2>
-    <p class="note">Kept for contrast: dollars scaled twice, map from a different raw source, methodologies faked, signals triple-filtered, three inconsistent serving paths.</p>
+    <p class="note">Pre-rebuild baseline, kept for contrast: dollars scaled twice, map from a different raw source, methodologies faked, signals triple-filtered, three inconsistent serving paths. <b>Note:</b> the 💲 double-scale, 🌍 country-code drops and ⚠️ LEFT-join (205) shown below are <b>resolved by M4a</b> — see the status table in §⑤; the rest remain for M3/M4b.</p>
     <p class="note"><b>M5 frontend-chrome (Track B · done 2026-06-07):</b> world geometry now served from bundled <code>ui/public/world.json</code> (was a live <code>raw.githubusercontent.com</code> fetch — ministry-firewall risk); UI builds fresh on every deploy (stale <code>ui/dist/</code> untracked + <code>deploy/build.sh</code> always rebuilds) — fixes the blank-page on deploy; ECharts tree-shaken (~1.05 MB → 562 kB chunk); Czech map tooltips; invalid <code>projection</code> config + <code>SHOW_SKELETON</code> + dead code removed; console cleaned. Data-dependent M5 features (two-tier signals, analytics tab, label-registry wiring) still wait on M4b.</p>
     <div class="mermaid">
 flowchart TD
@@ -199,15 +199,25 @@ flowchart TD
     <h3>Where each transformation happens</h3>
     <table>
       <tr><th>Transformation</th><th>Current</th><th>Target</th><th>Fix in</th></tr>
-      <tr><td>💲 Dollar scale</td><td><code>etl/01:41</code> AND <code>etl/05:90</code></td><td><code>etl/01</code> only</td><td><span class="pill c">M4a</span></td></tr>
-      <tr><td>🌍 Country codes</td><td>scattered + hardcoded <code>iso=='203'</code> + 10 dropped</td><td>one central module</td><td><span class="pill c">M4a</span></td></tr>
-      <tr><td>⚙️ All-country coverage</td><td>LEFT-join → 205</td><td>OUTER-join → all importers</td><td><span class="pill b">M4a</span></td></tr>
+      <tr><td>💲 Dollar scale</td><td><code>etl/01</code> only ✅</td><td><code>etl/01</code> only</td><td><span class="pill ok">M4a ✅</span></td></tr>
+      <tr><td>🌍 Country codes</td><td><code>country_ref</code> + committed <b>BACI↔ISO-3166 crosswalk</b> (<code>data/ref/baci_country_codes.csv</code>, both numerics); 0 dropped ✅</td><td>one central module</td><td><span class="pill ok">M4a ✅</span></td></tr>
+      <tr><td>⚙️ All-country coverage</td><td>OUTER-join → 226 importers ✅</td><td>OUTER-join → all importers</td><td><span class="pill ok">M4a ✅</span></td></tr>
       <tr><td>✅ Peer medians ×3</td><td>1 real + 2 faked + 1 stub</td><td>3 genuinely computed</td><td><span class="pill c">M3</span></td></tr>
       <tr><td>📝 Descriptors</td><td>2 of 3 (EN+CZ mix), opportunity missing</td><td>all 3 — <b>Czech prose</b>, from shared source</td><td><span class="pill c">M3</span></td></tr>
       <tr><td>🔻 Signal filtering</td><td>3× narrowing</td><td>full set served; tier at request time</td><td><span class="pill b">M4b</span></td></tr>
       <tr><td>🗺️ Map source</td><td>raw <code>trade_by_pair</code></td><td>slice of one core table</td><td><span class="pill b">M4b</span></td></tr>
       <tr><td>🔀 Serving paths</td><td>3 inconsistent</td><td>1 loader, 1 source</td><td><span class="pill c">M4b</span></td></tr>
     </table>
+    <h3 style="margin-top:20px">🌍 BACI ↔ ISO-3166 country crosswalk (M4a)</h3>
+    <p class="note">Single source of truth: committed <code>data/ref/baci_country_codes.csv</code> (regenerate via <code>etl/00_build_country_ref.py</code>), read by <code>country_ref.py</code>. Carries <b>both</b> numbering systems so any consumer/library can key on whichever it expects.</p>
+    <table>
+      <tr><th>Column</th><th>System</th><th>Note</th></tr>
+      <tr><td><code>country_code</code></td><td>BACI numeric</td><td>the raw <code>exporter</code>/<code>importer</code> value</td></tr>
+      <tr><td><code>country_iso2</code> / <code>country_iso3</code></td><td>ISO-3166 alpha</td><td>iso3 doubles as pseudo-code for BACI aggregates (e.g. <code>S19</code>)</td></tr>
+      <tr><td><code>iso_numeric</code></td><td>ISO-3166-1 numeric</td><td>blank for aggregates/defunct entities</td></tr>
+    </table>
+    <p class="note" style="margin-top:8px">BACI numeric ≠ ISO numeric for <b>USA 842/840 · France 251/250 · Norway 579/578 · Switzerland 757/756 · India 699/356</b> (+ historical twins). Helpers: <code>num_to_iso3</code>/<code>iso3_to_num</code> (BACI), <code>iso3_to_iso_numeric</code>/<code>iso_numeric_to_iso3</code> (ISO), <code>baci_num_to_iso_numeric</code> (bridge).</p>
+
     <h3 style="margin-top:20px">Serving layer — keeps vs drops</h3>
     <table>
       <tr><th class="lost">DROPPED — safe (~1.4 GB, ETL input only)</th><th class="kept">KEPT — serving layer (~60–150 MB)</th></tr>

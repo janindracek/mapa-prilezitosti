@@ -13,59 +13,18 @@ Output: peer_medians_comprehensive.parquet
 """
 
 import os
+import sys
 import json
 import pandas as pd
 import numpy as np
 from pathlib import Path
 
-# Local country code conversion function
-def normalize_country_code(country: str, target_format: str = "alpha3"):
-    """Local implementation of country code conversion"""
-    try:
-        import pycountry
-        
-        if not country:
-            return None
-            
-        # Try different lookup methods
-        country_rec = None
-        
-        # Try alpha-3 first (most common)
-        if len(country) == 3 and country.isalpha():
-            country_rec = pycountry.countries.get(alpha_3=country.upper())
-        
-        # Try alpha-2
-        if not country_rec and len(country) == 2 and country.isalpha():
-            country_rec = pycountry.countries.get(alpha_2=country.upper())
-        
-        # Try numeric
-        if not country_rec and country.isdigit():
-            country_rec = pycountry.countries.get(numeric=country)
-        
-        # Try name lookup (fuzzy matching)
-        if not country_rec:
-            try:
-                country_rec = pycountry.countries.lookup(country)
-            except LookupError:
-                pass
-        
-        if not country_rec:
-            return None
-            
-        # Return in target format
-        if target_format == "alpha2":
-            return country_rec.alpha_2
-        elif target_format == "alpha3":
-            return country_rec.alpha_3
-        elif target_format == "numeric":
-            return country_rec.numeric
-        elif target_format == "name":
-            return country_rec.name
-        else:
-            return country_rec.alpha_3  # Default to alpha3
-            
-    except Exception:
-        return None
+# Country-code conversion comes from the single source of truth (country_ref),
+# which uses BACI's own code table. The old local pycountry reimplementation
+# dropped the same ~6 BACI codes that deviate from ISO-3166 (USA=842, etc.) —
+# including them silently from any opportunity peer group they belonged to.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import country_ref as cr
 
 # Constants
 FACT_BASE = "data/out/fact_base.parquet"
@@ -221,9 +180,8 @@ def compute_opportunity_peer_medians(fact_base):
         # Load opportunity peer groups
         peer_groups = pd.read_parquet(PEER_GROUPS_OPPORTUNITY)
         
-        # Find Czech Republic's cluster - opportunity groups use numeric iso codes
-        # Czech Republic numeric code is 203
-        cze_rows = peer_groups[peer_groups['iso'].astype(str) == '203']
+        # Find Czech Republic's cluster - opportunity groups use BACI numeric codes.
+        cze_rows = peer_groups[peer_groups['iso'].astype(str) == str(cr.cz_numeric())]
         
         if cze_rows.empty:
             print("  Warning: Czech Republic not found in opportunity peer groups")
@@ -238,8 +196,7 @@ def compute_opportunity_peer_medians(fact_base):
         # Convert numeric ISO codes to ISO3 format
         peer_iso3_codes = []
         for _, row in peer_countries.iterrows():
-            numeric_code = str(row['iso'])
-            iso3 = normalize_country_code(numeric_code, "alpha3")
+            iso3 = cr.num_to_iso3(row['iso'])
             if iso3:
                 peer_iso3_codes.append(iso3)
         

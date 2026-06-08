@@ -23,6 +23,35 @@ Scope: **UI chrome only** — independent of the data track (M4a/M3/M4b). Touche
 **Flagged (out of scope, pre-existing):** `KeyData.jsx:157` calls `.toLocaleString()` on null, so a failed/empty `/insights_data` fetch crashes the whole app via the ErrorBoundary (observed during a transient API blip). Not a file this track touched — flagged as a separate task.
 
 **Next:** merge branch `m5-frontend-chrome`. Remaining M5 (two-tier display, analytics tab, consume `data/ref/labels.csv`) is an **M5-data** session after **M4b**.
+---
+
+## 2026-06-07 — M4a foundation ✅ (own session, Track A)
+
+**Done** (branch `m4a-foundation`, isolated worktree off `main`)
+- **Root cause nailed with numbers.** Raw BACI has **226 importers**; the old `etl/01` converted BACI numeric→ISO3 with **pycountry** (ISO-3166), which silently dropped the 6 BACI codes that deviate from ISO: **USA=842, France=251, Norway=579, Switzerland=757, India=699**, + aggregate **490 "Other Asia, nes"→S19** (mostly Taiwan). Compounded by a **LEFT-join** keyed on CZ's export partners → only **205** importers reached the table. Authoritative fix already on disk: BACI's own `data/raw/country_codes_V202501.csv` (238 rows, complete).
+- **(a) Central country-code module — `country_ref.py` (repo root).** Single source of truth, backed by a **committed** copy `data/ref/baci_country_codes.csv` (raw dir is gitignored — the map must travel with the code). API: `num_to_iso3 / iso3_to_num / iso3_to_name / cz_numeric() / map_series_num_to_iso3`. BACI table only, **no pycountry**, for numeric↔iso3. Handles BACI's 3 duplicate-iso3 historical twins (BEL 56/58, DEU 276/280, SDN 729/736) by preferring the active (non-`(...YYYY)`) entry in reverse lookups. `api/normalizers.py` left intact — it parses arbitrary *user input* (names/alpha2), a different job.
+- **(a′) BACI↔ISO-3166 crosswalk (Jan's ask).** The sheet now carries *both* numbering systems: added an `iso_numeric` (ISO-3166-1 numeric) column alongside the BACI `country_code`, so a consumer can key on whichever a library expects. They disagree for USA 842/840, France 251/250, Norway 579/578, Switzerland 757/756, India 699/356 (+ historical twins); aggregates (S19 etc.) have blank `iso_numeric`. New reproducible generator `etl/00_build_country_ref.py` (pycountry-derived from iso3; self-contained, no raw data needed). New helpers `iso3_to_iso_numeric / iso_numeric_to_iso3 / baci_num_to_iso_numeric`. Documented in README §5/§11 + architecture.html §⑤.
+- **(b) `etl/01` → OUTER-join + central codes.** Coverage **205 → 226**; hard assertions baked in (zero unmapped codes; coverage == raw universe; no null iso3; `export ≤ import`). fact_base 338k → **1.78M rows** (an ETL intermediate; compaction is M4b).
+- **(b) Prior-year/delta columns migrated into `etl/02`** (`export_cz_to_partner_prev`, `delta_export_abs`, `export_cz_total_for_hs6_prev`) — so the map reads them instead of re-deriving from raw.
+- **(c) `etl/05` rebased onto `metrics.parquet`** — no more raw `trade_by_pair` read, **duplicate `* TRADE_SCALE` deleted**. Dollars now scaled in exactly one place (`etl/01`). Map covers all 226 (USA/FRA/CHE/IND/NOR/S19 verified present).
+- **`etl/03b`**: replaced hardcoded `iso=='203'` with `cr.cz_numeric()` and the local pycountry reimplementation with `country_ref` (same dropped-code bug lurked here). Faked-median scaling untouched (M3).
+- **Acceptance gate:** `_finalization/verify-M4a.command` (double-click) rebuilds 01→02→05 and asserts coverage 205→226, single $-scale point, zero dropped codes, integrity. **Runs green.**
+- Docs synced: README §5/§8/§11 flags flipped, `architecture.html` §⑤ status rows → ✅ + contrast-note clarified.
+
+**Decided**
+- **Architecture call (Jan delegated): central code module lives at repo root (`country_ref.py`) + committed CSV**, rather than rewriting `api/utils/country_codes.py`. Reason: smallest blast radius for M4a, clean etl↔api sharing, no API-behavior change bleeding into M4b. Logged here + README §11 + architecture.html.
+- **Aggregate S19 (490) is kept, not dropped** — it's real trade; it just lacks map geometry until one is supplied (M5). Net coverage = 226.
+- **Live API untouched** — `/map_v2` still reads the `data/deployment/` CSV (a stubbed-out parquet path), so the live map won't show the new countries until **M4b** collapses the serving path. M4a acceptance is on the parquet artifacts, by design.
+
+**Flagged for M3** (pre-existing, NOT introduced here): `etl/03b`'s opportunity path reads `peer_groups['iso']` but that parquet's column is `iso3` → it's *always* a KeyError, so opportunity peer medians have never generated (matches "opportunity has none" in README). M3 owns the opportunity rebuild.
+
+**Env notes**
+- Must use the repo **`.venv` (py3.13, pyarrow 21)** — anaconda's `python3` (pyarrow 19) cannot read the BACI parquets ("Repetition level histogram size mismatch"). The `.command` auto-prefers `.venv/bin/python`.
+- Worked in worktree `/Users/janindracek/Documents/mapa-m4a` with `data/parquet` + `data/raw` symlinked read-only from the canonical checkout; `data/out` is local (gitignored intermediates). The canonical checkout was sitting on Track B's `m5-frontend-chrome` branch — did **not** touch it.
+
+**To merge:** branch `m4a-foundation` → `main`. Touched only `country_ref.py`, `data/ref/baci_country_codes.csv`, `etl/01,02,03b,05`, `_finalization/verify-M4a.command`, README, architecture.html, LOG, 00_INDEX (M4a row only) — no `ui/` overlap with Track B.
+
+**Next:** M3 — the 3 real peer methodologies (now unblocked). Read `modules/M3_methodology.md`.
 
 ---
 
