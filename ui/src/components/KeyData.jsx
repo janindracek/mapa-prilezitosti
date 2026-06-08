@@ -45,6 +45,13 @@ function formatPercentage(value) {
   return `${(value * 100).toLocaleString("cs-CZ", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
 }
 
+// YoY delta is already a percentage value (not a 0..1 ratio); format defensively
+function formatYoYDelta(value) {
+  if (value == null || Number.isNaN(value)) return "—";
+  const formatted = value.toLocaleString("cs-CZ", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return `${value > 0 ? '+' : ''}${formatted}%`;
+}
+
 export default function KeyData({ 
   data = {}, 
   signal = null, 
@@ -140,13 +147,13 @@ export default function KeyData({
       value: "—",
       shortLabel: "Peer median"
     }]),
-    // Add YoY change if available
-    ...(cz_delta_pct !== 0 ? [{
+    // Add YoY change if available (guard null/NaN/0 before formatting)
+    ...(cz_delta_pct != null && !Number.isNaN(cz_delta_pct) && cz_delta_pct !== 0 ? [{
       label: "Meziroční změna",
-      value: `${cz_delta_pct > 0 ? '+' : ''}${cz_delta_pct.toLocaleString("cs-CZ", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`,
+      value: formatYoYDelta(cz_delta_pct),
       shortLabel: "YoY change"
     }] : [{
-      label: "Meziroční změna", 
+      label: "Meziroční změna",
       value: "—",
       shortLabel: "YoY change"
     }])
