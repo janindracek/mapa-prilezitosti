@@ -92,6 +92,8 @@ The names below are carried from the fact-base through the API to the UI. This s
 
 Dollars are scaled **kUSD → USD exactly once**, in `etl/01` (`TRADE_UNITS_SCALE`, default 1000) — the duplicate scale formerly in `etl/05` was removed in **M4a** (✓); `etl/05` now reshapes `metrics.parquet` instead of re-reading raw. Country codes are normalized through **one central module** (`country_ref`, backed by BACI's own committed code table `data/ref/baci_country_codes.csv`) — done in **M4a** (✓). The prior pycountry path silently dropped the ~6 BACI codes that deviate from ISO-3166 (**USA=842, France=251, Norway=579, Switzerland=757, India=699**, + the "Other Asia, nes" aggregate `S19`); now **zero dropped**.
 
+That code table is the canonical **BACI ↔ ISO-3166 crosswalk** — it carries *both* numbering systems side by side: `country_code` (BACI numeric), `country_iso2`/`country_iso3`, and `iso_numeric` (ISO-3166-1 numeric). The BACI and ISO numerics **disagree** for USA (842/840), France (251/250), Norway (579/578), Switzerland (757/756), India (699/356), so a consumer can key on whichever system its library expects. `country_ref` exposes `num_to_iso3` / `iso3_to_num` (BACI), `iso3_to_iso_numeric` / `iso_numeric_to_iso3` (ISO-3166), and `baci_num_to_iso_numeric` (bridge); aggregates like `S19` have a blank `iso_numeric`. Regenerate the sheet with `etl/00_build_country_ref.py`.
+
 ### Signal record (e.g. `/top_signals`)
 | Field | Meaning |
 |---|---|
@@ -218,7 +220,7 @@ Use the repo `.venv` (Python 3.13; has the deps). `ui/.env.local`: `VITE_API_BAS
 
 | Path | What |
 |---|---|
-| `country_ref.py` | **single source of truth for country codes** (BACI numeric ↔ ISO3 ↔ name), backed by committed `data/ref/baci_country_codes.csv`. Used by `etl/01, 03b, 05`. (M4a) |
+| `country_ref.py` | **single source of truth for country codes** — BACI numeric ↔ ISO-3166 (alpha-2/alpha-3/numeric) ↔ name, backed by the committed **crosswalk** `data/ref/baci_country_codes.csv` (regenerate via `etl/00_build_country_ref.py`). Used by `etl/01, 03b, 05`. (M4a) |
 | `etl/` | the pipeline (current happy path: `01, 02, 03b, 04b, 05, 06b`; `archive/` = legacy) |
 | `api/` | FastAPI: `server_full.py` (entry), `routers/`, `services/`, `data/`, `settings/` |
 | `ui/` | React + Vite + ECharts |
