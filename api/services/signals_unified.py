@@ -281,6 +281,74 @@ class UnifiedSignalsService:
                 'explanation': peer_explanation['explanation_text'],
                 'methodology_name': peer_explanation['methodology_name']
             }
-        
+
         return result
-    
+
+    # --- M5: two-tier selection (strong first, backfill weak) ---------------
+    LIVE_METHODS = ["human", "trade_structure", "yoy_export", "yoy_share"]
+
+    def select_two_tier(self, country: str, strong_cap: int = 10, min_strong: int = 5) -> List[Dict[str, Any]]:
+        """Surface up to `strong_cap` STRONG signals for a country, balanced
+        across the 4 live methods; if fewer than `min_strong` strong exist,
+        backfill (flagged) with WEAK band up to the cap. Selection happens at
+        request time — the ETL serves the full banded set."""
+        pools = {
+            m: self.get_signals_by_methodology(country=country, method=m, limit=strong_cap * 3)
+            for m in self.LIVE_METHODS
+        }
+        strong = {m: [s for s in pools[m] if str(s.get("band", "strong")) == "strong"] for m in self.LIVE_METHODS}
+        weak = {m: [s for s in pools[m] if str(s.get("band")) == "weak"] for m in self.LIVE_METHODS}
+        seen = set()
+
+        def key(s):
+            return (s.get("partner_iso3"), s.get("hs6"), s.get("type"))
+
+        def round_robin(pmap, cap):
+            out, ptr = [], {m: 0 for m in self.LIVE_METHODS}
+            progressed = True
+            while len(out) < cap and progressed:
+                progressed = False
+                for m in self.LIVE_METHODS:
+                    lst = pmap[m]
+                    while ptr[m] < len(lst):
+                        s = lst[ptr[m]]; ptr[m] += 1
+                        if key(s) not in seen:
+                            seen.add(key(s)); out.append(s); progressed = True
+                            break
+                    if len(out) >= cap:
+                        break
+            return out
+
+        selected = round_robin(strong, strong_cap)
+        if len(selected) < min_strong:
+            selected += round_robin(weak, strong_cap - len(selected))
+        return selected[:strong_cap]
+
+    # --- M5: lean serving for the analytics side-tab (full set, no per-row
+    # peer-explanation enrichment — too slow at ~108k rows) -----------------
+    def get_all_signals(self, country: Optional[str] = None, method: Optional[str] = None,
+                        signal_type: Optional[str] = None, band: Optional[str] = None,
+                        hs6: Optional[str] = None, page: int = 1, page_size: int = 50) -> Dict[str, Any]:
+        df = self._load_signals()
+        if country:
+            iso = normalize_iso(country)
+            if iso and iso != "CZE":
+                df = df[df["partner_iso3"] == iso]
+        if method:
+            df = df[df["method"] == method]
+        if signal_type:
+            df = df[df["type"] == signal_type]
+        if band:
+            df = df[df["band"] == band]
+        if hs6:
+            df = df[df["hs6"] == str(hs6).zfill(6)]
+        if "intensity" in df.columns:
+            df = df.sort_values("intensity", ascending=False)
+        total = int(len(df))
+        page = max(1, int(page)); page_size = max(1, min(int(page_size), 500))
+        rows = df.iloc[(page - 1) * page_size: (page - 1) * page_size + page_size]
+        cols = ["type", "method", "band", "year", "hs6", "partner_iso3", "intensity",
+                "value", "peer_median", "delta_vs_peer", "rel_gap", "peer_count"]
+        recs = [{c: to_json_safe(r.get(c)) for c in cols if c in df.columns} for _, r in rows.iterrows()]
+        return {"total": total, "page": page, "page_size": page_size, "rows": recs}
+

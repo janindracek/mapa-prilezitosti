@@ -26,83 +26,30 @@ def signals(
 
 
 @router.get("/top_signals")
-def top_signals(country: str, year: Optional[int] = None, limit: int = 100):
-    """
-    Serve precomputed top signals (legacy endpoint - redirects to unified service).
-    - country: ISO2/ISO3 (normalized to ISO3)
-    - year: optional, defaults to latest available in the parquet
-    - limit: cap number of returned rows (per endpoint call)
-    """
-    # Get balanced signals from ALL methodologies for this country
-    # Different signal types have completely different intensity scales, 
-    # so we need to ensure fair representation rather than just sorting by intensity
-    
-    final_signals = []
-    seen_signals = set()  # Track (partner_iso3, hs6, type) to prevent duplicates
-    
-    # Allocate signals across the 4 live methodologies (2 peer groups + 2 YoY).
-    # opportunity retired in M3.
-    peer_limit = max(1, limit // 4)
-    yoy_limit = max(1, (limit - peer_limit * 2) // 2)
+def top_signals(country: str, year: Optional[int] = None, limit: int = 10):
+    """Two-tier signal selection for a country (M5): up to ~10 STRONG signals
+    balanced across the 4 live methods; if a country has <5 strong, backfill
+    with flagged WEAK (permissive) signals. Selection at request time."""
+    cap = min(int(limit), 10) if limit else 10
+    return signals_service.select_two_tier(country, strong_cap=cap, min_strong=5)
 
-    methods_config = [
-        ("human", peer_limit),            # Human peer-gap signals
-        ("trade_structure", peer_limit),  # Trade-structure peer-gap signals
-        ("yoy_export", yoy_limit),        # YoY export signals
-        ("yoy_share", yoy_limit),         # YoY share signals
-    ]
-    
-    for method, method_limit in methods_config:
-        method_signals = signals_service.get_signals_by_methodology(
-            country=country,
-            method=method,
-            limit=method_limit * 2  # Get extra to account for duplicates
-        )
-        
-        # Filter out duplicates and take top signals from this method
-        unique_method_signals = []
-        for signal in method_signals:
-            signal_key = (
-                signal.get('partner_iso3'), 
-                signal.get('hs6'), 
-                signal.get('type')
-            )
-            if signal_key not in seen_signals:
-                seen_signals.add(signal_key)
-                unique_method_signals.append(signal)
-                
-                if len(unique_method_signals) >= method_limit:
-                    break
-        
-        final_signals.extend(unique_method_signals[:method_limit])
-    
-    # Fill remaining slots with highest intensity signals across all methods
-    remaining_slots = limit - len(final_signals)
-    if remaining_slots > 0:
-        extra_signals = signals_service.get_signals_by_methodology(
-            country=country,
-            method="yoy_export",  # Favor YoY export for extra slots
-            limit=remaining_slots * 3  # Get extra to account for duplicates
-        )
-        
-        # Filter out duplicates from extra signals
-        unique_extra_signals = []
-        for signal in extra_signals:
-            signal_key = (
-                signal.get('partner_iso3'), 
-                signal.get('hs6'), 
-                signal.get('type')
-            )
-            if signal_key not in seen_signals:
-                seen_signals.add(signal_key)
-                unique_extra_signals.append(signal)
-                
-                if len(unique_extra_signals) >= remaining_slots:
-                    break
-        
-        final_signals.extend(unique_extra_signals[:remaining_slots])
-    
-    return final_signals[:limit]
+
+@router.get("/signals/all")
+def signals_all(
+    country: str | None = None,
+    method: str | None = None,
+    type: str | None = None,
+    band: str | None = None,
+    hs6: str | None = None,
+    page: int = 1,
+    page_size: int = 50,
+):
+    """Analytics side-tab (M5): lean, filterable, paginated view over the FULL
+    signal set (~108k). No per-row peer enrichment (too slow at that scale)."""
+    return signals_service.get_all_signals(
+        country=country, method=method, signal_type=type, band=band, hs6=hs6,
+        page=page, page_size=page_size,
+    )
 
 
 @router.get("/signals/methodologies")

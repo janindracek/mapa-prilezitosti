@@ -83,6 +83,10 @@ export function useAppData() {
       yoy: s.yoy,              // Year-over-year percentage change
       intensity: s.intensity,   // Signal intensity/strength
       year: s.year,            // Signal year
+      band: s.band,            // M5: strong | weak (two-tier display)
+      method: s.method,        // peer methodology id
+      peer_median: s.peer_median,
+      delta_vs_peer: s.delta_vs_peer,
     }));
   }, []);
 

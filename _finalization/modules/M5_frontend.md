@@ -1,6 +1,8 @@
 # M5 — Frontend finalization (DATA FEATURES track)
 
-**State:** chrome ✅ done (Track B, 2026-06-07) · **data features ⬜ launched** (this track) · **Depends:** M4b ✅ · Read with `../00_INDEX.md`.
+**State:** chrome ✅ done (Track B, 2026-06-07) · **data features ✅ done** (branch `m5-data`, 2026-06-09) · **Depends:** M4b ✅ · Read with `../00_INDEX.md`.
+
+> **Outcome:** label-registry view (`data/ref/labels.csv` → committed JSON, prebuild) wires `SignalsList`/`SignalInfo`/Analytics to ONE Czech vocabulary; the header-vs-badge clash is gone; dead/`retired` branches removed; the stale `MethodologyOverlay` deleted. Reusable **`HelpButton.jsx`** (`?` opens a popup) placed at every concept that needed explanation — Jan's pattern, not a permanent panel. **Two-tier strong/weak** in `signals_unified.select_two_tier` (round-robin balanced strong, backfill weak with caption); `/top_signals` thin-delegates. **Analytics side-tab** over the full ~108k via `/signals/all` (lean — no per-row peer enrichment). Verified: build clean, lint clean on new files, headless screenshots show overview + analytics. Full write-up in `../LOG.md` (2026-06-09).
 
 ## Launch context (2026-06-09) — read this first
 The **chrome** half is already merged (bundled `world.json`, build-on-deploy, ECharts tree-shake, Czech map tooltips, dead-code/console cleanup — see `../LOG.md` 2026-06-07 M5). This track is the **data features**, now unblocked by M4b. What M4b already gives you:
