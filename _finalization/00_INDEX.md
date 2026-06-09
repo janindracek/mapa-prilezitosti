@@ -29,8 +29,8 @@ Each module is sized to fit one focused session. Do not chain modules in a singl
 | M4a | Foundation: country codes + all-country coverage | ✅ done (Track A, branch `m4a-foundation`) | M2 (intent) | ✅ `verify-M4a.command` green: coverage 205→226, single $-scale point, zero dropped codes, integrity |
 | M3 | Methodology rebuild (real methods) | ✅ done (branch `m3-methodology`) | M4a | ✅ `verify-M3.command` green: 2 real distinct methods (top-3 product overlap ≈0.05 Jaccard), real medians (recompute-verified), opportunity retired→v2, Czech descriptors. Access filters deferred (design pass) |
 | M4b | Serving layer + path unification | ✅ done (branch `m4b-serving`) | M3 | ✅ `rebuild-all.command` green (9/9 serving==ETL checks); API boots on `data/serving/` only, every endpoint 200, `/map_v2`=226; 3 dead paths + `data/deployment/` deleted |
-| M5 | Frontend finalization | 🔄 chrome ✅ done (Track B, branch `m5-frontend-chrome`: bundled world.json, build-on-deploy, ECharts tree-shake, Czech tooltips, dead-code/console cleanup) · data features wait for M4b | M1 (data features after M4b) | clean build + screenshots + `build-ui.command` ✅ |
-| M6 | Insights re-engineering (OpenAI→Claude) | ⬜ deferred | M2; pre-deploy | decision + impl + banner correct |
+| M5 | Frontend finalization | 🔄 chrome ✅ done · **data features 🔄 launched (own session, Track D, branch `m5-data`)** | M4b ✅ | two-tier display + analytics tab + methodology notes + labels.csv wiring; screenshots |
+| M6 | Insights re-engineering (OpenAI→Claude) | 🔄 launched (own session, Track C, branch `m6-insights`) | M2 ✅ | decision (rec: live Claude + fallback) + impl + banner correct + safe key |
 | M7 | Hosting & deploy | ⬜ last | M3, M4b, M5, M6 | live URL + smoke-test + redeploy runbook |
 
 State legend: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked.
