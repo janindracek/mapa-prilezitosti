@@ -4,6 +4,33 @@ Newest first. One entry per working session: what changed, what was decided, wha
 
 ---
 
+## 2026-06-08 — M3 methodology rebuild ✅ (branch `m3-methodology`)
+
+**Done** (isolated worktree off `main`, after M4a merged)
+- **Two real, distinct peer methods** replace the fakes. `etl/03b` rewritten: it now computes the **honest median** — for (year, hs6, target market `t`) and method `m`, `peer_median_share = median of podil_cz_na_importu over { p ∈ cluster_m(t), p ≠ t, p ≠ CZE }`. Leave-one-out on the target, CZE excluded. Mirrors the recovered honest computation in `etl/archive/27_compute_peer_medians.py`, generalized to all years + CZE exclusion. The 0.85/1.15 scaling, the opportunity branch, and the empty `geographic` stub are all gone.
+- **Verified real, not faked:** an independent median recompute matches the pipeline output on 300/300 sampled rows (DEU/870323: trade_structure 0.01539 over 28 peers, human 0.01573 over 4 peers — both reproduced exactly).
+- **Genuinely different recommendations:** mean top-3 product overlap between the two methods = **0.05 Jaccard** over 149 countries (≈ fully different). E.g. DEU → trade_structure flags paper/steel (481320, 722220, 722820), human flags fuels/oils (270112, 270900, 271121). The old fakes (constant scaling) collapsed all methods to one ranking.
+- **Opportunity retired (Jan's call):** the HS6-shares + **2-point CAGR** + openness method is the "most wrong" (CAGR over 2 years = noise; mixed-scale k-means is a preprocessing artifact). Removed from `03b`/`04b`/`06b` and the label registry (`status=retired`); membership parquet left on disk unused. Proper ITC-style supply×demand×ease-of-trade replacement = **v2**.
+- **Descriptors → `data/ref/labels.csv`:** `trade_structure` translated EN→CZ, `human` already CZ, both methodology rows `status=ok`; `Peer_gap_*` signal rows for the 2 survivors `ok`, opportunity rows `retired`.
+- **Pipeline cleanups:** removed the dead opportunity ranking branch from `06b` and the dead `geographic` backward-compat block from `04b`.
+- **Acceptance:** `_finalization/verify-M3.command` (double-click) rebuilds 01→02→03b→04b→06b and asserts: 2 methods only / no opportunity, medians match an independent recompute, Jaccard < 0.30, Czech descriptors set. **Runs green.**
+- **Docs:** README §3 rewritten (2 methods + exact median math + retirement), §4 (4 signal types), §5 (×2 methods), §8/§9 notes; `architecture.html` §②/§④/§⑤ updated. Thorough per Jan's "everything in README + the HTML map."
+
+**Decided**
+- **Membership stays frozen** (the `*_explained.csv` is the source of truth, co-locating membership + descriptor per Jan's rule). The archived clustering script (`etl/archive/30_build_peer_groups.py`, trade_structure cosine k-means) is kept as **provenance**, NOT wired into the happy path — re-clustering would renumber clusters and break the descriptor mapping. (human is hand-curated, no clustering.) Flagging in case Jan wants a verified re-cluster later.
+- **Access filters (distance/FTA/market-size) deferred** — Jan wants a dedicated design conversation; none built this session. No distance/FTA/tariff data exists in the repo (only market-size is free from BACI). Logged as the open M3-follow-up.
+
+**Flagged for M4b** (pre-existing, surfaced by M3): with relative-only `S1_REL_GAP_MIN` and no absolute floor, some peer-gap signals pass on a near-zero peer median (tiny `human` clusters where every peer has ~0% CZ share → 100% relative gap on a trivial base). Medians are correct; restoring disciplined/absolute thresholds (README §9) filters these — that's M4b.
+
+**Env/workspace**
+- Worktree `/Users/janindracek/Documents/mapa-m3`; symlinked only the gitignored inputs *inside* `data/parquet` (BACI dirs + `trade_by_hs2_imports.parquet`) — no tracked-file clobber this time. Rebuilt fact_base→metrics (M4a code) first. `.venv` symlinked (py3.13/pyarrow21).
+
+**To merge:** branch `m3-methodology` → `main`. Touches `etl/03b,04b,06b`, `data/ref/labels.csv`, `_finalization/verify-M3.command`, README, architecture.html, LOG, 00_INDEX (M3 row only) — no `ui/` overlap.
+
+**Next:** M4b — serving-layer collapse + path unification (now the data is real). Read `modules/M4b_serving.md`. Also pick up the deferred access-filters design conversation and the §9 threshold restoration there.
+
+---
+
 ## 2026-06-07 — M5 frontend-chrome ✅ (Track B, parallel to M4a; branch `m5-frontend-chrome`)
 
 Scope: **UI chrome only** — independent of the data track (M4a/M3/M4b). Touched only `ui/`, `deploy/build.sh`, and a new root `build-ui.command`. Data-dependent M5 features (two-tier signals, analytics tab, label-registry wiring) deliberately left for a later M5-data session (need M4b).

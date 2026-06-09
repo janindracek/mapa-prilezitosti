@@ -81,13 +81,8 @@ def enrich_with_comprehensive_peers(metrics, peer_medians):
         # Count non-null values
         non_null = enriched[median_col].notna().sum()
         print(f"    Added {non_null:,} peer median values for {method}")
-    
-    # Add backward compatibility columns (use geographic as default)
-    if 'median_peer_share_geographic' in enriched.columns:
-        enriched['median_peer_share'] = enriched['median_peer_share_geographic']
-        enriched['delta_vs_peer'] = enriched['delta_vs_peer_geographic']
-        print("Added backward compatibility columns using geographic methodology")
-    
+    # (M3) Removed the dead "geographic" backward-compat block — there is no
+    # geographic methodology; the two real methods are trade_structure + human.
     return enriched
 
 

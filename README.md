@@ -34,34 +34,42 @@ Full annotated lineage (where dollars are scaled, where country codes convert, w
 
 ## 3. Peer-group methodologies
 
-Three independent definitions of "comparable market." Each produces (a) a **membership** map (which countries are peers) and (b) a **descriptor** (a human-readable name + explanation). Membership and descriptor come from one shared source (the `*_explained` files), and that same descriptor is what the app shows.
+**Two** independent definitions of "comparable market" (v1 — M3 ✓). Each produces (a) a **membership** map (which countries are peers) and (b) a **descriptor** (a Czech name + explanation). Membership and descriptor come from one shared source (the `*_explained.csv` files), and that same descriptor is what the app shows.
 
 | Method (`id`) | Signal type | How groups are formed | Inputs | Clusters | Czechia's group |
 |---|---|---|---|---|---|
-| **Trade-structure** (`trade_structure`) | `Peer_gap_matching` | k-means cosine clustering | HS2 import-share profiles | 10 | #4 "European core & advanced Asia" |
-| **Geographic / human** (`human`) | `Peer_gap_human` | expert hand-curation | geography + development level | 23 | #3 "Central & Eastern Europe" |
-| **Opportunity** (`opportunity`) | `Peer_gap_opportunity` | k-means cosine clustering | HS6 shares + CAGR (growth) + trade openness | 10 | (TBD) |
+| **Trade-structure** (`trade_structure`) | `Peer_gap_matching` | k-means cosine clustering | HS2 import-share profiles | 10 | #4 "Evropské jádro a vyspělá Asie" |
+| **Geographic / human** (`human`) | `Peer_gap_human` | expert hand-curation | geography + development level | 23 | #3 "Střední a východní Evropa" |
 
-- **Descriptors:** **[target]** all three carry a name + explanation in **Czech prose**, from the shared source. **[current]** trade-structure descriptor is English, human is Czech, **opportunity has none** (→ M3 builds it).
-- **Creation code** is archived (`etl/archive/30_build_peer_groups.py`, `31_…opportunity.py`); the live pipeline only converts the frozen `*_explained.csv` results to parquet. Re-running the clustering reproducibly is part of M3.
-- **[current] Faked medians:** `human` median = statistical × 0.85, `opportunity` = statistical × 1.15, `geographic` = empty stub (`etl/03b`). **[target]** all three compute a real median of peers' import shares. This is the core of module **M3**.
+**How the benchmark is computed — the honest median (M3 ✓).** The peer group is the **target market's** cluster (not Czechia's). For a product `hs6` and target market `t`, under method `m`:
+
+> `peer_median_share(hs6, t) = median over { p ∈ cluster_m(t), p ≠ t, p ≠ CZE } of podil_cz_na_importu(hs6, p)`
+> `delta_vs_peer = podil_cz_na_importu(hs6, t) − peer_median_share`  (negative ⇒ CZ under-penetrates `t` relative to its peers)
+
+In words: "in markets like `t`, Czechia captures a median X% of this product's imports; in `t` it captures Y%; the gap is the flag." Leave-one-out on `t`; CZE excluded (CZ doesn't export to itself). Computed over the **full all-country BACI** (M4a coverage) for every year, in `etl/03b` — mirroring the recovered honest computation in `etl/archive/27_compute_peer_medians.py`. The two methods key on different clusters, so for the same country they flag **genuinely different products** (measured top-3 product overlap between methods ≈ 0.05 Jaccard).
+
+- **Descriptors:** both methods carry a name + explanation in **Czech prose**, from the shared `*_explained.csv`, fed into the label registry `data/ref/labels.csv` (methodology rows, `status=ok`). Trade-structure was translated EN→CZ in M3; human was already Czech.
+- **Membership is frozen.** The `*_explained.csv` is the source of truth (it co-locates membership + descriptor, per the project rule). Creation code is archived (`etl/archive/30_build_peer_groups.py` = trade-structure cosine k-means; human is hand-curated) — kept as **provenance**, not the happy path: re-clustering would renumber clusters and break the descriptor mapping.
+- **Opportunity retired (v1).** The former third method (`opportunity` = k-means on HS6 shares + a **2-point CAGR** + openness) was **retired in M3**: a 2-year CAGR is noise, mixed-scale k-means is a preprocessing artifact, and it estimated the same flawed quantity as the others (see `_finalization/trade-economics-challenge.md`). Its membership parquet stays on disk unused; its label rows are `status=retired`. The proper **supply × demand × ease-of-trade** replacement is **v2** (`_finalization/V2_BACKLOG.md`).
+- **Previously faked medians (now fixed):** `etl/03b` used to return `human = statistical × 0.85`, `opportunity = statistical × 1.15`, and an empty `geographic` stub — all gone; `03b` now computes the real per-cluster median above.
 - Legacy `data/ref/peer_groups.json` (V4, Benelux, Nordics, ASEAN…) is a pre-existing hand-made set, slated to retire.
 
 ---
 
 ## 4. Signals
 
-A signal = one (product, market, year) flagged as notable. Five types:
+A signal = one (product, market, year) flagged as notable. **Four** types (v1):
 
 | `type` | Canonical Czech label | Meaning |
 |---|---|---|
 | `Peer_gap_matching` | Benchmark (strukturální) | CZ below the trade-structure peer median |
 | `Peer_gap_human` | Benchmark (geografický) | CZ below the geographic peer median |
-| `Peer_gap_opportunity` | Benchmark (příležitostní) | CZ below the opportunity peer median |
 | `YoY_export_change` | Nárůst exportu (YoY) | Large year-on-year change in CZ exports |
 | `YoY_partner_share_change` | Navýšení podílu na importu | Large YoY change in the partner's share of CZ exports |
 
-> **[current] Label inconsistency to fix (M3/M5):** `SignalsList.jsx` uses *two different* Czech vocabularies for the same type — section headers say "Benchmark (statistický, pohled vpřed / současný)" while badges say "(příležitostní / strukturální)". The table above is the **canonical** set; unify the code to it. Dead label branches (`YoY_import_change`, `Peer_gap_below_median`) should be removed.
+> `Peer_gap_opportunity` was **retired in M3** along with the opportunity methodology (§3); its `labels.csv` rows are `status=retired`. The supply×demand replacement is v2.
+
+> **[current] Label inconsistency to fix (M5):** `SignalsList.jsx` uses *two different* Czech vocabularies for the same type — section headers say "Benchmark (statistický, pohled vpřed / současný)" while badges say "(příležitostní / strukturální)". `labels.csv` is the **canonical** set (M3 set the methodology + signal-type rows `ok`); M5 wires the UI to it. Dead label branches (`YoY_import_change`, `Peer_gap_below_median`) should be removed.
 
 ### Two-tier selection **[target]**
 - **Strong** signals meet disciplined thresholds (peer-gap ≥ 20%, YoY ≥ 30%, etc. — §9). Surface at most ~10 per country.
@@ -87,8 +95,8 @@ The names below are carried from the fact-base through the API to the UI. This s
 | `partner_share_in_cz_exports` | Partner's share of CZ's exports of this HS6 | fraction |
 | `YoY_export_change` | Relative YoY change of `export_cz_to_partner` | fraction |
 | `YoY_partner_share_change` | Relative YoY change of `partner_share_in_cz_exports` | fraction |
-| `delta_vs_peer` (×3 methods) | `podil_cz_na_importu − peer_median_share` (negative ⇒ under-penetration) | fraction |
-| `peer_median_share` (×3 methods) | Peer-group median of CZ-import share | fraction |
+| `delta_vs_peer` (×2 methods) | `podil_cz_na_importu − peer_median_share` (negative ⇒ under-penetration) | fraction |
+| `peer_median_share` (×2 methods) | Peer-group median of CZ-import share (median over the target's cluster peers; §3) | fraction |
 
 Dollars are scaled **kUSD → USD exactly once**, in `etl/01` (`TRADE_UNITS_SCALE`, default 1000) — the duplicate scale formerly in `etl/05` was removed in **M4a** (✓); `etl/05` now reshapes `metrics.parquet` instead of re-reading raw. Country codes are normalized through **one central module** (`country_ref`, backed by BACI's own committed code table `data/ref/baci_country_codes.csv`) — done in **M4a** (✓). The prior pycountry path silently dropped the ~6 BACI codes that deviate from ISO-3166 (**USA=842, France=251, Norway=579, Switzerland=757, India=699**, + the "Other Asia, nes" aggregate `S19`); now **zero dropped**.
 
@@ -97,13 +105,13 @@ That code table is the canonical **BACI ↔ ISO-3166 crosswalk** — it carries 
 ### Signal record (e.g. `/top_signals`)
 | Field | Meaning |
 |---|---|
-| `type` | one of the five signal types (§4) |
+| `type` | one of the four signal types (§4) |
 | `year`, `hs6`, `partner_iso3` | the (product, market, year) keys |
 | `value` | the underlying metric value (for peer-gap: CZ's `podil_cz_na_importu`) |
 | `intensity` | signal strength = `abs(delta_vs_peer)` for peer-gaps; ranking key |
 | `delta_vs_peer`, `peer_median` | the gap and the benchmark it's measured against |
 | `yoy` | YoY value (for YoY signal types; null otherwise) |
-| `method` | peer methodology id (`human`/`trade_structure`/`opportunity`) |
+| `method` | peer methodology id (`human`/`trade_structure`) |
 | `peer_countries`, `peer_count` | the peer group membership shown to the user |
 | `methodology` | embedded descriptor object: `methodology_name`, `methodology_description`, `peer_countries`, `country_count` — the text the app displays |
 
@@ -177,13 +185,13 @@ export TRADE_UNITS_SCALE=1000
 python etl/01_build_base_facts.py            # raw BACI → fact_base — only $-scale point; OUTER-join → all 226 importers (M4a ✓)
 python etl/02_compute_trade_metrics.py       # shares + YoY + prior-year/delta columns → metrics
 python etl/05_build_map_data.py              # reshape metrics → ui_shapes/map_rows (no re-scale; M4a ✓)
-# peer groups: recover/rebuild membership + descriptors, then real medians ×3 [M3]
-python etl/03b_compute_all_peer_medians.py
+python etl/03b_compute_all_peer_medians.py   # REAL peer medians ×2 methods (trade_structure + human; M3 ✓)
 python etl/04b_enrich_metrics_with_all_peers.py
 python etl/06b_generate_comprehensive_signals.py   # FULL set, no premature caps [target]
 # [target] final stage: emit data/serving/*.parquet ; one rebuild-all.command runs the whole chain with assertions [M4b]
 ```
 > **M4a verification:** double-click `_finalization/verify-M4a.command` — rebuilds 01→02→05 from raw and asserts all-country coverage (205→226), single dollar-scale point, zero dropped codes, and integrity (no bilateral exceeds the partner's import or CZ's world total).
+> **M3 verification:** double-click `_finalization/verify-M3.command` — rebuilds 01→02→03b→04b→06b and asserts two real methods only (opportunity retired), medians match an independent recompute (not the old ×0.85/×1.15 fakes), the two methods recommend genuinely different products per country (top-3 Jaccard ≈ 0.05), and the Czech descriptors are set.
 **[current]** there is no single orchestrator and several documented steps reference moved/archived scripts; `rebuild-all.command` (M4b) makes the chain reproducible. Refresh procedure: run the ETL locally → upload `data/serving/` as a Release asset → redeploy pulls it.
 
 ---
@@ -202,6 +210,8 @@ python etl/06b_generate_comprehensive_signals.py   # FULL set, no premature caps
 | `MAX_TOTAL` / `MAX_PER_TYPE` | 5000 / 2000 | ~10 surfaced (full set still computed) |
 
 `metric_labels` map field ids to UI tooltip text.
+
+> **M3 observation (fix in M4b):** with the relative-only `S1_REL_GAP_MIN` and no absolute floor, some peer-gap signals pass on a **near-zero peer median** (e.g. a small `human` cluster where every peer has ~0% CZ share → a 100% relative gap on a trivial absolute base). The real medians are correct; restoring the disciplined thresholds above (an **absolute** gap/market-size floor) in M4b filters these out.
 
 ---
 

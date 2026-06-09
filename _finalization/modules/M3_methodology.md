@@ -1,6 +1,8 @@
-# M3 — Methodology rebuild (3 real methods)
+# M3 — Methodology rebuild (real methods)
 
-**State:** ⬜ · **Depends:** M4a · Read with `../00_INDEX.md`. **Largest item.**
+**State:** ✅ done (branch `m3-methodology`, 2026-06-08) · **Depends:** M4a · Read with `../00_INDEX.md`.
+
+> **Outcome (v1):** shipped **2** real, distinct peer methods — `trade_structure` + `human`. `opportunity` **retired** (2-point CAGR fragile) → v2. Real leave-one-out cluster medians replace the 0.85/1.15 fakes; both descriptors Czech in `labels.csv`. The two methods recommend genuinely different products per country (top-3 overlap ≈ 0.05 Jaccard). Acceptance: `../verify-M3.command`. **Access filters deferred** to a dedicated design pass (Jan); threshold discipline → M4b. Full write-up in README §3/§4 + `../LOG.md` (2026-06-08).
 
 ## Purpose
 Replace the faked methodologies with three genuinely distinct, defensible peer benchmarks. Today: `human`=statistical×0.85, `opportunity`=statistical×1.15, `geographic`=empty stub. Build geographic from scratch; compute human and opportunity medians for real.
