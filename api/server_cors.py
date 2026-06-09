@@ -1,8 +1,34 @@
+import json
+import math
+
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 
-APP = FastAPI(title="trade-engine API")
+
+def _json_clean(o):
+    """Recursively make a payload JSON-safe: NaN/Inf -> null, numpy scalars -> py."""
+    if isinstance(o, float):
+        return None if (math.isnan(o) or math.isinf(o)) else o
+    if isinstance(o, dict):
+        return {k: _json_clean(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [_json_clean(v) for v in o]
+    if hasattr(o, "item"):  # numpy scalar
+        return _json_clean(o.item())
+    return o
+
+
+class SafeJSONResponse(JSONResponse):
+    """JSON responses where NaN/Inf serialize as null (Starlette's default
+    allow_nan=False otherwise 500s on the NaN cells in our signal data)."""
+    def render(self, content) -> bytes:
+        return json.dumps(_json_clean(content), ensure_ascii=False, allow_nan=False,
+                          separators=(",", ":")).encode("utf-8")
+
+
+APP = FastAPI(title="trade-engine API", default_response_class=SafeJSONResponse)
 
 # GZip compression (must be added first to wrap all responses)
 APP.add_middleware(
@@ -31,19 +57,13 @@ def health():
 @APP.get("/debug")
 def debug():
     import os
+    serving = "data/serving"
     return {
         "status": "debug",
         "working_directory": os.getcwd(),
-        "deployment_data_exists": os.path.exists("data/deployment"),
+        "serving_dir_exists": os.path.isdir(serving),
+        "serving_files": sorted(os.listdir(serving)) if os.path.isdir(serving) else [],
         "config_yaml_exists": os.path.exists("data/config.yaml"),
-        "deployment_config_exists": os.path.exists("data/deployment/config.yaml"),
-        "csv_files": {
-            "core_trade": os.path.exists("data/deployment/core_trade.csv"),
-            "signals": os.path.exists("data/deployment/signals_filtered.csv"),
-            "countries": os.path.exists("data/deployment/countries.csv")
-        },
-        "directory_contents": os.listdir(".") if os.path.exists(".") else [],
-        "data_directory_contents": os.listdir("data") if os.path.exists("data") else []
     }
 
 @APP.get("/")

@@ -27,9 +27,9 @@ class UnifiedSignalsService:
     """Unified service for serving pre-computed signals from comprehensive ETL"""
     
     def __init__(self):
-        # Paths to comprehensive data - ONLY these are permitted
-        self.comprehensive_signals_path = "data/out/signals_comprehensive.parquet"
-        self.comprehensive_metrics_path = "data/out/metrics_all_peers.parquet"
+        # M4b: read the single serving layer.
+        self.comprehensive_signals_path = settings.SIGNALS_PATH
+        self.comprehensive_metrics_path = settings.METRICS_PARQUET_PATH
         
         # Cache for loaded data
         self._signals_cache = None
@@ -88,13 +88,13 @@ class UnifiedSignalsService:
         if signals_df.empty:
             return []
         
-        # Map new method names to data method names for backward compatibility
+        # M3/M4b: signals.parquet carries method ids verbatim. Keep legacy alias.
         method_mapping = {
-            'trade_structure': 'kmeans_cosine_hs2_shares',  # New name -> Data name
-            'kmeans_cosine_hs2_shares': 'kmeans_cosine_hs2_shares',  # Legacy support
+            'trade_structure': 'trade_structure',
+            'kmeans_cosine_hs2_shares': 'trade_structure',  # legacy alias
             'human': 'human',
-            'opportunity': 'opportunity',
-            'default': 'default'
+            'yoy_export': 'yoy_export',
+            'yoy_share': 'yoy_share',
         }
         
         # Also map for peer group registry lookup (use UI method name)
@@ -194,9 +194,9 @@ class UnifiedSignalsService:
         
         # Reverse mapping from data method to UI method names
         data_to_ui_method = {
-            'kmeans_cosine_hs2_shares': 'trade_structure',
+            'trade_structure': 'trade_structure',
+            'kmeans_cosine_hs2_shares': 'trade_structure',  # legacy alias
             'human': 'human',
-            'opportunity': 'opportunity',
             'yoy_export': 'yoy_export',
             'yoy_share': 'yoy_share'
         }
@@ -267,14 +267,14 @@ class UnifiedSignalsService:
             if method_signals.empty:
                 continue
             
-            # Get the strongest signal for this methodology
-            strongest_signal = method_signals.iloc[0].to_dict()
-            
+            # Get the strongest signal for this methodology (NaN-safe for JSON)
+            strongest_signal = {k: to_json_safe(v) for k, v in method_signals.iloc[0].to_dict().items()}
+
             # Get peer countries and explanation
             peer_explanation = PeerGroupRegistry.get_human_readable_explanation(
                 iso3, method, strongest_signal.get('year', 2023)
             )
-            
+
             result['methodologies'][method] = {
                 'signal': strongest_signal,
                 'peer_countries': peer_explanation['peer_countries'],

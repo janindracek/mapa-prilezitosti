@@ -1,19 +1,9 @@
 import pandas as pd
 from fastapi import APIRouter
-import os
 
 from api.config import load_config
 from api.services import PeerGroupsService
-
-# Import both systems and choose based on available data
-try:
-    from api.data.deployment_loader import deployment_data
-    DEPLOYMENT_AVAILABLE = os.path.exists("data/deployment/core_trade.csv")
-except ImportError:
-    DEPLOYMENT_AVAILABLE = False
-
-if not DEPLOYMENT_AVAILABLE:
-    from api.data_access import get_metrics_cached, metrics_mtime_key
+from api.data_access import get_metrics_cached, metrics_mtime_key
 
 router = APIRouter()
 peer_groups_service = PeerGroupsService()
@@ -39,21 +29,17 @@ def controls_with_labels():
         "metric_labels": { [metric]: string }
       }
     """
-    # Use appropriate data source
-    if DEPLOYMENT_AVAILABLE:
-        df = deployment_data.core_trade
-    else:
-        df = get_metrics_cached(metrics_mtime_key())
-    
+    df = get_metrics_cached(metrics_mtime_key())
+
     countries = sorted(pd.Series(df["partner_iso3"]).dropna().unique().tolist())
     years = sorted(int(y) for y in pd.Series(df["year"]).dropna().unique().tolist())
 
+    # Live signal types (opportunity retired in M3).
     metrics = [
-        "YoY_export_change",        # S1
-        "YoY_partner_share_change", # S2
-        "Peer_gap_matching",        # 3b (current setup)
-        "Peer_gap_opportunity",     # 3a (opportunity-based)
-        "Peer_gap_human",           # 3c (human-defined)
+        "YoY_export_change",
+        "YoY_partner_share_change",
+        "Peer_gap_matching",
+        "Peer_gap_human",
     ]
 
     labels, _ = load_config()

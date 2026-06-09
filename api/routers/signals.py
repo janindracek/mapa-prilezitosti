@@ -2,7 +2,6 @@ from typing import Optional
 from fastapi import APIRouter
 
 from api.services.signals_unified import UnifiedSignalsService
-from api.data.deployment_loader import deployment_data
 
 router = APIRouter()
 signals_service = UnifiedSignalsService()
@@ -13,62 +12,16 @@ def signals(
     country: str | None = None,
     hs6: str | None = None,
     type: str | None = None,
-    method: str | None = None,
-    limit: int = 10,
-):
-    """
-    Unified signals endpoint using deployment data
-    Returns filtered signals from the deployment dataset
-    """
-    try:
-        # Use deployment data loader for consistent access
-        signals_data = deployment_data.get_signals_data(
-            country=country, 
-            hs6=hs6, 
-            type=type,
-            limit=limit
-        )
-        return signals_data
-        
-    except Exception as e:
-        print(f"Error in signals endpoint: {e}")
-        return []
-
-
-@router.get("/signals_unified") 
-def signals_unified(
-    country: str | None = None,
-    hs6: str | None = None,
-    type: str | None = None,
     method: str | None = "trade_structure",
     limit: int = 10,
 ):
-    """
-    Serve pre-computed signals from comprehensive ETL pipeline.
-    
-    Args:
-        country: Target country (defaults to all countries if not provided)
-        hs6: Filter by product code
-        type: Filter by signal type
-        method: Peer group methodology (geographic, statistical, human, opportunity)
-        limit: Maximum signals to return
-    """
-    # If no country specified, get signals for all methodologies
-    if not country:
-        return signals_service.get_signals_by_methodology(
-            method=method or "trade_structure", 
-            hs6=hs6, 
-            signal_type=type, 
-            limit=limit
-        )
-    
-    # Country-specific signals
+    """Filtered signals from the single serving layer (M4b)."""
     return signals_service.get_signals_by_methodology(
-        country=country,
+        country=country or "CZE",
         method=method or "trade_structure",
         hs6=hs6,
         signal_type=type,
-        limit=limit
+        limit=limit,
     )
 
 
@@ -87,16 +40,16 @@ def top_signals(country: str, year: Optional[int] = None, limit: int = 100):
     final_signals = []
     seen_signals = set()  # Track (partner_iso3, hs6, type) to prevent duplicates
     
-    # Allocate signals across all 5 methodologies (3 peer groups + 2 YoY)
-    peer_limit = max(1, limit // 5)  # Each peer methodology gets 1/5 of total
-    yoy_limit = max(1, (limit - peer_limit * 3) // 2)  # YoY methods split remaining
-    
+    # Allocate signals across the 4 live methodologies (2 peer groups + 2 YoY).
+    # opportunity retired in M3.
+    peer_limit = max(1, limit // 4)
+    yoy_limit = max(1, (limit - peer_limit * 2) // 2)
+
     methods_config = [
-        ("human", peer_limit),                           # Human peer gap signals
-        ("trade_structure", peer_limit),                 # Trade structure peer gap signals  
-        ("opportunity", peer_limit),                     # Opportunity peer gap signals
-        ("yoy_export", yoy_limit),                       # YoY export signals  
-        ("yoy_share", yoy_limit)                         # YoY share signals
+        ("human", peer_limit),            # Human peer-gap signals
+        ("trade_structure", peer_limit),  # Trade-structure peer-gap signals
+        ("yoy_export", yoy_limit),        # YoY export signals
+        ("yoy_share", yoy_limit),         # YoY share signals
     ]
     
     for method, method_limit in methods_config:

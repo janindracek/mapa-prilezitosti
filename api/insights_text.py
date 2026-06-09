@@ -32,8 +32,8 @@ _HS6_LABELS = _load_hs6_labels()
 
 def _fmt_usd(x: float) -> str:
     if x is None or pd.isna(x): return "n/a"
-    # x is in thousands USD, scale to actual USD for display formatting
-    actual_usd = x * 1000
+    # M4b: values are already in USD (scaled once in etl/01) — do NOT re-scale.
+    actual_usd = x
     if actual_usd >= 1e9: return f"{actual_usd/1e9:.1f} mld. USD"
     if actual_usd >= 1e6: return f"{actual_usd/1e6:.1f} mil. USD"
     return f"{actual_usd:,.0f} USD".replace(",", " ")
@@ -221,7 +221,7 @@ def extract_context(df: pd.DataFrame, importer_iso3: str, hs6: str, year: int, l
     cz_top = cz_to_markets.sort_values(ascending=False).head(3)
     cz_top_list = ", ".join([f"{k} ({v/cz_global_last:.0%})" if cz_global_last>0 else k for k,v in cz_top.items()]) or "—"
 
-    # Import YoY change
+    # Import YoY change (partner's total imports)
     imp_yoy_change = None
     if len(imp_ts) >= 2:
         current_imp = imp_ts.iloc[-1]  # Most recent year
@@ -229,7 +229,13 @@ def extract_context(df: pd.DataFrame, importer_iso3: str, hs6: str, year: int, l
         if prev_imp > 0:
             imp_yoy_change = (current_imp / prev_imp - 1) * 100  # As percentage
 
+    # CZ's OWN export YoY to this importer (distinct from import YoY above).
+    cz_export_yoy = None
+    if len(cz_to_imp_ts) >= 2 and cz_to_imp_ts.iloc[-2] > 0:
+        cz_export_yoy = (cz_to_imp_ts.iloc[-1] / cz_to_imp_ts.iloc[-2] - 1) * 100
+
     return {
+        "cz_export_yoy": cz_export_yoy,
         "importer_iso3": importer_iso3,
         "hs6": hs6_z,
         "year": year,
