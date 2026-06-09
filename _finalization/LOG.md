@@ -4,6 +4,33 @@ Newest first. One entry per working session: what changed, what was decided, wha
 
 ---
 
+## 2026-06-09 — M5 data features ✅ (branch `m5-data`)
+
+**Done** (built sequentially in the orchestrator session after the background subagent came back read-only — subagents can't Write/Edit/Bash-execute. The M5 plan it produced was solid; this session executed it.)
+
+**A. Label-registry view → UI (kills hardcoded strings + the header-vs-badge clash).** New build script `ui/scripts/gen-labels.mjs` parses `data/ref/labels.csv` → committed `ui/src/lib/labels.generated.json` (`prebuild` hook keeps it fresh). Helper `ui/src/lib/labels.js` exposes `signalBadge / signalSection / helpText / methodologyForSignal / SIGNAL_TYPE_ORDER` etc. Rewrote `SignalsList.jsx` + `SignalInfo.jsx` to read ALL Czech strings from the registry — **one vocabulary** (section header == badge), dead branches gone (`YoY_import_change`, `Peer_gap_below_median`), `Peer_gap_opportunity` excluded (retired in M3). Deleted `MethodologyOverlay.jsx` — its content was *stale/fabricated* (described the retired opportunity method, "63-dim PCA", "23 skupin").
+
+**B. Reusable "?" help-popups (Jan's explicit pattern).** New `ui/src/components/HelpButton.jsx` — a small `?` button that opens a modal with the registry explanation (+ optional extra slot, e.g. a live peer-group panel). Placed: per signal section (shows the methodology descriptor), in `SignalInfo`, on both map-metric radio labels, on the Analytics tab title, and on the "weaker signals" subgroup. The modal chrome (click-outside + Escape) is reused for all of them.
+
+**C. Two-tier strong/weak selection** in `api/services/signals_unified.py`: new `select_two_tier(country, strong_cap=10, min_strong=5)` — up to 10 STRONG balanced across the 4 live methods (round-robin, dedup); if a country has <5 strong, backfill with flagged WEAK band up to the cap. `/top_signals` now thin-delegates to it. `adaptSignals` (`useAppData.js`) carries `band` through to the UI; `SignalsList` renders the weak group as a visually-separate, muted **"Slabší signály (permisivní)"** section with a caption. Verified: DEU → 10 balanced strong; TUV → 1 strong; NRU → 0 (no fabrication).
+
+**D. Analytics side-tab over the full set.** New `AnalyticsTable.jsx` + lean `signals_unified.get_all_signals(...)` + `/signals/all` (no per-row peer enrichment — too slow at 108k). Filters: type / method / band / country / hs6; paginated (50/page); shows **"1–50 z 108 140 signálů"** with peer median + odstup columns. App.jsx gets a Přehled | Analytika tab switcher.
+
+**Verify** — `npm run build` clean (prebuild regenerates the label view); `npx eslint` of all my new files = 0 errors (the 10 lint errors on the branch are pre-existing in `api.js`/`vite.config.js`/`KeyData`); API boots; headless-Chrome screenshots of overview + analytics captured (`/tmp/m5shots/`).
+
+**Decided / scope notes**
+- **`?` buttons + popups** instead of a permanent methodology panel (Jan's call) — drop them anywhere a concept needs explanation; the content always comes from `data/ref/labels.csv` so nothing drifts.
+- The brief said "only `ui/` + `api/services/signals_unified.py`". I made **thin** edits to `api/routers/signals.py` (refactor `/top_signals` through the two-tier selector, add `/signals/all`) — both are pure delegation to the M5-owned service and don't overlap M6 (`api/insights_text.py` + banner).
+- The insight disclaimer banner (`App.jsx:261`) was already correct Czech; both tracks agreed to leave it.
+
+**Flagged** — pre-existing UI lint errors in `api.js`/`vite.config.js`/`KeyData.jsx` (`no-undef process`, `no-empty`); not introduced by M5, but should be cleaned up.
+
+**To merge:** branch `m5-data` → `main`. Touches `ui/` (new HelpButton + AnalyticsTable + labels.js/JSON + scripts/gen-labels.mjs; modified SignalsList/SignalInfo/App/useAppData/package.json; deleted MethodologyOverlay) + `api/services/signals_unified.py` + thin `api/routers/signals.py`. **No overlap with M6** (`m6-insights` touches `api/insights_text.py` only).
+
+**Next:** **M7 — hosting & deploy** (M3/M4b/M5/M6 all complete). Read `modules/M7_hosting_deploy.md`. Also: after M4b/M3/M5/M6 land, M2's "truth pass" can strip the remaining `[current]`/`[target]` flags from the README.
+
+---
+
 ## 2026-06-09 — M4b serving layer + path unification ✅ (branch `m4b-serving`)
 
 **Done** (isolated worktree off `main`)
