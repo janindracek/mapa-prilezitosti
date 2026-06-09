@@ -48,57 +48,59 @@ def _cagr(series: pd.Series) -> Optional[float]:
 
 
 
-def _llm_generate(prompt: str, model: str = None, temperature: float = 0.4, max_tokens: int = 1200) -> Optional[str]:
+_INSIGHTS_SYSTEM = (
+    "Jsi novinář FT pokrývající byznys a ekonomiku vybrané země. Specializuješ se a porozumění trhu vybraného produktu"
+    "Piš česky, poutavě a věcně. "
+    "Pracuj POUZE s poskytnutými daty a daty získanými z webu. Pokud nějaký údaj chybí nebo je nejistý, napiš 'neznámé' nebo 'málo dat'. "
+    "Výstup strukturovaně: "
+    "Uveď HS6 kód (a název, pokud je v promptu). "
+    "1) 'Kontext:' příběh vysvětlení kontextu země a produktu, "
+    "1) 'Potenciál pro export z Česka (nízký/střední/vysoký): …' + 2–3 konkrétní důvody, "
+    "2) 'Bariéry:' 2–4 stručné body, "
+    "3) 'To‑do (30–60 dní):' 3–5 akčních kroků "
+    "4) 'Poznámky k datům:' 1–2 věty o limitech dat. "
+    "Bez marketingových frází, profesionální insight. Maximálně ~3000 znaků mimo odrážky."
+)
+
+
+def _llm_generate(prompt: str, model: str = None, max_tokens: int = 1200) -> Optional[str]:
     """
-    Calls OpenAI's chat.completions endpoint using stdlib only.
-    Returns text or None on failure.
+    Calls Anthropic's Messages API (Claude) using stdlib only — no SDK dependency,
+    so the deploy stays light (M6). Returns text or None on failure.
     Controlled by env:
-      - OPENAI_API_KEY (required)
-      - INSIGHTS_MODEL (optional, default 'gpt-4o-mini' if not provided)
+      - ANTHROPIC_API_KEY (required; server-side only, never shipped to the client)
+      - INSIGHTS_MODEL (optional, default 'claude-opus-4-8')
+    Note: no `temperature` — it is rejected (400) on Opus 4.7/4.8.
     """
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         return None
-    model = model or os.environ.get("INSIGHTS_MODEL", "gpt-4o-mini")
+    model = model or os.environ.get("INSIGHTS_MODEL", "claude-opus-4-8")
     logging.info(f"Using model: {model}")
 
     body = {
         "model": model,
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "Jsi novinář FT pokrývající byznys a ekonomiku vybrané země. Specializuješ se a porozumění trhu vybraného produktu"
-                    "Piš česky, poutavě a věcně. "
-                    "Pracuj POUZE s poskytnutými daty a daty získanými z webu. Pokud nějaký údaj chybí nebo je nejistý, napiš 'neznámé' nebo 'málo dat'. "
-                    "Výstup strukturovaně: "
-                    "Uveď HS6 kód (a název, pokud je v promptu). "
-                    "1) 'Kontext:' příběh vysvětlení kontextu země a produktu, "
-                    "1) 'Potenciál pro export z Česka (nízký/střední/vysoký): …' + 2–3 konkrétní důvody, "
-                    "2) 'Bariéry:' 2–4 stručné body, "
-                    "3) 'To‑do (30–60 dní):' 3–5 akčních kroků "
-                    "4) 'Poznámky k datům:' 1–2 věty o limitech dat. "
-                    "Bez marketingových frází, profesionální insight. Maximálně ~3000 znaků mimo odrážky."
-                ),
-            },
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": temperature,
         "max_tokens": max_tokens,
+        "system": _INSIGHTS_SYSTEM,
+        "messages": [{"role": "user", "content": prompt}],
     }
     req = request.Request(
-        "https://api.openai.com/v1/chat/completions",
+        "https://api.anthropic.com/v1/messages",
         method="POST",
         data=json.dumps(body).encode("utf-8"),
         headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
+            "x-api-key": api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
         },
     )
     try:
-        with request.urlopen(req, timeout=30) as resp:
+        with request.urlopen(req, timeout=60) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
-        return payload.get("choices", [{}])[0].get("message", {}).get("content")
+        # Messages API returns content as a list of blocks; join the text blocks.
+        blocks = payload.get("content", [])
+        text = "".join(b.get("text", "") for b in blocks if b.get("type") == "text")
+        return text.strip() or None
     except (urlerror.URLError, TimeoutError, KeyError, json.JSONDecodeError) as e:
         import traceback
         print(f"LLM generation failed: {e}")
@@ -161,7 +163,10 @@ def extract_context(df: pd.DataFrame, importer_iso3: str, hs6: str, year: int, l
     imp_cagr = _cagr(imp_ts)
     imp_last = imp_ts.iloc[-1] if len(imp_ts) else None
 
-    # Top suppliers for the year
+    # Largest global import markets for this HS6 this year. (The serving layer
+    # has no third-country bilateral flows, so we can't compute "who supplies
+    # market X" — list the biggest import markets instead, no bogus % vs the
+    # selected market. Fixes the old "USA (747%)" output.)
     imp_year = df[df["year"] == year]
     supp = (
         imp_year.groupby("partner_iso3")["import_partner_total"]
@@ -169,7 +174,7 @@ def extract_context(df: pd.DataFrame, importer_iso3: str, hs6: str, year: int, l
         .sort_values(ascending=False)
         .head(3)
     )
-    top_suppliers = ", ".join([f"{k} ({v/imp_last:.0%})" if imp_last and imp_last>0 else k for k,v in supp.items()]) or "—"
+    top_suppliers = ", ".join(str(k) for k in supp.index.tolist()) or "—"
 
     # Czech exports globally and to importer
     cz_to_imp_ts = (
@@ -271,23 +276,25 @@ def generate_insights(parquet_path: str, importer_iso3: str, hs6: str, year: int
         if llm_text:
             return llm_text.strip()
 
-    # Fallback deterministic text (2 paragraphs)
+    # Fallback deterministic text — Czech (2 paragraphs), shown when the LLM is
+    # off or unavailable. None-guarded so missing metrics don't crash.
+    def _pct(x):
+        return "neznámé" if x is None else f"{x:.1%}"
+
     p1 = (
-        f"{importer_iso3} imported HS6 {context['hs6']} worth { _fmt_usd(context['imp_last']) } in {year}. "
-        f"Market growth rate: {context['imp_cagr']:.1%} p.a. over the last {lookback} years. "
-        f"Main suppliers: {context['top_suppliers']}."
+        f"{importer_iso3} dovezl HS6 {context['hs6']} v hodnotě { _fmt_usd(context['imp_last']) } v roce {year}. "
+        f"Tempo růstu trhu: {_pct(context['imp_cagr'])} ročně za posledních {lookback} let. "
+        f"Největší dovozní trhy pro tuto položku: {context['top_suppliers']}."
     )
     share_line = ""
     if context['pen_imp'] is not None and context['pen_med'] is not None:
         gap = context['pen_imp'] - context['pen_med']
-        if gap >= 0:
-            share_line = f" Czech market share in {importer_iso3} is {context['pen_imp']:.1%}, close to/above the median position elsewhere ({context['pen_med']:.1%})."
-        else:
-            share_line = f" Czech market share in {importer_iso3} is {context['pen_imp']:.1%}, below the median position elsewhere ({context['pen_med']:.1%})."
+        vztah = "blízko/nad mediánem srovnatelných trhů" if gap >= 0 else "pod mediánem srovnatelných trhů"
+        share_line = f" Podíl ČR na trhu {importer_iso3} je {_pct(context['pen_imp'])}, {vztah} ({_pct(context['pen_med'])})."
     p2 = (
-        f"Czech Republic exports HS6 {context['hs6']} globally worth { _fmt_usd(context['cz_global_last']) } in {year}; "
-        f"{ _fmt_usd(context['cz_to_imp_last']) } went to {importer_iso3}.{share_line} "
-        f"Top Czech markets for HS6 in {year}: {context['cz_top_list']}."
+        f"ČR vyváží HS6 {context['hs6']} celosvětově za { _fmt_usd(context['cz_global_last']) } v roce {year}; "
+        f"z toho { _fmt_usd(context['cz_to_imp_last']) } směřovalo do {importer_iso3}.{share_line} "
+        f"Top české trhy pro HS6 v roce {year}: {context['cz_top_list']}."
     )
     return "\n\n".join([p1, p2])
 
