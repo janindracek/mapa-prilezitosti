@@ -1,298 +1,140 @@
 #!/usr/bin/env python3
 """
-Compute comprehensive peer medians for ALL methodologies.
+ETL stage 03b — compute REAL peer-group medians (M3).
 
-This script generates peer medians for all available peer group methodologies:
-- Geographic/Default: Regional peer groups  
-- Statistical: K-means clustering by export similarity
-- Human: Expert-curated peer groups
-- Opportunity: Opportunity-based peer groups
+Two methods only (opportunity retired in M3 v1; the dead "geographic" stub is
+gone):
+  - trade_structure : k-means cosine on HS2 import-share profiles (frozen
+                      membership in peer_groups_hs2.parquet; descriptor in
+                      peer_groups_hs2_explained.csv)
+  - human           : expert-curated geographic/economic groups
+                      (peer_groups_human.parquet / peer_groups_human_explained.csv)
 
-Input: fact_base.parquet + peer_groups_*.parquet files
-Output: peer_medians_comprehensive.parquet
+The median is HONEST (no 0.85/1.15 scaling). For each (year, hs6, target market
+t) and method m:
+
+    peer_median_share = median over { p in cluster_m(t), p != t, p != CZE }
+                        of podil_cz_na_importu(year, hs6, p)
+
+i.e. the peer group is the TARGET market's cluster (leave-one-out on t; CZE
+excluded since CZ does not export to itself). Mirrors the established honest
+computation in etl/archive/27_compute_peer_medians.py, generalized to all years
+and with CZE removed from peer sets.
+
+Input : data/out/metrics.parquet (all-country coverage from M4a)
+        data/out/peer_groups_hs2.parquet, data/out/peer_groups_human.parquet
+Output: data/out/peer_medians_comprehensive.parquet
+        cols: year, hs6, partner_iso3, method, peer_median_share,
+              peer_countries (json), peer_count
 """
 
+import json
 import os
 import sys
-import json
-import pandas as pd
-import numpy as np
 from pathlib import Path
 
-# Country-code conversion comes from the single source of truth (country_ref),
-# which uses BACI's own code table. The old local pycountry reimplementation
-# dropped the same ~6 BACI codes that deviate from ISO-3166 (USA=842, etc.) —
-# including them silently from any opportunity peer group they belonged to.
+import pandas as pd
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import country_ref as cr
 
-# Constants
-FACT_BASE = "data/out/fact_base.parquet"
-PEER_GROUPS_STATISTICAL = "data/out/peer_groups_statistical.parquet"  
-PEER_GROUPS_HUMAN = "data/out/peer_groups_human.parquet"
-PEER_GROUPS_OPPORTUNITY = "data/out/peer_groups_opportunity.parquet"
+METRICS = "data/out/metrics.parquet"
 OUTPUT = "data/out/peer_medians_comprehensive.parquet"
 
+# (method_id, membership parquet). method_id must match etl/06b's
+# method->signal-type map and etl/04b's column suffixes.
+METHODS = [
+    ("trade_structure", "data/out/peer_groups_hs2.parquet"),
+    ("human", "data/out/peer_groups_human.parquet"),
+]
 
-def load_fact_base():
-    """Load fact base with market shares"""
-    print("Loading fact base...")
-    if not os.path.isfile(FACT_BASE):
-        raise FileNotFoundError(f"Missing {FACT_BASE}. Run etl/01_build_base_facts.py first.")
-    
-    df = pd.read_parquet(FACT_BASE)
-    
-    # Ensure we have market share column
-    if 'podil_cz_na_importu' not in df.columns:
-        print("Computing Czech market share (podil_cz_na_importu)...")
-        df['podil_cz_na_importu'] = np.where(
-            df['import_partner_total'] > 0,
-            df['export_cz_to_partner'] / df['import_partner_total'],
-            0.0
-        )
-    
+CZ = cr.CZ_ISO3  # "CZE"
+
+
+def load_metrics() -> pd.DataFrame:
+    if not os.path.isfile(METRICS):
+        raise FileNotFoundError(f"Missing {METRICS}. Run etl/01 + etl/02 first.")
+    df = pd.read_parquet(METRICS, columns=["year", "hs6", "partner_iso3", "podil_cz_na_importu"])
     return df
 
 
-def compute_geographic_peer_medians(fact_base):
-    """Skip geographic peer groups - NOT IMPLEMENTED YET"""
-    print("Skipping geographic peer medians (not implemented - would require proper peer group definitions)")
-    return pd.DataFrame()
+def load_membership(path: str) -> pd.DataFrame:
+    """iso3 -> cluster, with CZE removed (CZ is never its own peer market)."""
+    pg = pd.read_parquet(path)
+    if "iso3" not in pg.columns or "cluster" not in pg.columns:
+        raise ValueError(f"{path} must have iso3 + cluster columns; got {list(pg.columns)}")
+    m = pg[["iso3", "cluster"]].dropna().drop_duplicates()
+    m = m[m["iso3"] != CZ]
+    return m.reset_index(drop=True)
 
 
-def compute_statistical_peer_medians(fact_base):
-    """Use existing statistical peer medians file"""
-    print("Computing statistical peer medians...")
-    
-    if not os.path.isfile(PEER_GROUPS_STATISTICAL):
-        print(f"Missing: {PEER_GROUPS_STATISTICAL}. Skipping statistical peer groups.")
-        return pd.DataFrame()
-    
-    # Use existing computed peer medians to avoid performance issues
-    legacy_path = "data/out/peer_medians_statistical.parquet"
-    if os.path.isfile(legacy_path):
-        print(f"  Using existing peer_medians_statistical.parquet...")
-        legacy_df = pd.read_parquet(legacy_path)
-        
-        results = []
-        for _, row in legacy_df.iterrows():
-            results.append({
-                'year': int(row['year']),
-                'hs6': str(row['hs6']).zfill(6),
-                'partner_iso3': str(row['partner_iso3']),
-                'country_iso3': 'CZE',
-                'method': 'kmeans_cosine_hs2_shares',  # Standard method name
-                'cluster_id': 0,
-                'k_param': None,
-                'peer_median_share': float(row['median_peer_share']),
-                'peer_countries': json.dumps([]),
-                'peer_count': 0
-            })
-        
-        return pd.DataFrame(results)
-    
-    print(f"Missing: {legacy_path}. Cannot compute statistical peer groups.")
-    return pd.DataFrame()
+def compute_method(metrics: pd.DataFrame, membership: pd.DataFrame, method_id: str) -> pd.DataFrame:
+    # Peer membership shown to the user: each target's co-cluster members (excl. self).
+    members_by_cluster = membership.groupby("cluster")["iso3"].apply(list).to_dict()
+    cluster_of = dict(zip(membership["iso3"], membership["cluster"]))
 
+    # (target, peer) pairs within a cluster, excluding self → leave-one-out.
+    pairs = membership.merge(membership, on="cluster", suffixes=("_t", "_p"))
+    pairs = pairs[pairs["iso3_t"] != pairs["iso3_p"]][["iso3_t", "iso3_p"]]
 
-def compute_human_peer_medians(fact_base):
-    """Compute peer medians for human-curated peer groups"""
-    print("Computing human peer medians...")
-    
-    if not os.path.isfile(PEER_GROUPS_HUMAN):
-        print(f"Warning: {PEER_GROUPS_HUMAN} not found. Skipping human peer groups.")
-        return pd.DataFrame()
-    
-    try:
-        # Load human peer groups
-        peer_groups = pd.read_parquet(PEER_GROUPS_HUMAN)
-        
-        # Find Czech Republic's cluster - human groups use iso3 column
-        cze_rows = peer_groups[peer_groups['iso3'] == 'CZE']
-        
-        if cze_rows.empty:
-            print("  Warning: Czech Republic not found in human peer groups")
-            return pd.DataFrame()
-        
-        cze_cluster = cze_rows.iloc[0]['cluster']
-        print(f"  Found Czech Republic in cluster {cze_cluster}")
-        
-        # Get peer countries in the same cluster
-        peer_countries = peer_groups[peer_groups['cluster'] == cze_cluster]
-        
-        # Extract ISO3 codes directly
-        peer_iso3_codes = peer_countries['iso3'].unique().tolist()
-        
-        peer_iso3_codes = list(set(peer_iso3_codes))  # Remove duplicates
-        print(f"  Found {len(peer_iso3_codes)} peer countries for human methodology")
-        
-        if not peer_iso3_codes:
-            print("  Warning: No valid peer countries found for human methodology")
-            return pd.DataFrame()
-        
-        # Since we don't have bilateral trade data for all countries,
-        # we'll use the statistical peer medians as a baseline and apply
-        # a scaling factor based on human peer group characteristics
-        
-        # Load statistical peer medians for reference
-        if os.path.isfile("data/out/peer_medians_statistical.parquet"):
-            statistical_medians = pd.read_parquet("data/out/peer_medians_statistical.parquet")
-            
-            results = []
-            for _, row in statistical_medians.iterrows():
-                # Scale the statistical median based on human peer characteristics
-                # Human peer groups tend to be more geographically focused,
-                # so we adjust the median slightly
-                scaling_factor = 0.85  # Human peers may perform slightly lower due to geographic constraints
-                
-                results.append({
-                    'year': row['year'],
-                    'hs6': row['hs6'],
-                    'partner_iso3': row['partner_iso3'],
-                    'country_iso3': 'CZE',
-                    'method': 'human',
-                    'cluster_id': cze_cluster,
-                    'k_param': None,
-                    'peer_median_share': float(row['median_peer_share'] * scaling_factor),
-                    'peer_countries': json.dumps(peer_iso3_codes),
-                    'peer_count': len(peer_iso3_codes)
-                })
-            
-            return pd.DataFrame(results)
-        else:
-            print("  Warning: Statistical peer medians not found. Cannot generate human peer medians.")
-            return pd.DataFrame()
-        
-    except Exception as e:
-        print(f"  Error computing human peer medians: {e}")
-        return pd.DataFrame()
+    out_blocks = []
+    for year in sorted(metrics["year"].unique()):
+        cur = metrics[metrics["year"] == year][["hs6", "partner_iso3", "podil_cz_na_importu"]]
+        # attach each peer's CZ-share for every hs6, drop markets that didn't import it
+        ps = pairs.merge(cur, left_on="iso3_p", right_on="partner_iso3", how="inner")
+        ps = ps.dropna(subset=["podil_cz_na_importu"])
+        if ps.empty:
+            continue
+        med = (
+            ps.groupby(["iso3_t", "hs6"], as_index=False)["podil_cz_na_importu"]
+              .median()
+              .rename(columns={"iso3_t": "partner_iso3", "podil_cz_na_importu": "peer_median_share"})
+        )
+        med["year"] = int(year)
+        med["method"] = method_id
+        out_blocks.append(med)
 
+    if not out_blocks:
+        return pd.DataFrame(columns=["year", "hs6", "partner_iso3", "method",
+                                     "peer_median_share", "peer_countries", "peer_count"])
 
-def compute_opportunity_peer_medians(fact_base):
-    """Compute peer medians for opportunity-based peer groups"""  
-    print("Computing opportunity peer medians...")
-    
-    if not os.path.isfile(PEER_GROUPS_OPPORTUNITY):
-        print(f"Warning: {PEER_GROUPS_OPPORTUNITY} not found. Skipping opportunity peer groups.")
-        return pd.DataFrame()
-    
-    try:
-        # Load opportunity peer groups
-        peer_groups = pd.read_parquet(PEER_GROUPS_OPPORTUNITY)
-        
-        # Find Czech Republic's cluster - opportunity groups use BACI numeric codes.
-        cze_rows = peer_groups[peer_groups['iso'].astype(str) == str(cr.cz_numeric())]
-        
-        if cze_rows.empty:
-            print("  Warning: Czech Republic not found in opportunity peer groups")
-            return pd.DataFrame()
-        
-        cze_cluster = cze_rows.iloc[0]['cluster']
-        print(f"  Found Czech Republic in cluster {cze_cluster}")
-        
-        # Get peer countries in the same cluster
-        peer_countries = peer_groups[peer_groups['cluster'] == cze_cluster]
-        
-        # Convert numeric ISO codes to ISO3 format
-        peer_iso3_codes = []
-        for _, row in peer_countries.iterrows():
-            iso3 = cr.num_to_iso3(row['iso'])
-            if iso3:
-                peer_iso3_codes.append(iso3)
-        
-        peer_iso3_codes = list(set(peer_iso3_codes))  # Remove duplicates
-        print(f"  Found {len(peer_iso3_codes)} peer countries for opportunity methodology")
-        
-        if not peer_iso3_codes:
-            print("  Warning: No valid peer countries found for opportunity methodology")
-            return pd.DataFrame()
-        
-        # Use statistical peer medians as baseline and apply opportunity-based scaling
-        if os.path.isfile("data/out/peer_medians_statistical.parquet"):
-            statistical_medians = pd.read_parquet("data/out/peer_medians_statistical.parquet")
-            
-            results = []
-            for _, row in statistical_medians.iterrows():
-                # Scale the statistical median based on opportunity peer characteristics
-                # Opportunity peer groups focus on market potential and growth,
-                # so they may perform better in dynamic markets
-                scaling_factor = 1.15  # Opportunity peers may perform higher due to growth focus
-                
-                results.append({
-                    'year': row['year'],
-                    'hs6': row['hs6'],
-                    'partner_iso3': row['partner_iso3'],
-                    'country_iso3': 'CZE',
-                    'method': 'opportunity',
-                    'cluster_id': cze_cluster,
-                    'k_param': None,
-                    'peer_median_share': float(row['median_peer_share'] * scaling_factor),
-                    'peer_countries': json.dumps(peer_iso3_codes),
-                    'peer_count': len(peer_iso3_codes)
-                })
-            
-            return pd.DataFrame(results)
-        else:
-            print("  Warning: Statistical peer medians not found. Cannot generate opportunity peer medians.")
-            return pd.DataFrame()
-        
-    except Exception as e:
-        print(f"  Error computing opportunity peer medians: {e}")
-        return pd.DataFrame()
+    out = pd.concat(out_blocks, ignore_index=True)
+
+    # Peer list/count per target (constant across hs6): co-cluster members minus self.
+    peer_list = {
+        t: [c for c in members_by_cluster.get(cluster_of.get(t), []) if c != t]
+        for t in out["partner_iso3"].unique()
+    }
+    out["peer_countries"] = out["partner_iso3"].map(lambda t: json.dumps(peer_list.get(t, [])))
+    out["peer_count"] = out["partner_iso3"].map(lambda t: len(peer_list.get(t, [])))
+    return out[["year", "hs6", "partner_iso3", "method",
+                "peer_median_share", "peer_countries", "peer_count"]]
 
 
 def main():
-    """Main execution function"""
-    print("=== Computing Comprehensive Peer Medians ===")
-    
-    # Load fact base
-    fact_base = load_fact_base()
-    print(f"Loaded fact base: {len(fact_base):,} rows")
-    
-    # Compute peer medians for each methodology
-    all_medians = []
-    
-    # Geographic peer groups
-    geographic_medians = compute_geographic_peer_medians(fact_base)
-    if not geographic_medians.empty:
-        all_medians.append(geographic_medians)
-        print(f"Generated {len(geographic_medians):,} geographic peer medians")
-    
-    # Statistical peer groups  
-    statistical_medians = compute_statistical_peer_medians(fact_base)
-    if not statistical_medians.empty:
-        all_medians.append(statistical_medians)
-        print(f"Generated {len(statistical_medians):,} statistical peer medians")
-    
-    # Human peer groups
-    human_medians = compute_human_peer_medians(fact_base)
-    if not human_medians.empty:
-        all_medians.append(human_medians)
-        print(f"Generated {len(human_medians):,} human peer medians")
-    
-    # Opportunity peer groups
-    opportunity_medians = compute_opportunity_peer_medians(fact_base)
-    if not opportunity_medians.empty:
-        all_medians.append(opportunity_medians)
-        print(f"Generated {len(opportunity_medians):,} opportunity peer medians")
-    
-    # Combine all methodologies
-    if all_medians:
-        comprehensive_medians = pd.concat(all_medians, ignore_index=True)
-        
-        # Ensure output directory exists
-        Path(OUTPUT).parent.mkdir(parents=True, exist_ok=True)
-        
-        # Save comprehensive peer medians
-        comprehensive_medians.to_parquet(OUTPUT, index=False)
-        print(f"✅ Saved comprehensive peer medians: {len(comprehensive_medians):,} rows → {OUTPUT}")
-        
-        # Summary by methodology
-        summary = comprehensive_medians.groupby('method').size().to_dict()
-        for method, count in summary.items():
-            print(f"  {method}: {count:,} peer median calculations")
-    else:
-        print("⚠️ No peer medians generated. Check input data.")
+    print("=== M3: computing REAL peer medians (trade_structure + human) ===")
+    metrics = load_metrics()
+    print(f"Loaded metrics: {len(metrics):,} rows, {metrics['partner_iso3'].nunique()} importers")
+
+    blocks = []
+    for method_id, path in METHODS:
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f"Missing membership {path} for method {method_id}")
+        membership = load_membership(path)
+        n_clusters = membership["cluster"].nunique()
+        print(f"  {method_id}: {len(membership)} markets in {n_clusters} clusters (CZE excluded)")
+        blk = compute_method(metrics, membership, method_id)
+        print(f"    -> {len(blk):,} (year,hs6,target) medians")
+        blocks.append(blk)
+
+    out = pd.concat(blocks, ignore_index=True)
+    Path(OUTPUT).parent.mkdir(parents=True, exist_ok=True)
+    out.to_parquet(OUTPUT, index=False)
+
+    print(f"[PASS] Wrote {OUTPUT}: {len(out):,} rows")
+    for method_id, _ in METHODS:
+        sub = out[out["method"] == method_id]
+        print(f"  {method_id}: {len(sub):,} rows, median peer_count={int(sub['peer_count'].median()) if len(sub) else 0}")
 
 
 if __name__ == "__main__":

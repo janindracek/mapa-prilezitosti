@@ -80,7 +80,7 @@ flowchart TD
     PEERDEF["Peer-group definitions + 📝 descriptors<br/>(statistics · geographic · AI — see §②)"]
     BACI --> CORE["Core facts<br/>💲 ONE scale point<br/>⚙️ OUTER-join: all importers<br/>per (year,hs6,partner)"]
     CCS --> CORE
-    CORE --> MED["Peer medians ×3 methods<br/>✅ really computed"]
+    CORE --> MED["Peer medians ×2 methods<br/>✅ really computed (M3 ✓)"]
     PEERDEF --> MED
     CORE --> SIG["Signals (FULL, un-capped)<br/>strong + permissive bands"]
     MED --> SIG
@@ -101,7 +101,7 @@ flowchart TD
   <!-- ========================= PEER GROUPS ========================= -->
   <section id="peers">
     <h2>② How peer groups are created &amp; described <span class="tag det">the missing piece</span></h2>
-    <p class="note">Three independent ways to decide "which countries are comparable." Each produces a membership map AND a human-readable descriptor, from one shared document (the <code>*_explained</code> source). That same descriptor is what the app shows. Creation is a once-run step; results are frozen and versioned.</p>
+    <p class="note"><b>Two</b> independent ways to decide "which countries are comparable" (v1 — M3 ✓; the opportunity method was retired). Each produces a membership map AND a Czech descriptor, from one shared document (the <code>*_explained.csv</code> source) — that same descriptor is what the app shows. Membership is frozen/versioned. <b>The benchmark median is honest:</b> for a product and a target market <code>t</code>, it is the median of CZ's import-share over <code>t</code>'s cluster-peers (leave-one-out, CZE excluded) — no more ×0.85/×1.15 fakes.</p>
     <div class="mermaid">
 flowchart LR
   subgraph IN["Inputs"]
@@ -114,22 +114,22 @@ flowchart LR
   EXP --> M2["GEOGRAPHIC<br/>expert curation"]
   M1 --> C1["trade_structure<br/>10 clusters + 📝 name+explanation (EN)"]
   M2 --> C2["human / geo<br/>23 clusters + 📝 name+explanation (CZ)"]
-  M3 --> C3["opportunity<br/>10 clusters ❌ NO descriptor"]
+  M3 --> C3["opportunity<br/>❌ RETIRED in M3 v1 → v2"]
   C1 --> CONV["converters → parquet"]
   C2 --> CONV
   C3 --> CONV
   CONV --> USE1["→ peer medians (the benchmark)"]
   CONV --> USE2["→ 📝 app descriptors (why these peers)"]
     </div>
-    <h3>The three methods (verify)</h3>
+    <h3>The two methods (v1 — M3 ✓)</h3>
     <table>
       <tr><th>Method <code>(app id)</code></th><th>How groups formed</th><th>Inputs</th><th>#</th><th>Czechia's group</th><th>Descriptor</th></tr>
-      <tr><td><b>Trade-structure</b> <code>trade_structure</code> → signal <code>Peer_gap_matching</code></td><td>k-means cosine ("statistics")</td><td>HS2 import-share profiles</td><td>10</td><td>#4 "European core &amp; advanced Asia"</td><td class="ok">✅ name + EN prose</td></tr>
-      <tr><td><b>Geographic / human</b> <code>human</code> → <code>Peer_gap_human</code></td><td>expert hand-curation</td><td>geography + development level</td><td>23</td><td>#3 "Central &amp; Eastern Europe"</td><td class="ok">✅ name + CZ prose</td></tr>
-      <tr><td><b>Opportunity</b> <code>opportunity</code> → <code>Peer_gap_opportunity</code></td><td>k-means cosine ("AI-generated")</td><td>HS6 shares + CAGR (growth) + trade openness</td><td>10</td><td>numeric-coded (TBD)</td><td class="no">❌ none</td></tr>
+      <tr><td><b>Trade-structure</b> <code>trade_structure</code> → signal <code>Peer_gap_matching</code></td><td>k-means cosine ("statistics")</td><td>HS2 import-share profiles</td><td>10</td><td>#4 "Evropské jádro a vyspělá Asie"</td><td class="ok">✅ name + CZ prose (M3)</td></tr>
+      <tr><td><b>Geographic / human</b> <code>human</code> → <code>Peer_gap_human</code></td><td>expert hand-curation</td><td>geography + development level</td><td>23</td><td>#3 "Střední a východní Evropa"</td><td class="ok">✅ name + CZ prose</td></tr>
+      <tr style="opacity:.6"><td><b>Opportunity</b> <code>opportunity</code> → <code>Peer_gap_opportunity</code></td><td>k-means cosine ("AI-generated")</td><td>HS6 shares + CAGR (growth) + trade openness</td><td>10</td><td>—</td><td class="no">❌ RETIRED in M3 v1 → v2</td></tr>
       <tr style="background:#faf6ee"><td><i>Legacy</i> <code>peer_groups.json</code></td><td>hand-made named lists</td><td>Baltics, Benelux, V4, Nordics, ASEAN…</td><td>8</td><td>V4</td><td>names only — likely retire</td></tr>
     </table>
-    <p class="note" style="margin-top:12px"><b>Gaps to fix in M3:</b> opportunity has no name+explanation · ALL descriptors must be Czech prose (trade-structure is EN today) · the medians on top of these groups are currently faked (human ×0.85, opportunity ×1.15) · stray numeric codes still mixed into trade-structure membership · the k-means creation code is archived (must be recovered/re-run to be reproducible).</p>
+    <p class="note" style="margin-top:12px"><b>M3 done (✓):</b> both descriptors now Czech prose in <code>data/ref/labels.csv</code> (trade-structure translated EN→CZ; human already CZ) · medians are <b>real</b> — median of CZ-share over the target's cluster-peers, no ×0.85/×1.15 fakes (verified by independent recompute) · the two methods recommend <b>genuinely different products</b> for the same country (top-3 product overlap ≈ 0.05 Jaccard) · opportunity (2-point CAGR — statistically fragile) retired to v2 · trade-structure clustering code (<code>etl/archive/30_build_peer_groups.py</code>) kept as provenance, membership frozen. <b>Deferred:</b> access filters (distance/FTA/market-size) need a separate design pass; threshold discipline (absolute floors) is M4b.</p>
   </section>
 
   <!-- ========================= APP CONSUMPTION ========================= -->
@@ -166,16 +166,15 @@ flowchart LR
   <!-- ========================= CURRENT ========================= -->
   <section id="current">
     <h2>④ Current architecture <span class="tag cur">AS-IS · defective (contrast)</span></h2>
-    <p class="note">Pre-rebuild baseline, kept for contrast: dollars scaled twice, map from a different raw source, methodologies faked, signals triple-filtered, three inconsistent serving paths. <b>Note:</b> the 💲 double-scale, 🌍 country-code drops and ⚠️ LEFT-join (205) shown below are <b>resolved by M4a</b> — see the status table in §⑤; the rest remain for M3/M4b.</p>
+    <p class="note">Pre-rebuild baseline, kept for contrast: dollars scaled twice, map from a different raw source, methodologies faked, signals triple-filtered, three inconsistent serving paths. <b>Note:</b> the 💲 double-scale, 🌍 country-code drops and ⚠️ LEFT-join (205) are <b>resolved by M4a</b>; the ❌ faked medians (×0.85/×1.15/stub) and missing descriptors are <b>resolved by M3</b> (now real medians for trade_structure + human, opportunity retired) — see the status table in §⑤. Signal triple-filtering + the serving-path collapse remain for M4b.</p>
     <p class="note"><b>M5 frontend-chrome (Track B · done 2026-06-07):</b> world geometry now served from bundled <code>ui/public/world.json</code> (was a live <code>raw.githubusercontent.com</code> fetch — ministry-firewall risk); UI builds fresh on every deploy (stale <code>ui/dist/</code> untracked + <code>deploy/build.sh</code> always rebuilds) — fixes the blank-page on deploy; ECharts tree-shaken (~1.05 MB → 562 kB chunk); Czech map tooltips; invalid <code>projection</code> config + <code>SHOW_SKELETON</code> + dead code removed; console cleaned. Data-dependent M5 features (two-tier signals, analytics tab, label-registry wiring) still wait on M4b.</p>
     <div class="mermaid">
 flowchart TD
   BACI["BACI HS22 Y22/Y23 CSV — kUSD"]
   BACI --> E01["01 build_base_facts<br/>💲 SCALE #1 · 🌍 drops unmatched<br/>⚠️ LEFT-join: only 205 partners"]
   E01 --> FB[fact_base] --> E02[02 metrics] --> M[metrics.parquet]
-  PGS["trade_structure (k-means HS2) 📝EN"] --> E03["03/03b peer medians<br/>✅ statistical real<br/>❌ human = ×0.85<br/>❌ opportunity = ×1.15<br/>❌ geographic = stub<br/>🌍 iso3 vs numeric mismatch"]
+  PGS["trade_structure (k-means HS2) 📝EN"] --> E03["03/03b peer medians<br/>WAS: ✅ statistical real · ❌ human ×0.85<br/>❌ opportunity ×1.15 · ❌ geographic stub<br/>NOW (M3 ✓): real medians ×2,<br/>opportunity retired"]
   PGH["human/geo (curated) 📝CZ"] --> E03
-  PGO["opportunity (k-means HS6+CAGR) ❌no 📝"] --> E03
   E03 --> PM[peer_medians] --> E04[04/04b enrich] --> ME[metrics_all_peers]
   M --> E04
   BACI --> E05["05 build_map_data<br/>⚠️ reads RAW trade_by_pair<br/>💲 SCALE #2 DOUBLE"]
@@ -202,8 +201,8 @@ flowchart TD
       <tr><td>💲 Dollar scale</td><td><code>etl/01</code> only ✅</td><td><code>etl/01</code> only</td><td><span class="pill ok">M4a ✅</span></td></tr>
       <tr><td>🌍 Country codes</td><td><code>country_ref</code> + committed <b>BACI↔ISO-3166 crosswalk</b> (<code>data/ref/baci_country_codes.csv</code>, both numerics); 0 dropped ✅</td><td>one central module</td><td><span class="pill ok">M4a ✅</span></td></tr>
       <tr><td>⚙️ All-country coverage</td><td>OUTER-join → 226 importers ✅</td><td>OUTER-join → all importers</td><td><span class="pill ok">M4a ✅</span></td></tr>
-      <tr><td>✅ Peer medians ×3</td><td>1 real + 2 faked + 1 stub</td><td>3 genuinely computed</td><td><span class="pill c">M3</span></td></tr>
-      <tr><td>📝 Descriptors</td><td>2 of 3 (EN+CZ mix), opportunity missing</td><td>all 3 — <b>Czech prose</b>, from shared source</td><td><span class="pill c">M3</span></td></tr>
+      <tr><td>✅ Peer medians</td><td>real medians ×2 (trade_structure + human); opportunity retired ✅</td><td>genuinely computed</td><td><span class="pill ok">M3 ✅</span></td></tr>
+      <tr><td>📝 Descriptors</td><td>both Czech prose, in <code>labels.csv</code> (status ok) ✅</td><td>Czech prose, from shared source</td><td><span class="pill ok">M3 ✅</span></td></tr>
       <tr><td>🔻 Signal filtering</td><td>3× narrowing</td><td>full set served; tier at request time</td><td><span class="pill b">M4b</span></td></tr>
       <tr><td>🗺️ Map source</td><td>raw <code>trade_by_pair</code></td><td>slice of one core table</td><td><span class="pill b">M4b</span></td></tr>
       <tr><td>🔀 Serving paths</td><td>3 inconsistent</td><td>1 loader, 1 source</td><td><span class="pill c">M4b</span></td></tr>
@@ -234,7 +233,7 @@ flowchart TD
       <tr><th>concept</th><th>section_header</th><th>badge</th><th>short</th><th>full_description</th></tr>
       <tr><td><code>Peer_gap_matching</code></td><td>Benchmark (strukturální)</td><td>Benchmark (strukturální)</td><td>Strukturální</td><td>tooltip/prose</td></tr>
       <tr><td><code>Peer_gap_human</code></td><td>Benchmark (geografický)</td><td>Benchmark (geografický)</td><td>Geografický</td><td>peer descriptor (CZ)</td></tr>
-      <tr><td><code>Peer_gap_opportunity</code></td><td>Benchmark (příležitostní)</td><td>Benchmark (příležitostní)</td><td>Příležitostní</td><td>peer descriptor (CZ, M3 builds)</td></tr>
+      <tr style="opacity:.6"><td><code>Peer_gap_opportunity</code></td><td colspan="4"><i>RETIRED in M3 v1 — <code>labels.csv</code> status=retired; → v2</i></td></tr>
       <tr><td><code>cz_share_in_partner_import</code></td><td>—</td><td>—</td><td>Podíl ČR</td><td>Český podíl na importu</td></tr>
     </table>
     <p class="note" style="margin-top:8px"><b>Why it exists:</b> today the section header and badge for the same signal type literally disagree (header "statistický pohled současný/vpřed" vs badge "strukturální/příležitostní"). The registry is the fix.</p>

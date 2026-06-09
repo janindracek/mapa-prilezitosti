@@ -157,12 +157,6 @@ def generate_peer_gap_signals(df, methodologies, thresholds):
                     partner_data_ranked[cols['delta_col']].abs() * 0.7 +
                     (partner_data_ranked['import_partner_total'] / 1e9) * 0.3  # Volume factor
                 )
-            elif method == 'opportunity':  
-                # Opportunity methodology: prefer markets with growth potential
-                partner_data_ranked['methodology_rank'] = (
-                    partner_data_ranked[cols['delta_col']].abs() * 0.8 +
-                    partner_data_ranked['YoY_export_change'].fillna(0).abs() * 0.2  # Growth factor
-                )
             else:
                 # Trade structure: use pure peer gap (original logic)
                 partner_data_ranked['methodology_rank'] = partner_data_ranked[cols['delta_col']].abs()
@@ -184,13 +178,13 @@ def generate_peer_gap_signals(df, methodologies, thresholds):
                 except:
                     peer_countries = []
             
-            # Map method names to UI-expected signal types
+            # Map method names to UI-expected signal types (M3: 2 methods).
+            # opportunity retired in v1; kmeans_cosine_hs2_shares is the legacy
+            # alias for trade_structure.
             method_to_signal_type = {
                 'trade_structure': 'Peer_gap_matching',            # Trade structure peers (HS2 similarity)
                 'kmeans_cosine_hs2_shares': 'Peer_gap_matching',   # Legacy name mapping
                 'human': 'Peer_gap_human',                         # Geographic/human-curated peers
-                'opportunity': 'Peer_gap_opportunity',             # Opportunity-based peers
-                'default': 'Peer_gap_below_median'                 # Default methodology
             }
             signal_type = method_to_signal_type.get(method, f"Peer_gap_{method}")
             
