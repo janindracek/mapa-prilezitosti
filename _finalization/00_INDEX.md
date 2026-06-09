@@ -30,7 +30,7 @@ Each module is sized to fit one focused session. Do not chain modules in a singl
 | M3 | Methodology rebuild (real methods) | ✅ done (branch `m3-methodology`) | M4a | ✅ `verify-M3.command` green: 2 real distinct methods (top-3 product overlap ≈0.05 Jaccard), real medians (recompute-verified), opportunity retired→v2, Czech descriptors. Access filters deferred (design pass) |
 | M4b | Serving layer + path unification | ✅ done (branch `m4b-serving`) | M3 | ✅ `rebuild-all.command` green (9/9 serving==ETL checks); API boots on `data/serving/` only, every endpoint 200, `/map_v2`=226; 3 dead paths + `data/deployment/` deleted |
 | M5 | Frontend finalization | 🔄 chrome ✅ done · **data features 🔄 launched (own session, Track D, branch `m5-data`)** | M4b ✅ | two-tier display + analytics tab + methodology notes + labels.csv wiring; screenshots |
-| M6 | Insights re-engineering (OpenAI→Claude) | 🔄 launched (own session, Track C, branch `m6-insights`) | M2 ✅ | decision (rec: live Claude + fallback) + impl + banner correct + safe key |
+| M6 | Insights re-engineering (OpenAI→Claude) | ✅ impl done (branch `m6-insights`; live path needs `ANTHROPIC_API_KEY` to verify) | M2 ✅ | ✅ Claude Messages API (stdlib, no SDK), Czech fallback, key via env; fallback verified, live needs key |
 | M7 | Hosting & deploy | ⬜ last | M3, M4b, M5, M6 | live URL + smoke-test + redeploy runbook |
 
 State legend: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked.

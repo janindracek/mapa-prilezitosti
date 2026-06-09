@@ -4,6 +4,24 @@ Newest first. One entry per working session: what changed, what was decided, wha
 
 ---
 
+## 2026-06-09 — M6 insights → Claude ✅ impl (branch `m6-insights`)
+
+**Done** (implemented by the orchestrator session after the background subagent came back read-only — subagents can't Write/Edit/Bash-execute)
+- `api/insights_text._llm_generate` rewritten from OpenAI → **Anthropic Messages API** via stdlib `urllib` (no SDK dependency → Render stays light): `POST https://api.anthropic.com/v1/messages`, headers `x-api-key` + `anthropic-version: 2023-06-01`, the Czech system prompt moved to the top-level `system` field, response parsed from `content[].text` blocks. Model via `INSIGHTS_MODEL` (default `claude-opus-4-8`). **No `temperature`** (rejected on Opus 4.7/4.8). Confirmed model id + API shape via the `claude-api` skill.
+- Key handling: `ANTHROPIC_API_KEY` from env, **server-side only** (never shipped to the client). `INSIGHTS_USE_LLM` gating + the deterministic fallback unchanged in behavior.
+- **Fallback rewritten in Czech** (was English) + None-guarded (`_pct` helper) so missing metrics don't crash.
+- **Fixed the "USA (747%)" defect** in `extract_context`: the serving layer has no third-country bilateral flows, so "top suppliers to market X" is uncomputable — now lists the largest global import markets for the HS6 (no bogus % vs the selected market). Relabeled accordingly in the fallback + prompt.
+
+**Decided** — **live Claude call per request + deterministic fallback** (the recommended approach; full ETL precompute impractical at ~1.3M HS6×market combos). Hybrid precompute-of-surfaced-signals left as an optional latency/cost optimization.
+
+**Verified** — boots; no-key path returns clean **Czech** fallback text (and the M4b `_fmt_usd` USD fix holds: "12.7 mld. USD"). **The live Claude path needs an `ANTHROPIC_API_KEY` to verify end-to-end** — set it + `INSIGHTS_USE_LLM=1` and hit `/insights?importer=DEU&hs6=870323&year=2023`.
+
+**Scope note** — the **disclaimer banner** lives in `ui/src/App.jsx:261` (already correct Czech: "VAROVÁNÍ: obsah vygenerovaný automaticky skrz LLM…"). It's an M5-owned `ui/` file, so M6 left it untouched (no change needed) to avoid an App.jsx collision with the parallel M5 track.
+
+**To merge:** branch `m6-insights` → `main`. Touches only `api/insights_text.py` (+ this LOG + the M6 `00_INDEX` row). No `ui/` overlap with M5.
+
+---
+
 ## 2026-06-09 — M4b serving layer + path unification ✅ (branch `m4b-serving`)
 
 **Done** (isolated worktree off `main`)
