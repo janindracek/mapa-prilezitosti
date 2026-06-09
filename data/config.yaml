@@ -1,18 +1,19 @@
-# === Signal thresholds (used by ETL/41_signals_with_peer.py and others) ===
+# === Signal thresholds (M4b: disciplined floors restored; full set served) ===
+# The ETL (etl/06b) serves the FULL candidate set above these floors; the
+# strong/weak two-tier SELECTION happens at request time in the API (M5).
 thresholds:
-  # Minimum absolute export value (USD) for considering a YoY change - VERY PERMISSIVE
-  MIN_EXPORT_USD: 10000
-  # Minimum partner total imports (USD) for considering a peer-gap signal - VERY PERMISSIVE  
-  MIN_IMPORT_USD: 500000
-  # Peer gap: require at least this absolute gap vs peer median (in fraction points, 0.01 = 1pp) - VERY PERMISSIVE
-  S1_REL_GAP_MIN: 0.001
-  # YoY % threshold for absolute exports (0.05 = 5%) - VERY PERMISSIVE
-  S2_YOY_THRESHOLD: 0.05
-  # YoY % threshold for partner share inside CZ exports (0.05 = 5%) - VERY PERMISSIVE
-  S3_YOY_SHARE_THRESHOLD: 0.05
-  # Max signals returned in total and per type - GENERATE MANY MORE
-  MAX_TOTAL: 5000
-  MAX_PER_TYPE: 2000
+  # --- disciplined absolute floors (a signal must clear export OR import) ---
+  MIN_EXPORT_USD: 100000        # CZ export to the market for this HS6
+  MIN_IMPORT_USD: 5000000       # market's total import of this HS6
+  # --- peer-gap relative-gap tiers: (median - CZ_share)/median ---
+  S1_REL_GAP_MIN: 0.20          # STRONG peer-gap tier (band=strong)
+  S1_REL_GAP_WEAK: 0.10         # candidate floor — weak band lower bound (band=weak: 0.10–0.20)
+  # --- YoY tiers (strong only; no weak band) ---
+  S2_YOY_THRESHOLD: 0.30        # YoY export change
+  S3_YOY_SHARE_THRESHOLD: 0.20  # YoY partner-share change
+  # Caps moved to request time (API/M5). null = serve the full candidate set.
+  MAX_TOTAL: null
+  MAX_PER_TYPE: null
 
 # === Labels used by API /controls and UI tooltips ===
 metric_labels:

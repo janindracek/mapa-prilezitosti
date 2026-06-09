@@ -25,8 +25,8 @@ BACI raw ─► core facts ─► peer        data/serving/*.parquet   one loade
             medians ─► signals  ──►   (~60–150 MB)        ──►   (parquet at startup)
 ```
 
-- **[target]** The ETL's final stage emits a compact **serving layer** (`data/serving/*.parquet`, ~60–150 MB). The API reads **only** that, through a single loader. The ~1.5 GB raw/derived matrix never leaves the ETL stage. The serving artifact ships as a GitHub Release asset that the deploy downloads.
-- **[current]** The API auto-switches to a hand-built `data/deployment/` CSV subset when present, via a parallel loader; there are also two other inconsistent serving paths. This is being collapsed to the single serving layer in module **M4b**.
+- The ETL's final stage (`etl/07_build_serving.py`) emits a compact **serving layer** (`data/serving/*.parquet`, ~43 MB: `core_trade`, `signals`, `peer_groups`, `hs6_names`, `countries`). The API reads **only** that, through one loader (`api/data/serving.py` + the settings paths) — done in **M4b** (✓). The ~1.5 GB raw/derived matrix never leaves the ETL stage. The serving artifact ships as a GitHub Release asset that the deploy downloads (wired in M7).
+- **[was]** the API auto-switched to a hand-built `data/deployment/` CSV subset, plus two other inconsistent paths (a dead `api.shapes`, a `/signals_unified` second source). **M4b deleted all three**; `data/deployment/` is removed and the `import_partner_total_x/_y` collision is gone (the serving `core_trade` has one `import_partner_total`).
 
 Full annotated lineage (where dollars are scaled, where country codes convert, where signals are filtered): see `_finalization/architecture.html`.
 
@@ -132,9 +132,9 @@ That code table is the canonical **BACI ↔ ISO-3166 crosswalk** — it carries 
 | `cz_world_total` | CZ total world exports of the HS6 (USD) |
 | `median_peer_share` | peer benchmark share |
 | `import_yoy_change` | YoY change in the partner's imports |
-| `cz_delta_pct` | **[current bug]** duplicates `import_yoy_change`; should be CZ's own YoY delta |
+| `cz_delta_pct` | CZ's own export YoY % to the partner (M4b fixed: it used to duplicate `import_yoy_change`) |
 
-> **[current bug]** `median_peer_share` from `/insights_data` (0.0 observed) disagrees with `peer_median` from `/top_signals` (0.108) for the same DEU/870323 — two different sources. Unify against the single serving layer (M4b).
+> **[fixed M4b]** `median_peer_share` from `/insights_data` and `peer_median` from `/top_signals` now come from the **same serving layer**. `/insights_data` computes the median at request time over the importer's peer group (real, non-zero — e.g. 0.0157 for DEU/870323), consistent with the precomputed signal medians.
 
 ### Label registry — one concept, many surfaces
 
@@ -166,9 +166,9 @@ The same concept is shown with **different strings depending on where it appears
 | `GET /insights?importer&hs6&year` · `GET /insights_data?importer&hs6&year` | narrative text · KeyData tiles |
 | `GET /peer_groups/complete?country&peer_group&year` · `…/explanation?method&country&year` | peer membership · descriptor |
 
-**[current] To delete (M4b):** the `data/deployment` CSV branch, the dead `api.shapes` map path, the `/signals_unified` second source, and the undocumented `/bars_v2`.
+**[done M4b]** Deleted: the `data/deployment` CSV branch, the dead `api.shapes` map path, the `/signals_unified` second source, and the undocumented `/bars_v2`. Every endpoint now reads the one serving layer. `/map_v2` returns **all importers** (226) from `core_trade`; `/signals`, `/top_signals`, `/signals/*` all read `signals.parquet` (the full banded set), with request-time selection in the service.
 
-The AI insight text (`/insights`) runs on OpenAI in the non-deployment path and falls back to a deterministic Czech template otherwise; it carries a visible disclaimer banner. Moving to Claude (or precompute) is module **M6**.
+The AI insight text (`/insights`) runs on OpenAI and falls back to a deterministic Czech template; it carries a visible disclaimer banner. Moving to Claude (or precompute) is module **M6**.
 
 ---
 
@@ -187,31 +187,31 @@ python etl/02_compute_trade_metrics.py       # shares + YoY + prior-year/delta c
 python etl/05_build_map_data.py              # reshape metrics → ui_shapes/map_rows (no re-scale; M4a ✓)
 python etl/03b_compute_all_peer_medians.py   # REAL peer medians ×2 methods (trade_structure + human; M3 ✓)
 python etl/04b_enrich_metrics_with_all_peers.py
-python etl/06b_generate_comprehensive_signals.py   # FULL set, no premature caps [target]
-# [target] final stage: emit data/serving/*.parquet ; one rebuild-all.command runs the whole chain with assertions [M4b]
+python etl/06b_generate_comprehensive_signals.py   # FULL banded set above disciplined floors (M4b ✓)
+python etl/07_build_serving.py               # assemble data/serving/*.parquet — the single source (M4b ✓)
 ```
+Or just double-click **`rebuild-all.command`** (M4b ✓) — runs the whole chain raw→serving with loud per-stage assertions and a serving==ETL integrity report.
 > **M4a verification:** double-click `_finalization/verify-M4a.command` — rebuilds 01→02→05 from raw and asserts all-country coverage (205→226), single dollar-scale point, zero dropped codes, and integrity (no bilateral exceeds the partner's import or CZ's world total).
 > **M3 verification:** double-click `_finalization/verify-M3.command` — rebuilds 01→02→03b→04b→06b and asserts two real methods only (opportunity retired), medians match an independent recompute (not the old ×0.85/×1.15 fakes), the two methods recommend genuinely different products per country (top-3 Jaccard ≈ 0.05), and the Czech descriptors are set.
-**[current]** there is no single orchestrator and several documented steps reference moved/archived scripts; `rebuild-all.command` (M4b) makes the chain reproducible. Refresh procedure: run the ETL locally → upload `data/serving/` as a Release asset → redeploy pulls it.
+`rebuild-all.command` (M4b ✓) is the single orchestrator. Annual refresh: run it locally → upload `data/serving/` as a GitHub Release asset → redeploy pulls it (M7).
 
 ---
 
 ## 9. Config — `data/config.yaml`
 
-`thresholds` define the **strong** signal tier (two-tier model, §4). **[current]** they were loosened to "VERY PERMISSIVE" during a deployment scramble; **[target]** restore disciplined values:
+`thresholds` were restored to disciplined values in **M4b** (✓) — they had been loosened to "VERY PERMISSIVE" during a deployment scramble. `etl/06b` serves the **full candidate set above these floors**; each signal is tagged `band` = `strong`/`weak`, and the request-time strong/weak selection happens in the API (polished in M5).
 
-| key | current | target (strong tier) |
+| key | M4b value | meaning |
 |---|---|---|
-| `MIN_EXPORT_USD` | 10 000 | 100 000 |
-| `MIN_IMPORT_USD` | 500 000 | 5 000 000 |
-| `S1_REL_GAP_MIN` | 0.001 | 0.20 |
-| `S2_YOY_THRESHOLD` | 0.05 | 0.30 |
-| `S3_YOY_SHARE_THRESHOLD` | 0.05 | 0.20 |
-| `MAX_TOTAL` / `MAX_PER_TYPE` | 5000 / 2000 | ~10 surfaced (full set still computed) |
+| `MIN_EXPORT_USD` | 100 000 | a signal must clear a material CZ export (YoY) … |
+| `MIN_IMPORT_USD` | 5 000 000 | … or a material market import (peer-gap) |
+| `S1_REL_GAP_MIN` | 0.20 | **strong** peer-gap tier (`band=strong`) |
+| `S1_REL_GAP_WEAK` | 0.10 | candidate floor; `band=weak` is 0.10–0.20 |
+| `S2_YOY_THRESHOLD` | 0.30 | YoY export change |
+| `S3_YOY_SHARE_THRESHOLD` | 0.20 | YoY partner-share change |
+| `MAX_TOTAL` / `MAX_PER_TYPE` | null | caps moved to request time; ETL serves the full set |
 
-`metric_labels` map field ids to UI tooltip text.
-
-> **M3 observation (fix in M4b):** with the relative-only `S1_REL_GAP_MIN` and no absolute floor, some peer-gap signals pass on a **near-zero peer median** (e.g. a small `human` cluster where every peer has ~0% CZ share → a 100% relative gap on a trivial absolute base). The real medians are correct; restoring the disciplined thresholds above (an **absolute** gap/market-size floor) in M4b filters these out.
+`metric_labels` map field ids to UI tooltip text. The absolute floors fixed the M3-flagged near-zero-median noise (tiny `human` clusters where every peer had ~0% CZ share → 100% relative gap on a trivial base): peer-gap signals now also require a material export/import base.
 
 ---
 
@@ -244,5 +244,5 @@ To check the **production build** (not the dev server) end-to-end, double-click 
 | `ui/` | React + Vite + ECharts (`ui/dist/` is gitignored — built on deploy; geometry bundled at `ui/public/world.json`) |
 | `deploy/build.sh` | deploy build: installs deps, builds the UI fresh, validates the API |
 | `run-local.command` · `build-ui.command` | double-click: boot dev (API+UI) · build prod UI and serve it through the API |
-| `data/deployment/` | **[current]** hand-built serving subset (→ replaced by `data/serving/` in M4b) |
+| `data/serving/` | the single serving layer (M4b): `core_trade`, `signals`, `peer_groups`, `hs6_names`, `countries`. Gitignored; built by `rebuild-all.command` / `etl/07`; shipped as a Release asset (M7). |
 | `_finalization/` | the rebuild workspace: `00_INDEX.md`, `architecture.html`, module briefs, drift register, logs |

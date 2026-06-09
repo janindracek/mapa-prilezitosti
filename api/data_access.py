@@ -3,31 +3,20 @@ from functools import lru_cache
 from api.settings import settings
 
 
-# Cesty k parquetům
-METRICS_ENR = Path("data/out/metrics_enriched.parquet")
-METRICS_FALLBACK = Path("data/out/metrics.parquet")
+# M4b: the metrics frame IS the serving core_trade table.
+METRICS_PATH = Path(settings.METRICS_PARQUET_PATH)
+
 
 def metrics_mtime_key() -> tuple[float, float]:
-    """
-    Key for cache invalidation: (mtime of enriched, mtime of fallback).
-    Pokud soubor neexistuje, použije se 0.0.
-    """
-    m1 = METRICS_ENR.stat().st_mtime if METRICS_ENR.exists() else 0.0
-    m2 = METRICS_FALLBACK.stat().st_mtime if METRICS_FALLBACK.exists() else 0.0
-    return (m1, m2)
+    """Cache-invalidation key: mtime of the serving core_trade parquet."""
+    m = METRICS_PATH.stat().st_mtime if METRICS_PATH.exists() else 0.0
+    return (m, 0.0)
+
 
 @lru_cache(maxsize=8)
 def get_metrics_cached(_key: tuple[float, float]):
-    """
-    Cached wrapper around load_metrics(). Key is (mtime_enr, mtime_fallback),
-    so changing either parquet invalidates cache.
-    """
+    """Cached load of the serving core_trade fact table."""
     import pandas as pd
-    
-    # Load enriched metrics first, fallback to basic metrics
-    if METRICS_ENR.exists():
-        return pd.read_parquet(METRICS_ENR)
-    elif METRICS_FALLBACK.exists():
-        return pd.read_parquet(METRICS_FALLBACK)
-    else:
-        return pd.DataFrame()  # Empty DataFrame if no files exist
+    if METRICS_PATH.exists():
+        return pd.read_parquet(METRICS_PATH)
+    return pd.DataFrame()

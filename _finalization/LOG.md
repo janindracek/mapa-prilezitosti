@@ -4,6 +4,31 @@ Newest first. One entry per working session: what changed, what was decided, wha
 
 ---
 
+## 2026-06-09 — M4b serving layer + path unification ✅ (branch `m4b-serving`)
+
+**Done** (isolated worktree off `main`)
+- **One serving layer.** New `etl/07_build_serving.py` assembles `data/serving/` (~43 MB): `core_trade` (= metrics_all_peers: 226 importers, both years, real ×2 medians, **one** `import_partner_total`), `signals` (full banded set), `peer_groups` (membership + Czech descriptor per cluster, 2 methods), `hs6_names`, `countries` (EN + CZ). Built/refreshed by `rebuild-all.command`.
+- **Full signal set + disciplined floors.** `06b` rewritten: restored §9 floors (MIN_EXPORT 100k, MIN_IMPORT 5M, YoY 0.30/0.20), peer-gap candidate floor `S1_REL_GAP_WEAK=0.10` with a `band` (strong ≥0.20 / weak 0.10–0.20); removed the per-country/global caps (request-time selection = M5). Added a material-export floor to the YoY signals (killed the near-zero-base noise). Full set = **108,140** signals (was 4,989 capped).
+- **API → ONE loader.** New `api/data/serving.py` (map/products shaping + names). Settings collapsed to `data/serving/` only (no `DEPLOYMENT_AVAILABLE` branch). Repointed `data_access`, `signals_unified`, `loaders.load_peer_groups` (reads the combined serving peer_groups, filters by method). Rewrote routers map/signals/products/insights/metadata to the single source. **Deleted** `api/data/deployment_loader.py`, `api/shapes.py`, the `/signals_unified` endpoint, and `/bars_v2`. Deleted the committed `data/deployment/`.
+- **Bugs fixed:** `import_partner_total_x/_y` collision (gone by construction); `cz_delta_pct` now CZ's own export YoY (was a dup of import YoY); `median_peer_share` in `/insights_data` is real & non-zero (was 0.0, different source); `insights_text._fmt_usd` no longer ×1000 (data is USD, not kUSD). Added a NaN/numpy-safe default `JSONResponse` (Starlette's `allow_nan=False` was 500-ing on the NaN cells in YoY signals).
+- **Subtle catch:** `signals_unified` mapped `trade_structure → kmeans_cosine_hs2_shares` for filtering, but M3's `06b` emits `method='trade_structure'` → would have returned empty. Fixed the mapping.
+- **Descriptor completion:** translated the trade_structure per-cluster descriptors EN→CZ in `peer_groups_hs2_explained.csv` and removed the stray numeric codes (490/579/251/699/842/757 → country names) from its `countries` lists — finishing two items the architecture flagged.
+- **Verified by boot:** API boots on `data/serving/`, every endpoint returns 200. `/map_v2` = **226 countries**; `/top_signals DEU` balanced across the 4 live types (no opportunity); `/insights_data` tiles correct. `rebuild-all.command` green (9/9 integrity checks: serving==ETL, 226 coverage, single import col, full banded set, 2 methods, no opportunity, settings point only at data/serving, deployment gone).
+
+**Decided**
+- **`data/deployment/` deleted now; `data/serving/` gitignored** (Jan's call delegated). Reason: the deployment subset was a hand-built shortcut for the old deploy — keeping a stale committed copy invites the drift we're killing. The serving layer is machine-generated (rebuild-all) and ships as a Release asset in M7.
+- **core_trade drops the `peer_countries_*` JSON columns** (map/bars/insights don't need them; signals + peer_groups already carry memberships).
+
+**Flagged for M5** (Jan): **surface methodology notes/descriptors prominently in the dashboard** (the Czech descriptors now exist in `labels.csv` + serving `peer_groups`). Also pending M5: the strong/weak two-tier *display* + analytics tab (data is ready — `band` column), and wiring the UI to `labels.csv`. **Known duplication** (M5 cleanup): `api/peer_group_registry.py` carries its own hardcoded Czech cluster descriptions that don't perfectly match `*_explained.csv`/`labels.csv` — unify when the UI consumes the registry.
+
+**Env/workspace:** worktree `/Users/janindracek/Documents/mapa-m4b`; symlinked the gitignored BACI input dirs + `.venv`. Rebuilt the whole chain. API smoke-tested with `INSIGHTS_USE_LLM=0`.
+
+**To merge:** branch `m4b-serving` → `main`. Touches `etl/06b,07`, `data/config.yaml`, `data/out/peer_groups_hs2_explained.csv`, the `api/` serving rewrite, `rebuild-all.command`, `.gitignore`, deletes `data/deployment/` + `api/data/deployment_loader.py` + `api/shapes.py`, docs. **No `ui/` files** — but note `ui/` will consume the new shapes in M5.
+
+**Next:** M5 (data features) — two-tier display, analytics tab, label-registry + methodology-notes wiring. Or M6 (insights OpenAI→Claude). Read `00_INDEX.md`.
+
+---
+
 ## 2026-06-08 — M3 methodology rebuild ✅ (branch `m3-methodology`)
 
 **Done** (isolated worktree off `main`, after M4a merged)

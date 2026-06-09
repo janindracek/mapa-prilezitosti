@@ -39,27 +39,28 @@ def load_hs6_names() -> Dict[str, str]:
 
 
 def load_peer_groups(peer_type: str, year: int, country_iso3: str) -> Optional[pd.DataFrame]:
-    """Load peer group data based on type"""
-    
-    # Choose data source based on peer group type
-    peer_type = peer_type.strip().lower()
-    if peer_type == "human":
-        path = settings.PEER_GROUPS_HUMAN_PATH
-    elif peer_type == "opportunity":
-        path = settings.PEER_GROUPS_OPPORTUNITY_PATH
-    elif peer_type == "trade_structure":
-        path = settings.PEER_GROUPS_HS2_PATH
-    else:
-        path = settings.PEER_GROUPS_STATISTICAL_PATH
-    
+    """Load peer-group membership for a method from the single serving file.
+
+    M4b: all methods live in data/serving/peer_groups.parquet (columns:
+    method, iso3, cluster, cluster_name, explanation). v1 ships two methods —
+    trade_structure + human (opportunity retired in M3)."""
+    method = peer_type.strip().lower()
+    method = {"kmeans_cosine_hs2_shares": "trade_structure",
+              "statistical": "trade_structure",
+              "default": "trade_structure"}.get(method, method)
+    if method not in ("trade_structure", "human"):
+        return None
+
+    path = settings.PEER_GROUPS_PATH
     if not os.path.isfile(path):
         return None
-    
+
     try:
         df = pd.read_parquet(path)
+        df = df[df["method"] == method]
         if df.empty:
             return None
-        
+
         # All peer group data now uses consistent iso3 column with alpha-3 codes
         iso_col = 'iso3'
         
