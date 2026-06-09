@@ -6,6 +6,7 @@ import ProductBarChart from "./components/ProductBarChart.jsx";
 import KeyData from "./components/KeyData.jsx";
 import SignalInfo from "./components/SignalInfo.jsx";
 import HelpButton from "./components/HelpButton.jsx";
+import AnalyticsTable from "./components/AnalyticsTable.jsx";
 
 // Hooks and utilities
 import { useAppData } from "./hooks/useAppData.js";
@@ -37,6 +38,7 @@ export default function App() {
   } = useSignalHandling(adaptSignals);
   
   const [mapMetric, setMapMetric] = useState('cz_share_in_partner_import');
+  const [view, setView] = useState('overview'); // 'overview' | 'analytics'
   
   const insights = useInsights(selectedId, selectedHS6, panelVM, state, signals);
   
@@ -141,6 +143,30 @@ export default function App() {
         Obchodní příležitosti Česka
       </h1>
 
+      {/* Tabs: overview dashboard vs the full-set analytics table (M5) */}
+      <div style={{ display: "flex", gap: 8, borderBottom: "2px solid #e9ecef", marginBottom: 4 }}>
+        {[["overview", "Přehled"], ["analytics", "Analytika"]].map(([v, lbl]) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            style={{
+              padding: "8px 18px", fontSize: 15, fontWeight: 600, cursor: "pointer",
+              border: "none", background: "transparent",
+              color: view === v ? "#008C00" : "#666",
+              borderBottom: view === v ? "3px solid #008C00" : "3px solid transparent",
+            }}
+          >
+            {lbl}
+          </button>
+        ))}
+      </div>
+
+      {view === 'analytics' && (
+        <AnalyticsTable referenceData={referenceData} />
+      )}
+
+      {view === 'overview' && (
+      <>
       <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 0, marginBottom: 16 }}>
           {/* Left column skeleton */}
           <div style={{ display: "grid", gap: 12, gridTemplateRows: "auto 1fr auto", paddingRight: 8 }}>
@@ -269,6 +295,8 @@ export default function App() {
           <div style={{ marginTop: 8, color: "#a00", fontSize: 12 }}>Error: {String(insights.error)}</div>
         )}
       </div>
+      </>
+      )}
     </div>
   );
 }
