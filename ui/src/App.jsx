@@ -5,6 +5,7 @@ import WorldMap from "./components/WorldMap.jsx";
 import ProductBarChart from "./components/ProductBarChart.jsx";
 import KeyData from "./components/KeyData.jsx";
 import SignalInfo from "./components/SignalInfo.jsx";
+import HelpButton from "./components/HelpButton.jsx";
 
 // Hooks and utilities
 import { useAppData } from "./hooks/useAppData.js";
@@ -228,6 +229,7 @@ export default function App() {
                       onChange={(e) => setMapMetric(e.target.value)}
                     />
                     Český podíl na importu země (%)
+                    <HelpButton id="cz_share_in_partner_import" size={15} />
                   </label>
                   <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 14 }}>
                     <input
@@ -237,6 +239,7 @@ export default function App() {
                       onChange={(e) => setMapMetric(e.target.value)}
                     />
                     Celková hodnota českého exportu do země (USD, 2023)
+                    <HelpButton id="export_value_usd" size={15} />
                   </label>
                 </div>
               </div>

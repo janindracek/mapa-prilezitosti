@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "gen:labels": "node scripts/gen-labels.mjs",
     "dev": "vite",
+    "prebuild": "npm run gen:labels",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
