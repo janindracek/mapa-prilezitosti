@@ -44,7 +44,10 @@ fi
 # that name (the `#label` suffix to `gh release` sets a label, not the filename).
 WORKDIR="$(mktemp -d -t serving-release.XXXXXX)"
 TARBALL="$WORKDIR/$ASSET"
-tar -czf "$TARBALL" -C "$SERVING" "${REQUIRED[@]}"
+# COPYFILE_DISABLE=1 stops macOS bsdtar from embedding AppleDouble `._*` xattr
+# sidecar files (the parquets carry an extended attr). Without it the tarball
+# ships junk `._core_trade.parquet` etc. that litter data/serving/ on deploy.
+COPYFILE_DISABLE=1 tar -czf "$TARBALL" -C "$SERVING" "${REQUIRED[@]}"
 SIZE=$(du -h "$TARBALL" | cut -f1)
 echo "  packaged ${#REQUIRED[@]} parquets → $ASSET ($SIZE)"
 

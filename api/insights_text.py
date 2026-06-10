@@ -261,11 +261,16 @@ def generate_insights(parquet_path: str, importer_iso3: str, hs6: str, year: int
     Deterministic or LLM text for INSIGHTS (2–3 paragraphs) from aggregated metrics parquet.
     Expected columns: year, partner_iso3, hs6, import_partner_total, export_cz_to_partner, export_cz_total_for_hs6
     """
-    # Load aggregated metrics parquet (simulate cached call)
+    # Load aggregated metrics parquet (simulate cached call). Push the hs6 filter
+    # down to the parquet read so we materialize only this product's ~few-thousand
+    # rows, not the full 1.78M-row table — extract_context filters by hs6 first
+    # anyway, so the result is identical. Without pushdown, reading the object
+    # string columns over all rows spiked RSS ~+114 MB per call (toward the
+    # 512 MB hosting cap). Identical output, a fraction of the memory.
     df = pd.read_parquet(parquet_path, columns=[
         "year", "partner_iso3", "hs6",
         "import_partner_total", "export_cz_to_partner", "export_cz_total_for_hs6"
-    ])
+    ], filters=[("hs6", "==", str(hs6).zfill(6))])
 
     context = extract_context(df, importer_iso3, hs6, year, lookback)
 

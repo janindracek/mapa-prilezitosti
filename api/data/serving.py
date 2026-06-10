@@ -19,6 +19,17 @@ _MAP_METRIC = {
     "export_value_usd": "export_cz_to_partner",
 }
 
+# The map/product shaping below only ever touches these 5 of core_trade's 19
+# columns. Reading just these, with the pyarrow dtype backend (compact string
+# storage), keeps the single resident copy ~66 MB AND — critically — keeps the
+# READ-TIME peak low: the default object-string read explodes the two
+# high-cardinality string columns to ~190 MB transient, inflating the RSS
+# high-water mark past the 512 MB hosting cap. The pyarrow backend never
+# materializes Python str objects, so peak RSS stays ~halved. Loading the full
+# 19-col object frame was the cause of the /map_v2 OOM 502s. Output is identical
+# to the float64 path (pyarrow doubles are full precision).
+_CORE_COLS = ["year", "hs6", "partner_iso3", "podil_cz_na_importu", "export_cz_to_partner"]
+
 
 class ServingDataLoader:
     def __init__(self):
@@ -30,7 +41,10 @@ class ServingDataLoader:
     def core_trade(self) -> pd.DataFrame:
         if self._core is None:
             p = settings.CORE_TRADE_PATH
-            self._core = pd.read_parquet(p) if os.path.isfile(p) else pd.DataFrame()
+            if os.path.isfile(p):
+                self._core = pd.read_parquet(p, columns=_CORE_COLS, dtype_backend="pyarrow")
+            else:
+                self._core = pd.DataFrame()
         return self._core
 
     @lru_cache(maxsize=1)
