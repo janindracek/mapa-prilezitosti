@@ -193,7 +193,7 @@ python etl/07_build_serving.py               # assemble data/serving/*.parquet �
 Or just double-click **`rebuild-all.command`** (M4b ✓) — runs the whole chain raw→serving with loud per-stage assertions and a serving==ETL integrity report.
 > **M4a verification:** double-click `_finalization/verify-M4a.command` — rebuilds 01→02→05 from raw and asserts all-country coverage (205→226), single dollar-scale point, zero dropped codes, and integrity (no bilateral exceeds the partner's import or CZ's world total).
 > **M3 verification:** double-click `_finalization/verify-M3.command` — rebuilds 01→02→03b→04b→06b and asserts two real methods only (opportunity retired), medians match an independent recompute (not the old ×0.85/×1.15 fakes), the two methods recommend genuinely different products per country (top-3 Jaccard ≈ 0.05), and the Czech descriptors are set.
-`rebuild-all.command` (M4b ✓) is the single orchestrator. Annual refresh: run it locally → upload `data/serving/` as a GitHub Release asset → redeploy pulls it (M7).
+`rebuild-all.command` (M4b ✓) is the single orchestrator. **Annual refresh** (M7 ✓): run it locally → `bash deploy/release-serving.sh` packages `data/serving/` as a GitHub Release asset (`serving.tar.gz`, marked *latest*) → a redeploy's `deploy/build.sh` downloads it. Full step-by-step (refresh, redeploy, first-time hosting, smoke-test, insights, troubleshooting): **`_finalization/RUNBOOK.md`**.
 
 ---
 
@@ -242,7 +242,10 @@ To check the **production build** (not the dev server) end-to-end, double-click 
 | `etl/` | the pipeline (current happy path: `01, 02, 03b, 04b, 05, 06b`; `archive/` = legacy) |
 | `api/` | FastAPI: `server_full.py` (entry), `routers/`, `services/`, `data/`, `settings/` |
 | `ui/` | React + Vite + ECharts (`ui/dist/` is gitignored — built on deploy; geometry bundled at `ui/public/world.json`) |
-| `deploy/build.sh` | deploy build: installs deps, builds the UI fresh, validates the API |
+| `deploy/build.sh` | deploy build (M7): installs deps, **downloads the serving layer from the latest GitHub Release**, builds the UI fresh, validates the API |
+| `deploy/release-serving.sh` | packages `data/serving/` → GitHub Release asset `serving.tar.gz` (marked *latest*) for the deploy to pull (M7) |
+| `render.yaml` | Render service config (M7): plan, Python 3.12, build/start commands, `/health` check, `ANTHROPIC_API_KEY` secret slot |
 | `run-local.command` · `build-ui.command` | double-click: boot dev (API+UI) · build prod UI and serve it through the API |
+| `_finalization/verify-deploy.command` · `RUNBOOK.md` | smoke-test a live URL (7 checks) · hosting/redeploy/annual-refresh operational guide (M7) |
 | `data/serving/` | the single serving layer (M4b): `core_trade`, `signals`, `peer_groups`, `hs6_names`, `countries`. Gitignored; built by `rebuild-all.command` / `etl/07`; shipped as a Release asset (M7). |
 | `_finalization/` | the rebuild workspace: `00_INDEX.md`, `architecture.html`, module briefs, drift register, logs |

@@ -66,6 +66,7 @@ def debug():
         "config_yaml_exists": os.path.exists("data/config.yaml"),
     }
 
-@APP.get("/")
-def root():
-    return {"status": "ok"}
+# NOTE: no `/` route here on purpose. server_full.py serves the built SPA
+# (ui/dist/index.html) at `/` when present. A root route registered here would
+# be matched first and shadow the SPA, serving JSON instead of the dashboard.
+# Health checks use `/health`.

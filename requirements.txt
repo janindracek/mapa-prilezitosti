@@ -1,7 +1,9 @@
-# Production-safe dependencies for Render deployment
+# Production-safe dependencies for Render deployment.
+# Pinned for reproducible deploys on Python 3.12 (see render.yaml).
 pandas>=2.0,<3.0
-pyarrow>=18.0.0,<22.0.0  # Use latest version with Python 3.13 support
+pyarrow==21.0.0          # cp312 manylinux wheel exists — no source build on Render
 fastapi>=0.104.0,<1.0
 uvicorn[standard]>=0.24.0,<1.0
 pycountry>=22.0,<24.0
 pyyaml>=6.0,<7.0
+python-dotenv>=1.0,<2.0  # api/server_full.py loads .env at startup

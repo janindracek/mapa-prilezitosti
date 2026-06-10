@@ -2,11 +2,24 @@ services:
   - type: web
     name: mapa-prilezitosti
     env: python
+    # Free (512 MB) to verify the deploy works end-to-end. The serving layer is
+    # ~43 MB on disk and steady-state RSS lands ~250–400 MB, so Free is tight and
+    # sleeps after 15 min idle (≈30 s cold start). Bump to `starter` once verified
+    # for no-sleep + headroom.
     plan: free
     buildCommand: ./deploy/build.sh
     startCommand: uvicorn api.server_full:app --host 0.0.0.0 --port $PORT
+    # `/` serves the SPA; use the JSON health route for liveness checks.
+    healthCheckPath: /health
     envVars:
+      # Pin to 3.12 — pyarrow 21 ships a cp312 manylinux wheel (no source build).
       - key: PYTHON_VERSION
-        value: "3.12"
+        value: "3.12.7"
       - key: TRADE_UNITS_SCALE
         value: "1000"
+      # Live Claude insights (M6). Leave unset for the first key-less deploy:
+      # with no key the insight box falls back to deterministic Czech text with
+      # no network call (api/insights_text.py). Set this in the Render dashboard
+      # (Environment → Secret) to enable the AI path — never commit the key.
+      - key: ANTHROPIC_API_KEY
+        sync: false

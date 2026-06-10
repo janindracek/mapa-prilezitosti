@@ -4,6 +4,32 @@ Newest first. One entry per working session: what changed, what was decided, wha
 
 ---
 
+## 2026-06-10 — M7 hosting & deploy ✅ machinery (branch `m7-hosting`)
+
+**Substrate decided (with Jan): FastAPI single service on Render.** One process serves the API *and* the built SPA (`server_full.py` mounts `ui/dist/` at `/`) — no frontend/backend split. DuckDB-WASM and "hybrid preview→full" rejected for v1: WASM means rewriting every router as client queries (out of scope, and forecloses nothing — same parquet can go WASM in v2); hybrid collapses to "single FastAPI service" anyway. Picked the substrate that already runs locally.
+
+**Decided (Jan):** start on **Free** to prove it works, then bump to **Starter** ($7, no sleep). **Insights:** AI-driven is the goal; first deploy ships key-less (fallback) to verify infra — finalizing the AI field (incl. a transparent "AI nedostupné" failure notice instead of restating the dashboard) is the **one deferred follow-up**. **Domain:** default `*.onrender.com` until verified.
+
+**Built (all proven locally end-to-end):**
+- **Release-asset flow.** `deploy/release-serving.sh` packages `data/serving/` (5 parquets, ~39 MB gz) → GitHub Release `serving-YYYY-MM-DD`, asset `serving.tar.gz`, marked `--latest`; idempotent per day (clobbers). `deploy/build.sh` rewritten: resolves the asset via the **GitHub API** (immediately consistent; the `latest/download` redirect lags ~20 s post-publish) with the redirect as fallback, downloads + extracts to `data/serving/`, validates the 5 files, then builds the UI fresh + validates the API. Dropped the dead `data/deployment/` branch (M4b deleted that data).
+- **`render.yaml`:** plan `free` (comment to bump → starter), `PYTHON_VERSION=3.12.7`, `healthCheckPath: /health`, `ANTHROPIC_API_KEY` declared `sync:false` (dashboard secret).
+- **`requirements.txt`:** pinned `pyarrow==21.0.0` (cp312 manylinux wheel exists — no source build on 3.12) and **added `python-dotenv`** (server_full.py imports it at startup — was missing → would have ImportError'd the API on Render). Deleted dead `requirements-render.txt` (unreferenced; also missing dotenv).
+- **`_finalization/verify-deploy.command`:** 7-check smoke test against any base URL (health · map_v2 ≥200 · top_signals DEU · signals/all ~108k · insights Czech · `/` SPA · world.json).
+- **Runbook:** new **`_finalization/RUNBOOK.md`** (first-time hosting · redeploy · annual refresh · smoke-test table · insights · troubleshooting). README §8 + the "Where things are" table updated to point at it and the new scripts.
+
+**Deploy-blocking bug found & fixed.** `api/server_cors.py:69` registered `@APP.get("/") → {"status":"ok"}`. Since `server_cors` is imported *before* the conditional SPA route in `server_full.py`, Starlette matched it first and **shadowed the SPA** — the live root URL would have served JSON, not the dashboard. Removed the duplicate root route (left a comment so it isn't re-added); `/health` covers liveness. Verified `/` now serves the SPA with assets loading (200, correct MIME).
+
+**Verified** — `gh release create` published `serving.tar.gz` (live, marked latest). Full `deploy/build.sh` dry-run in a clean rsync'd tree (no `.venv`/`data/serving`/`dist`): downloaded the asset from the live Release → built UI → validated API. Booted the API from that exact artifact and ran `verify-deploy.command`: **7/7 PASS**. (Caught two real bugs en route: `gh release … FILE#name` sets a *label* not the filename → the first asset was mis-named and `latest/download` 404'd; fixed `release-serving.sh` to build the tarball as a file literally named `serving.tar.gz`.)
+
+**Not done (needs Jan / sequenced after):**
+- **Live Render deploy** — needs Jan's Render account. Machinery + Release are ready; §1 of the RUNBOOK is the exact click-path. Then run `verify-deploy.command <url>` together.
+- **M2 truth pass** (strip `[current]`/`[target]` from README) — brief says sequence it *after* the deploy lands. Pending the live URL.
+- **Insights AI-field finalization** (the deferred follow-up above).
+
+**To merge:** branch `m7-hosting` → `main`. Touches `deploy/build.sh` (rewrite) + new `deploy/release-serving.sh`, `render.yaml`, `requirements.txt` (del `requirements-render.txt`), `api/server_cors.py` (remove dup `/`), new `_finalization/verify-deploy.command` + `RUNBOOK.md`, README §8/§11, this LOG + the M7 `00_INDEX` row. No `etl/`, no `ui/src/`, no service-logic changes — API contract intact (every endpoint that worked on `main` still 200s).
+
+---
+
 ## 2026-06-09 — M5 data features ✅ (branch `m5-data`)
 
 **Done** (built sequentially in the orchestrator session after the background subagent came back read-only — subagents can't Write/Edit/Bash-execute. The M5 plan it produced was solid; this session executed it.)

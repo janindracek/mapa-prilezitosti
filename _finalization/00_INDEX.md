@@ -31,7 +31,7 @@ Each module is sized to fit one focused session. Do not chain modules in a singl
 | M4b | Serving layer + path unification | ✅ done (branch `m4b-serving`) | M3 | ✅ `rebuild-all.command` green (9/9 serving==ETL checks); API boots on `data/serving/` only, every endpoint 200, `/map_v2`=226; 3 dead paths + `data/deployment/` deleted |
 | M5 | Frontend finalization | ✅ chrome done · ✅ **data features done (branch `m5-data`)** | M4b ✅ | ✅ label-registry view + "?" help popups (kills hardcoded strings, fixes header-vs-badge clash) · ✅ two-tier strong/weak signals · ✅ analytics side-tab over the full ~108k set · screenshots captured |
 | M6 | Insights re-engineering (OpenAI→Claude) | ✅ impl done (branch `m6-insights`; live path needs `ANTHROPIC_API_KEY` to verify) | M2 ✅ | ✅ Claude Messages API (stdlib, no SDK), Czech fallback, key via env; fallback verified, live needs key |
-| M7 | Hosting & deploy | ⬜ last | M3, M4b, M5, M6 | live URL + smoke-test + redeploy runbook |
+| M7 | Hosting & deploy | 🔄 machinery done (branch `m7-hosting`); live deploy needs Jan's Render account | M3, M4b, M5, M6 | FastAPI single service on Render; Release-asset flow (`release-serving.sh`→`build.sh`) proven 7/7 via `verify-deploy.command` on the downloaded artifact; fixed SPA-shadowing root route + missing `python-dotenv`; runbook `RUNBOOK.md`. **Remaining:** Jan creates the Render service (RUNBOOK §1) → live URL → smoke-test; then M2 truth pass + insights AI-field finalize |
 
 State legend: ⬜ not started · 🔄 in progress · ✅ done · ⏸ blocked.
 
