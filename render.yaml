@@ -2,6 +2,9 @@ services:
   - type: web
     name: mapa-prilezitosti
     env: python
+    # EU region — closest to the Czech ministry audience. Region is fixed at
+    # service creation (can't be changed without recreating), so set it now.
+    region: frankfurt
     # Free (512 MB) to verify the deploy works end-to-end. The serving layer is
     # ~43 MB on disk and steady-state RSS lands ~250–400 MB, so Free is tight and
     # sleeps after 15 min idle (≈30 s cold start). Bump to `starter` once verified
