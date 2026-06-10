@@ -29,10 +29,14 @@ def controls_with_labels():
         "metric_labels": { [metric]: string }
       }
     """
-    df = get_metrics_cached(metrics_mtime_key())
-
-    countries = sorted(pd.Series(df["partner_iso3"]).dropna().unique().tolist())
-    years = sorted(int(y) for y in pd.Series(df["year"]).dropna().unique().tolist())
+    # /controls only needs the distinct countries + years. Read just those two
+    # columns (the UI hits this on every load) instead of the full fact frame.
+    import pandas as _pd
+    from api.settings import settings as _settings
+    cdf = _pd.read_parquet(_settings.CORE_TRADE_PATH, columns=["partner_iso3", "year"],
+                           dtype_backend="pyarrow")
+    countries = sorted(_pd.Series(cdf["partner_iso3"]).dropna().unique().tolist())
+    years = sorted(int(y) for y in _pd.Series(cdf["year"]).dropna().unique().tolist())
 
     # Live signal types (opportunity retired in M3).
     metrics = [
