@@ -14,22 +14,43 @@ def metrics_mtime_key() -> tuple[float, float]:
     return (m, 0.0)
 
 
+_DUCK = None
+
+
+def _duck():
+    """One shared DuckDB connection, hard-capped so it can never balloon past
+    the hosting RAM. Per-request connections accumulated memory under load and
+    OOM-crashed the 512 MB tier; a single capped connection (reused via cursors)
+    is memory-stable. memory_limit is a HARD ceiling DuckDB respects by
+    spilling/erroring rather than growing; threads kept low (each buffers).
+    """
+    global _DUCK
+    if _DUCK is None:
+        import duckdb
+        c = duckdb.connect()
+        c.execute("SET memory_limit='200MB'")  # hard cap — DuckDB spills, never OOMs the process
+        c.execute("SET threads TO 2")
+        c.execute("SET preserve_insertion_order=false")
+        _DUCK = c
+    return _DUCK
+
+
 def query_core(columns, *, year=None, hs6=None, partner_iso3=None):
     """On-demand DuckDB read of a BOUNDED slice of core_trade.
 
     The fact table is 1.78M rows; loading it whole into pandas (even optimized)
     leaves a ~700 MB RSS high-water mark that OOM-crashes the 512 MB hosting
-    tier. Instead, every endpoint that used the full frame now reads only the
-    rows (predicate pushdown on year/hs6/partner_iso3) and columns it needs,
-    straight from the parquet via DuckDB — which streams row groups instead of
+    tier. Instead, every endpoint that used the full frame reads only the rows
+    (predicate pushdown on year/hs6/partner_iso3) and columns it needs, straight
+    from the parquet via DuckDB — which streams row groups instead of
     materializing the table. core_trade.parquet is written sorted by (year, hs6)
     in small row groups (etl/07) so these filters skip most of the file.
 
     Returns a pandas DataFrame (numpy/object dtypes) so existing downstream
     pandas logic is unchanged. `columns` come from our code (safe to inline);
-    user-supplied filter values are passed as bound parameters.
+    user-supplied filter values are passed as bound parameters. A fresh cursor
+    per call keeps it thread-safe under uvicorn's worker threadpool.
     """
-    import duckdb
     sel = ", ".join(columns)
     where, params = [], []
     if year is not None:
@@ -41,23 +62,14 @@ def query_core(columns, *, year=None, hs6=None, partner_iso3=None):
     sql = f"SELECT {sel} FROM read_parquet('{_CORE}')"
     if where:
         sql += " WHERE " + " AND ".join(where)
-    con = duckdb.connect()
-    try:
-        return con.execute(sql, params).df()
-    finally:
-        con.close()
+    return _duck().cursor().execute(sql, params).df()
 
 
 @lru_cache(maxsize=1)
 def core_max_year(_key: tuple[float, float]) -> int | None:
     """Latest year in core_trade (cheap aggregate; cached, invalidated by mtime)."""
-    import duckdb
-    con = duckdb.connect()
-    try:
-        row = con.execute(f"SELECT max(year) FROM read_parquet('{_CORE}')").fetchone()
-        return int(row[0]) if row and row[0] is not None else None
-    finally:
-        con.close()
+    row = _duck().cursor().execute(f"SELECT max(year) FROM read_parquet('{_CORE}')").fetchone()
+    return int(row[0]) if row and row[0] is not None else None
 
 
 @lru_cache(maxsize=1)
