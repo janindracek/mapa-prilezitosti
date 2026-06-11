@@ -3,7 +3,6 @@ from fastapi import APIRouter
 
 from api.config import load_config
 from api.services import PeerGroupsService
-from api.data_access import get_metrics_cached, metrics_mtime_key
 
 router = APIRouter()
 peer_groups_service = PeerGroupsService()

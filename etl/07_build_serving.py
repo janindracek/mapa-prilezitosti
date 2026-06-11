@@ -110,8 +110,16 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
 
     core_trade = build_core_trade()
-    core_trade.to_parquet(OUT / "core_trade.parquet", index=False)
-    print(f"[PASS] core_trade.parquet: {len(core_trade):,} rows, {core_trade['partner_iso3'].nunique()} importers, years {sorted(core_trade['year'].unique())}")
+    # Sort by (year, hs6) and write small row groups so the API's on-demand
+    # DuckDB reads (api/data_access.query_core, filtered by year/hs6) can skip
+    # most of the file. Default 2 huge row groups defeat predicate pushdown and
+    # spike memory; this is the load-bearing change that lets the full app run
+    # under the 512 MB hosting tier. File size is unchanged (~38 MB).
+    core_trade = core_trade.sort_values(["year", "hs6"]).reset_index(drop=True)
+    core_trade.to_parquet(OUT / "core_trade.parquet", index=False, row_group_size=50_000)
+    import pyarrow.parquet as _pq
+    _rg = _pq.ParquetFile(OUT / "core_trade.parquet").metadata.num_row_groups
+    print(f"[PASS] core_trade.parquet: {len(core_trade):,} rows, {core_trade['partner_iso3'].nunique()} importers, years {sorted(core_trade['year'].unique())}, {_rg} row groups")
 
     signals = build_signals()
     signals.to_parquet(OUT / "signals.parquet", index=False)

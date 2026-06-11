@@ -1,7 +1,10 @@
 const BASE =
   (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE && import.meta.env.VITE_API_BASE.trim()) ||
   (typeof process !== "undefined" && process.env && process.env.NEXT_PUBLIC_API_BASE && process.env.NEXT_PUBLIC_API_BASE.trim()) ||
-  "http://127.0.0.1:8000";
+  // Prod: same-origin (relative) — the API serves this SPA. Only fall back to a
+  // local dev host in dev builds. A hardcoded localhost in prod would make every
+  // browser hit the VIEWER's own machine (dead dashboard on the deploy).
+  ((typeof import.meta !== "undefined" && import.meta.env && import.meta.env.DEV) ? "http://127.0.0.1:8000" : "");
 
 function qs(p = {}) {
   const q = new URLSearchParams();

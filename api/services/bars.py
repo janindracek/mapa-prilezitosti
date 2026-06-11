@@ -14,7 +14,7 @@ import pandas as pd
 import pycountry
 from typing import List, Dict, Any, Optional, Set
 
-from api.data_access import get_metrics_cached, metrics_mtime_key
+from api.data_access import query_core, core_max_year, metrics_mtime_key
 from api.data.loaders import load_hs6_names, resolve_peers
 from api.normalizers import normalize_iso, norm_hs2
 from api.formatting import fmt_value, to_json_safe
@@ -73,21 +73,22 @@ class BarsService:
         Returns:
             List of {id: hs6, name, value, value_fmt, unit}
         """
-        df = get_metrics_cached(metrics_mtime_key())
-        if df.empty:
+        # Default to latest year. Push year (+ country) down to the parquet read
+        # instead of loading the whole fact frame.
+        year = year or core_max_year(metrics_mtime_key())
+        if year is None:
             return []
-        
-        # Default to latest year
-        year = year or int(df["year"].max())
-        current_data = df[df["year"] == year].copy()
-        
-        # Apply country filter
+        iso3 = None
         if country:
             iso3 = normalize_iso(country)
             if not iso3:
                 return []
-            current_data = current_data[current_data["partner_iso3"] == iso3]
-        
+        current_data = query_core(
+            ["hs6", "export_cz_to_partner"], year=int(year), partner_iso3=iso3
+        )
+        if current_data.empty:
+            return []
+
         # Apply HS2 filter
         if hs2:
             hs2_normalized = norm_hs2(hs2)
@@ -143,16 +144,18 @@ class BarsService:
         Returns:
             List of {id: iso3, name, value, value_fmt, unit}
         """
-        df = get_metrics_cached(metrics_mtime_key())
+        # Normalize HS6 and read only this product's rows (all years) from the
+        # parquet — small slice, keeps the existing year-filter + fallback logic.
+        hs6_padded = str(hs6).zfill(6)
+        df = query_core(
+            ["year", "partner_iso3", "hs6", "export_cz_to_partner"], hs6=hs6_padded
+        )
         if df.empty:
             return []
-        
-        # Normalize HS6
-        hs6_padded = str(hs6).zfill(6)
-        
+
         # Filter data
         filtered_data = df[
-            (df["hs6"].astype(str).str.zfill(6) == hs6_padded) & 
+            (df["hs6"].astype(str).str.zfill(6) == hs6_padded) &
             (df["year"] == year)
         ].copy()
         

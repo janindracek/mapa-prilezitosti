@@ -41,11 +41,10 @@ class PeerGroupsService:
         if not iso3:
             return {"error": f"unknown country '{country}'"}
         
-        # Get metrics latest year
+        # Get metrics latest year (cheap aggregate, no full-frame load)
         try:
-            from api.data_access import get_metrics_cached, metrics_mtime_key
-            df = get_metrics_cached(metrics_mtime_key())
-            metrics_latest_year = int(df["year"].max())
+            from api.data_access import core_max_year, metrics_mtime_key
+            metrics_latest_year = core_max_year(metrics_mtime_key())
         except Exception:
             metrics_latest_year = None
         

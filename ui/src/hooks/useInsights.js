@@ -33,7 +33,7 @@ export function useInsights(selectedId, selectedHS6, panelVM, state, signals) {
     const timerId = setTimeout(async () => {
       try {
         setInsights(prev => ({ ...prev, loading: true, error: null }));
-        const base = (API_BASE && String(API_BASE).trim()) || 'http://127.0.0.1:8000';
+        const base = (API_BASE && String(API_BASE).trim()) || '';  // prod: same-origin
         const url = `${base}/insights?importer=${encodeURIComponent(selectedCountry)}&hs6=${encodeURIComponent(finalHS6)}&year=${encodeURIComponent(selectedYear)}`;
         const res = await fetch(url, { signal: ctrl.signal });
         const ctype = res.headers.get('content-type') || '';

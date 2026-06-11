@@ -2,6 +2,7 @@
 # Pinned for reproducible deploys on Python 3.12 (see render.yaml).
 pandas>=2.0,<3.0
 pyarrow==21.0.0          # cp312 manylinux wheel exists — no source build on Render
+duckdb>=1.1,<2.0         # on-demand parquet queries (api/data_access.query_core) — fits 512 MB
 fastapi>=0.104.0,<1.0
 uvicorn[standard]>=0.24.0,<1.0
 pycountry>=22.0,<24.0

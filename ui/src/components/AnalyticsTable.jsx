@@ -35,7 +35,7 @@ export default function AnalyticsTable({ referenceData = { countryNames: {}, hs6
     (async () => {
       setLoading(true); setError(null);
       try {
-        const base = API_BASE || "http://127.0.0.1:8000";
+        const base = API_BASE || "";  // prod: same-origin (API_BASE='' from constants.js)
         const qs = new URLSearchParams({ page: String(page), page_size: String(PAGE_SIZE) });
         for (const [k, v] of Object.entries(filters)) if (v) qs.set(k, v);
         const r = await fetch(`${base}/signals/all?${qs.toString()}`);

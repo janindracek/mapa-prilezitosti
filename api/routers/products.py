@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from api.services.bars import BarsService
 from api.helpers import build_trend
 from api.data.serving import serving_data
-from api.data_access import get_metrics_cached, metrics_mtime_key
+from api.data_access import query_core
 
 router = APIRouter()
 bars_service = BarsService()
@@ -31,7 +31,7 @@ def product_bars(
 @router.get("/trend")
 def trend(hs6: str, years: int = 10):
     """Time series for an HS6 aggregated across partners (both years)."""
-    df = get_metrics_cached(metrics_mtime_key())
+    df = query_core(["hs6", "year", "export_cz_total_for_hs6"], hs6=hs6)
     return build_trend(df, hs6=hs6, years=years)
 
 

@@ -28,7 +28,7 @@ export default function SignalInfo({
       setLoading(true);
       setError(null);
       try {
-        const base = API_BASE || 'http://127.0.0.1:8000';
+        const base = API_BASE || '';  // prod: same-origin (API_BASE='' from constants.js)
         const url = `${base}/peer_groups/explanation?method=${encodeURIComponent(method)}&country=${encodeURIComponent(country)}&year=${encodeURIComponent(year)}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);

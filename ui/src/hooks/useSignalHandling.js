@@ -135,7 +135,7 @@ export function useSignalHandling(adaptSignals) {
 
     try {
       // Fetch complete insights data for KeyData component
-      const base = API_BASE || 'http://127.0.0.1:8000';
+      const base = API_BASE || '';  // prod: same-origin (API_BASE='' from constants.js)
       const url = `${base}/insights_data?importer=${encodeURIComponent(curPartner)}&hs6=${encodeURIComponent(curHs6)}&year=${encodeURIComponent(curYear)}`;
 
       const response = await fetch(url);
