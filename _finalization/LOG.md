@@ -4,6 +4,34 @@ Newest first. One entry per working session: what changed, what was decided, wha
 
 ---
 
+## 2026-06-11 — M7 LIVE on Render, Free tier ✅ (branch `m7-hosting` → merged `main`)
+
+**Live URL:** https://mapa-prilezitosti-z6ch.onrender.com — full dashboard, **Free tier (512 MB)**, region Frankfurt. Smoke 7/7; all UI endpoints 200; survived 120 heavy `/bars` requests with 0 failures.
+
+Jan created the Render Blueprint from `main`. The infra worked first try (map + signals + insights live), then three real bugs surfaced that only show up *on the actual deploy* — fixed each:
+
+1. **Free-tier OOM (the big one).** Loading the 1.78M-row `core_trade` whole into pandas spiked RSS to ~730 MB → worker OOM-crashed → `/map_v2`, `/bars`, `/controls` 502'd. An independent feasibility subagent confirmed <500 MB is realistic with **DuckDB on-demand queries + repartitioning**, not a pandas-pushdown (which leaks high-water). Implemented:
+   - `etl/07`: write `core_trade.parquet` sorted by `(year, hs6)` in **50k-row groups** (was 2 huge groups) — lets DuckDB skip most of the file. *Load-bearing.*
+   - `api/data_access.query_core()` — predicate+projection pushdown via DuckDB; routed the 4 live full-frame consumers through it (`bars.py` ×2, `/trend`, `/insights_data`); `get_metrics_cached` deprecated (its only other caller, the legacy `SignalsService`, is dead — the router uses `UnifiedSignalsService` over the 4 MB `signals.parquet`). `/controls` reads 2 cols directly. Outputs verified byte-identical to the full-frame computation.
+   - **One shared DuckDB connection, `memory_limit=200MB`, threads=2** (commit `496cf14`) — the *critical* stability fix. Per-request `duckdb.connect()` accumulated memory and still crash-looped `/bars` on Render (local 356 MB didn't translate — Render's baseline is tighter). The hard cap makes DuckDB **spill to disk, never OOM the process**. Confirmed: 120 heavy `/bars` in a row, 0 failures, worker alive.
+   - `requirements.txt`: `duckdb>=1.1,<2.0` (1.1 MB wheel, cp312 ok).
+2. **UI hardcoded `127.0.0.1:8000` as the API base** (found via a *browser* test, invisible to curl). `ui/.env.local` (`VITE_API_BASE`) is gitignored → absent on Render → the SPA's `API_BASE || 'http://127.0.0.1:8000'` fallbacks made every visitor's browser hit *their own* localhost → dead dashboard. Fixed all 5 sites (`lib/api.js`, `AnalyticsTable`, `SignalInfo`, `useInsights`, `useSignalHandling`) to default to **same-origin (relative)** in prod. Verified in a real browser with a Render-simulated build (no `.env.local`): KeyData/bars/peer panels load, all calls same-origin, no console errors. (Note: `constants.js` leaves a runtime-*dead* `127.0.0.1` literal in the bundle via optional-chaining Vite can't fold — inert in prod; cosmetic only.)
+3. **`/` served `{"status":"ok"}` not the SPA** + **missing `python-dotenv`** — both caught pre-deploy in the machinery pass (see 2026-06-10 entry).
+
+**Tier outcome:** Free **works** for the whole app (~356 MB local / holds on Render with the cap). Starter ($7) is the *same* 512 MB — only worth it to kill the 15-min idle sleep. **Standard/2 GB is NOT needed** — the refactor avoided the spend Jan was ready to make.
+
+**Verified:** `verify-deploy.command <url>` 7/7 green against the live site; full UI endpoint sweep 200; DuckDB outputs == reference; same-origin UI confirmed in-browser on the identical bundle.
+
+**Open / deferred:**
+- **Insights AI field** — still the deferred follow-up: ship live Claude (set `ANTHROPIC_API_KEY` as a Render secret) and rework the fallback to a transparent "AI nedostupné" notice instead of restating the dashboard. Infra is ready; Jan's call on the key.
+- **Bump to Starter** (optional) to remove cold-start sleep.
+- **M2 truth pass** — strip remaining `[current]`/`[target]` from README now that the deploy has landed.
+- Cosmetic: drop the optional-chaining in `ui/src/lib/constants.js` so Vite folds the dead `127.0.0.1` literal out of the bundle.
+
+**Docs:** README §2 (DuckDB memory-bounded reads) + §8; `_finalization/RUNBOOK.md` (tier, DuckDB §0, troubleshooting rows for the 3 deploy bugs); `verify-deploy.command`.
+
+---
+
 ## 2026-06-10 — M7 hosting & deploy ✅ machinery (branch `m7-hosting`)
 
 **Substrate decided (with Jan): FastAPI single service on Render.** One process serves the API *and* the built SPA (`server_full.py` mounts `ui/dist/` at `/`) — no frontend/backend split. DuckDB-WASM and "hybrid preview→full" rejected for v1: WASM means rewriting every router as client queries (out of scope, and forecloses nothing — same parquet can go WASM in v2); hybrid collapses to "single FastAPI service" anyway. Picked the substrate that already runs locally.

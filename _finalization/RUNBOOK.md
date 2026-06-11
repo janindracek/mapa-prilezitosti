@@ -7,8 +7,10 @@ Operational guide for the live deployment. The *what/why* lives in `README.md` (
 ## 0. What's deployed
 
 - **One FastAPI service** (Render, `render.yaml`) — serves the API **and** the built React SPA from a single process (`api/server_full.py` mounts `ui/dist/` at `/`). No split frontend/backend.
-- **Serving layer** (`data/serving/*.parquet`, ~43 MB) is *not* in the repo (gitignored). It is published as a **GitHub Release asset** (`serving.tar.gz`, marked *latest*) and the deploy downloads it.
+- **Serving layer** (`data/serving/*.parquet`, ~45 MB) is *not* in the repo (gitignored). It is published as a **GitHub Release asset** (`serving.tar.gz`, marked *latest*) and the deploy downloads it.
+- **Fits the 512 MB (Free) tier.** The fact table (`core_trade`, 1.78M rows) is *never* loaded whole into memory — that spiked RSS to ~700 MB and OOM-crashed 512 MB. Instead: the map/products path reads only 5 columns (`api/data/serving.py`), and every other data endpoint (`/bars`, `/trend`, `/insights_data`) queries the parquet **on demand via DuckDB** (`api/data_access.query_core`), reading only the rows/columns it needs. `core_trade.parquet` is written sorted by `(year, hs6)` in small row groups so those queries skip most of the file. Measured peak RSS ~356 MB.
 - **Insights** (`/insights`): live Claude when `ANTHROPIC_API_KEY` is set; otherwise a deterministic Czech fallback (no network call, no error). See §5.
+- **UI API base is same-origin.** The SPA calls the API with **relative** URLs in production (the same service serves both). It must NOT hardcode a host — a localhost fallback makes every visitor's browser hit *their own* machine (dead dashboard). Local dev uses `ui/.env.local` (`VITE_API_BASE=http://localhost:8000`), which is gitignored and absent on the deploy by design.
 
 ```
 LOCAL (once/year)                         GitHub                         Render
@@ -36,7 +38,7 @@ The repo is public; Render deploys from GitHub on push.
    ./_finalization/verify-deploy.command https://<service>.onrender.com
    ```
    All 7 checks must pass (§4). Then open the URL: the dashboard (Přehled / Analytika), not JSON.
-6. **Bump the tier.** Once green, Render dashboard → Settings → Instance Type → **Starter** ($7/mo: no sleep, no cold start). Free works but sleeps after 15 min idle (~30 s first-click cold start) and is RAM-tight (~250–400 MB RSS vs 512 MB cap).
+6. **Tier.** The full app fits **Free** (512 MB) — measured peak ~356 MB after the DuckDB refactor (§0). Free's only downside is it **sleeps after 15 min idle** (~30 s first-click cold start). Bump to **Starter** ($7/mo, Render dashboard → Settings → Instance Type) only to kill the sleep — it's the *same* 512 MB, so it's purely a no-sleep upgrade, not a RAM upgrade. (Standard/2 GB is not needed.)
 
 ---
 
@@ -115,4 +117,7 @@ No arg → tests `http://127.0.0.1:8000` (a local prod build via `build-ui.comma
 | `ImportError: dotenv` | `python-dotenv` missing from `requirements.txt` (M7 added it). |
 | pyarrow build-from-source / wheel error | Python must be 3.12 (`render.yaml`); pyarrow is pinned `==21.0.0` (has a cp312 wheel). |
 | Insights paragraph restates the dashboard | Expected fallback (no key). Set `ANTHROPIC_API_KEY`, or see §5 open item. |
-| First click slow (~30 s) on Free | Free tier sleeps after 15 min idle. Bump to Starter (§1.6). |
+| `/controls`, `/bars`, `/trend`, `/insights_data` 502 under load | Pre-DuckDB build (full-frame load OOMs 512 MB). Ensure the deploy is on the commit with `api/data_access.query_core` + the repartitioned `core_trade` Release asset. |
+| `ModuleNotFoundError: duckdb` | `duckdb` missing from `requirements.txt` (added for the on-demand query path). |
+| Dashboard loads but **no data** (charts/KeyData empty) in the browser | The SPA is calling a hardcoded `127.0.0.1:8000` (the visitor's own machine). The API base must be same-origin/relative in prod — never build the deploy with a localhost fallback (§0). |
+| First click slow (~30 s) on Free | Free tier sleeps after 15 min idle. Bump to Starter (§1.6) — same RAM, just no sleep. |
