@@ -4,6 +4,7 @@ import KeyDataOverlay from './KeyDataOverlay.jsx';
 // Czech number formatting function
 function formatCzechUSD(x) {
   if (x == null || Number.isNaN(x)) return "—";
+  if (x === 0) return "0 USD"; // a real zero is data, not a missing value
   try {
     // API returns values already properly scaled 
     const actualValue = x;
@@ -137,26 +138,20 @@ export default function KeyData({
       value: formatPercentage(cz_share_in_c),
       shortLabel: "CZ market share"
     },
-    // Add median peer share if available
-    ...(median_peer_share > 0 ? [{
+    // Median peer share: 0 is a real value ("peers also export nothing"),
+    // only null/NaN means unknown
+    {
       label: "Medián peer group",
       value: formatPercentage(median_peer_share),
       shortLabel: "Peer median"
-    }] : [{
-      label: "Medián peer group",
-      value: "—",
-      shortLabel: "Peer median"
-    }]),
-    // Add YoY change if available (guard null/NaN/0 before formatting)
-    ...(cz_delta_pct != null && !Number.isNaN(cz_delta_pct) && cz_delta_pct !== 0 ? [{
+    },
+    // YoY change: only rendered when a real YoY number exists (the hook
+    // passes null for non-YoY signals and placeholder zeros)
+    {
       label: "Meziroční změna",
       value: formatYoYDelta(cz_delta_pct),
       shortLabel: "YoY change"
-    }] : [{
-      label: "Meziroční změna",
-      value: "—",
-      shortLabel: "YoY change"
-    }])
+    }
   ];
 
   return (

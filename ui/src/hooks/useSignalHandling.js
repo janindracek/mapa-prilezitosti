@@ -144,19 +144,30 @@ export function useSignalHandling(adaptSignals) {
       }
       const insightsData = await response.json();
 
-      // Create comprehensive keyData with all required fields
+      // Create comprehensive keyData with all required fields.
+      // ?? (not ||): a genuine 0 export must display as "0", not "—" —
+      // otherwise the panel shows "Export —" next to "Podíl 0,0%".
+      const isPeerSignal = !!signal.type?.includes('Peer_gap');
+      const isYoYSignal = signal.type === 'YoY_export_change' || signal.type === 'YoY_partner_share_change';
       const keyData = {
-        // Basic bilateral data from insights_data endpoint  
-        cz_to_c: insightsData.cz_to_c || null,
-        cz_world_total: insightsData.cz_world_total || null,
-        
-        // Missing fields now populated from insights_data endpoint
+        cz_to_c: insightsData.cz_to_c ?? null,
+        cz_world_total: insightsData.cz_world_total ?? null,
         c_import_total: insightsData.c_import_total,
-        cz_share_in_c: insightsData.cz_share_in_c, 
-        median_peer_share: insightsData.median_peer_share,
-        
-        // YoY percentage from signal (only if it's a valid number)
-        cz_delta_pct: (typeof (signal.yoy || signal.intensity) === 'number' && !isNaN(signal.yoy || signal.intensity)) ? (signal.yoy || signal.intensity) : null
+        cz_share_in_c: insightsData.cz_share_in_c,
+
+        // For peer-gap signals show the signal's OWN peer median — the number
+        // the signal fired on. insights_data computes a median over a different
+        // (geography-based) peer group and can disagree (e.g. 0.0 vs 2.06%).
+        median_peer_share: (isPeerSignal && Number.isFinite(signal.peer_median))
+          ? signal.peer_median
+          : (insightsData.median_peer_share ?? null),
+
+        // YoY only from YoY signals (signal.intensity is a share-gap on a
+        // different scale — it used to render as a bogus "+0,0%"). Synthetic
+        // signals carry a placeholder yoy of exactly 0, which means "unknown".
+        cz_delta_pct: (isYoYSignal && Number.isFinite(signal.yoy) && signal.yoy !== 0)
+          ? signal.yoy
+          : (insightsData.cz_delta_pct ?? null)
       };
 
       // Fetch bar data for the signal type only

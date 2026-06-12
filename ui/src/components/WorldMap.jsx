@@ -84,6 +84,58 @@ function buildNameMappings(geoData) {
     '862': 'Venezuela', '876': 'Wallis and Futuna', '882': 'Samoa', '887': 'Yemen', '894': 'Zambia'
   };
   
+  // ISO3 → region name AS SPELLED IN ui/public/world.json. Generated from the
+  // numeric table above via pycountry + manual fixes for this geojson's
+  // non-standard names (USA, England, Republic of Serbia, Ivory Coast, ...).
+  // Without this table byIso3 stayed empty, so API rows (Czech names + iso3)
+  // never matched geojson regions and most countries rendered as "no data".
+  const ISO3_TO_GEOJSON_NAME = {
+    AFG: "Afghanistan", AGO: "Angola", ALB: "Albania", ARE: "United Arab Emirates",
+    ARG: "Argentina", ARM: "Armenia", ATF: "French Southern and Antarctic Lands", AUS: "Australia",
+    AUT: "Austria", AZE: "Azerbaijan", BDI: "Burundi", BEL: "Belgium",
+    BEN: "Benin", BFA: "Burkina Faso", BGD: "Bangladesh", BGR: "Bulgaria",
+    BHS: "The Bahamas", BIH: "Bosnia and Herzegovina", BLR: "Belarus", BLZ: "Belize",
+    BOL: "Bolivia", BRA: "Brazil", BRN: "Brunei", BTN: "Bhutan",
+    BWA: "Botswana", CAF: "Central African Republic", CAN: "Canada", CHE: "Switzerland",
+    CHL: "Chile", CHN: "China", CIV: "Ivory Coast", CMR: "Cameroon",
+    COD: "Democratic Republic of the Congo", COG: "Republic of the Congo", COL: "Colombia", CRI: "Costa Rica",
+    CUB: "Cuba", CYP: "Cyprus", CZE: "Czech Republic", DEU: "Germany",
+    DJI: "Djibouti", DNK: "Denmark", DOM: "Dominican Republic", DZA: "Algeria",
+    ECU: "Ecuador", EGY: "Egypt", ERI: "Eritrea", ESH: "Western Sahara",
+    ESP: "Spain", EST: "Estonia", ETH: "Ethiopia", FIN: "Finland",
+    FJI: "Fiji", FLK: "Falkland Islands", FRA: "France", GAB: "Gabon",
+    GBR: "England", GEO: "Georgia", GHA: "Ghana", GIN: "Guinea",
+    GMB: "Gambia", GNB: "Guinea Bissau", GNQ: "Equatorial Guinea", GRC: "Greece",
+    GRL: "Greenland", GTM: "Guatemala", GUY: "Guyana", HND: "Honduras",
+    HRV: "Croatia", HTI: "Haiti", HUN: "Hungary", IDN: "Indonesia",
+    IND: "India", IRL: "Ireland", IRN: "Iran", IRQ: "Iraq",
+    ISL: "Iceland", ISR: "Israel", ITA: "Italy", JAM: "Jamaica",
+    JOR: "Jordan", JPN: "Japan", KAZ: "Kazakhstan", KEN: "Kenya",
+    KGZ: "Kyrgyzstan", KHM: "Cambodia", KOR: "South Korea", KWT: "Kuwait",
+    LAO: "Laos", LBN: "Lebanon", LBR: "Liberia", LBY: "Libya",
+    LKA: "Sri Lanka", LSO: "Lesotho", LTU: "Lithuania", LUX: "Luxembourg",
+    LVA: "Latvia", MAR: "Morocco", MDA: "Moldova", MDG: "Madagascar",
+    MEX: "Mexico", MKD: "Macedonia", MLI: "Mali", MMR: "Myanmar",
+    MNE: "Montenegro", MNG: "Mongolia", MOZ: "Mozambique", MRT: "Mauritania",
+    MWI: "Malawi", MYS: "Malaysia", NAM: "Namibia", NCL: "New Caledonia",
+    NER: "Niger", NGA: "Nigeria", NIC: "Nicaragua", NLD: "Netherlands",
+    NOR: "Norway", NPL: "Nepal", NZL: "New Zealand", OMN: "Oman",
+    PAK: "Pakistan", PAN: "Panama", PER: "Peru", PHL: "Philippines",
+    PNG: "Papua New Guinea", POL: "Poland", PRI: "Puerto Rico", PRK: "North Korea",
+    PRT: "Portugal", PRY: "Paraguay", PSE: "West Bank", QAT: "Qatar",
+    ROU: "Romania", RUS: "Russia", RWA: "Rwanda", SAU: "Saudi Arabia",
+    SDN: "Sudan", SEN: "Senegal", SLB: "Solomon Islands", SLE: "Sierra Leone",
+    SLV: "El Salvador", SOM: "Somalia", SRB: "Republic of Serbia", SSD: "South Sudan",
+    SUR: "Suriname", SVK: "Slovakia", SVN: "Slovenia", SWE: "Sweden",
+    SWZ: "Swaziland", SYR: "Syria", TCD: "Chad", TGO: "Togo",
+    THA: "Thailand", TJK: "Tajikistan", TKM: "Turkmenistan", TLS: "East Timor",
+    TTO: "Trinidad and Tobago", TUN: "Tunisia", TUR: "Turkey", TWN: "Taiwan",
+    TZA: "United Republic of Tanzania", UGA: "Uganda", UKR: "Ukraine", URY: "Uruguay",
+    USA: "USA", UZB: "Uzbekistan", VEN: "Venezuela", VNM: "Vietnam",
+    VUT: "Vanuatu", YEM: "Yemen", ZAF: "South Africa", ZMB: "Zambia",
+    ZWE: "Zimbabwe",
+  };
+
   try {
     const features = geoData.features || [];
     for (const f of features) {
@@ -92,14 +144,22 @@ function buildNameMappings(geoData) {
       if (!nm) continue;
       nameSet.add(nm);
     }
-    
+
     // Add numeric mappings
     for (const [numericCode, countryName] of Object.entries(numericToName)) {
       if (nameSet.has(countryName)) {
         byNumeric.set(numericCode, countryName);
       }
     }
-    
+
+    // ISO3 mappings — the path the API data (iso3 + Czech display name)
+    // actually resolves through.
+    for (const [iso3, countryName] of Object.entries(ISO3_TO_GEOJSON_NAME)) {
+      if (nameSet.has(countryName)) {
+        byIso3.set(iso3, countryName);
+      }
+    }
+
   } catch (_) {}
   
   __NAME_BY = { byIso3, byNumeric, nameSet };
@@ -218,19 +278,24 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
     } else {
       const minV = values.length ? Math.min(...values) : 0;
       const maxV = values.length ? Math.max(...values) : 0;
-      const maxAbs = values.length ? Math.max(Math.abs(minV), Math.abs(maxV)) : 1;
-      vmin = -Math.max(maxAbs, 1e-9);
-      vmax =  Math.max(maxAbs, 1e-9);
-      colors = ["#dc2626", "#fef2f2", "#16a34a"]; // red → light → green (intuitive: negative/positive)
-      const nf = new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 0 });
-      
-      if (metric === 'export_value_usd') {
-        // export_value_usd: API returns values already in USD, no additional scaling needed
-        tooltipFmt = (v) => v == null ? 'n/a' : `${nf.format(v)} USD`;
+      if (minV < 0) {
+        // Diverging scale only when the metric can actually be negative
+        // (e.g. a YoY delta): red → light → green centered on 0.
+        const maxAbs = Math.max(Math.abs(minV), Math.abs(maxV), 1e-9);
+        vmin = -maxAbs;
+        vmax = maxAbs;
+        colors = ["#dc2626", "#fef2f2", "#16a34a"];
       } else {
-        // For other metrics: values are already in USD, no scaling needed
-        tooltipFmt = (v) => v == null ? 'n/a' : `${nf.format(v)} USD`;
+        // Export values are never negative. The old diverging scale put the
+        // many zero-export countries at its midpoint (near-white) and wasted
+        // half the range, so the map looked empty even with real data.
+        vmin = 0;
+        vmax = Math.max(maxV, 1e-9);
+        colors = ["#f0fdf4", "#4ade80", "#15803d"]; // light → rich green
       }
+      const nf = new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 0 });
+      // Values are already in USD, no scaling needed
+      tooltipFmt = (v) => v == null ? 'n/a' : `${nf.format(v)} USD`;
     }
 
     return {
