@@ -14,7 +14,7 @@ import pandas as pd
 import pycountry
 from typing import List, Dict, Any, Optional, Set
 
-from api.data_access import query_core, core_max_year, metrics_mtime_key
+from api.data_access import query_core, core_max_year, metrics_mtime_key, top_products
 from api.data.loaders import load_hs6_names, resolve_peers
 from api.normalizers import normalize_iso, norm_hs2
 from api.formatting import fmt_value, to_json_safe
@@ -73,8 +73,9 @@ class BarsService:
         Returns:
             List of {id: hs6, name, value, value_fmt, unit}
         """
-        # Default to latest year. Push year (+ country) down to the parquet read
-        # instead of loading the whole fact frame.
+        # Default to latest year. The groupby/top-N runs inside DuckDB so the
+        # request never materializes a year slice (~894k rows) into pandas —
+        # concurrent slices were what OOMed the 512 MB tier.
         year = year or core_max_year(metrics_mtime_key())
         if year is None:
             return []
@@ -83,34 +84,15 @@ class BarsService:
             iso3 = normalize_iso(country)
             if not iso3:
                 return []
-        current_data = query_core(
-            ["hs6", "export_cz_to_partner"], year=int(year), partner_iso3=iso3
+        hs2_normalized = norm_hs2(hs2) if hs2 else None
+        product_totals = top_products(
+            year=int(year), partner_iso3=iso3, hs2=hs2_normalized, top=top
         )
-        if current_data.empty:
+        if product_totals.empty:
             return []
 
-        # Apply HS2 filter
-        if hs2:
-            hs2_normalized = norm_hs2(hs2)
-            if hs2_normalized:
-                current_data = current_data[
-                    current_data["hs6"].astype(str).str.zfill(6).str[:2] == hs2_normalized
-                ]
-        
-        if current_data.empty:
-            return []
-        
-        # Aggregate by HS6 and get top products
-        product_totals = (
-            current_data.groupby("hs6")["export_cz_to_partner"]
-            .sum()
-            .nlargest(max(int(top), 1))
-            .reset_index()
-        )
-        
-        # Format results
-        product_totals["id"] = product_totals["hs6"].astype(str).str.zfill(6)
-        product_totals = product_totals.rename(columns={"export_cz_to_partner": "value"})[["id", "value"]]
+        product_totals["id"] = product_totals["hs6"].astype(str)
+        product_totals = product_totals[["id", "value"]]
         
         # Add product names
         hs6_names = self._get_hs6_names()

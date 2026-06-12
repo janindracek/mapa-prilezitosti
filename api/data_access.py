@@ -1,3 +1,4 @@
+import threading
 from pathlib import Path
 from functools import lru_cache
 from api.settings import settings
@@ -15,6 +16,14 @@ def metrics_mtime_key() -> tuple[float, float]:
 
 
 _DUCK = None
+
+# DuckDB's memory_limit caps only DuckDB-internal memory; the pandas DataFrames
+# each query materializes are uncapped Python memory. Under concurrent load those
+# result frames stack up (the 2023 slice alone is ~56 MB as pandas) and OOM the
+# 512 MB tier even though DuckDB itself stays within its cap. Bound how many
+# results can be materializing at once; excess requests queue briefly instead of
+# crashing the worker.
+_QUERY_SEM = threading.Semaphore(4)
 
 
 def _duck():
@@ -62,7 +71,30 @@ def query_core(columns, *, year=None, hs6=None, partner_iso3=None):
     sql = f"SELECT {sel} FROM read_parquet('{_CORE}')"
     if where:
         sql += " WHERE " + " AND ".join(where)
-    return _duck().cursor().execute(sql, params).df()
+    with _QUERY_SEM:
+        return _duck().cursor().execute(sql, params).df()
+
+
+def top_products(year, partner_iso3=None, hs2=None, top=10):
+    """Top HS6 by summed CZ export, aggregated INSIDE DuckDB.
+
+    The pandas equivalent (read the whole year slice, then groupby) materializes
+    ~894k rows / ~56 MB per request; a handful of concurrent calls OOMs the
+    512 MB tier. Aggregating in SQL returns `top` rows instead. lpad() guards
+    against any non-zero-padded hs6 values, matching the old .str.zfill(6).
+    """
+    where, params = ["year = ?"], [int(year)]
+    if partner_iso3 is not None:
+        where.append("partner_iso3 = ?"); params.append(str(partner_iso3))
+    if hs2 is not None:
+        where.append("lpad(hs6, 6, '0') LIKE ?"); params.append(f"{str(hs2).zfill(2)}%")
+    sql = (
+        "SELECT lpad(hs6, 6, '0') AS hs6, SUM(export_cz_to_partner) AS value "
+        f"FROM read_parquet('{_CORE}') WHERE {' AND '.join(where)} "
+        f"GROUP BY 1 ORDER BY value DESC LIMIT {max(int(top), 1)}"
+    )
+    with _QUERY_SEM:
+        return _duck().cursor().execute(sql, params).df()
 
 
 @lru_cache(maxsize=1)

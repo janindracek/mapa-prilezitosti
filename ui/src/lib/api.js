@@ -1,4 +1,8 @@
-const BASE =
+// Single source of truth for the API base — constants.js re-exports this.
+// Plain (non-optional-chained) import.meta.env access so Vite can statically
+// replace it; `import.meta?.env?.X` defeats the replacement and silently
+// resolves to undefined at runtime.
+export const BASE =
   (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE && import.meta.env.VITE_API_BASE.trim()) ||
   (typeof process !== "undefined" && process.env && process.env.NEXT_PUBLIC_API_BASE && process.env.NEXT_PUBLIC_API_BASE.trim()) ||
   // Prod: same-origin (relative) — the API serves this SPA. Only fall back to a

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Controls from "./components/Controls.jsx";
 import SignalsList from "./components/SignalsList.jsx";
 import WorldMap from "./components/WorldMap.jsx";
@@ -50,42 +50,31 @@ export default function App() {
 
 
 
-  // Load data when selection changes
+  // Each dataset reloads only when ITS inputs change. The previous single
+  // effect re-ran on every selection change and refetched everything (8×
+  // top_signals / 7× bars / 4× map_v2 per click), flooding the free-tier API
+  // and re-rendering the charts continuously.
   useEffect(() => {
-    const { year, country } = state;
-    if (!year || !country) return;
+    if (!state.country) return;
+    loadSignals(state.country).catch((e) => console.error("[signals load] failed", e));
+  }, [state.country, loadSignals]);
 
-    (async () => {
-      try {
-        // Load signals
-        await loadSignals(country);
-        
-        // Ensure we have an HS6: pick top product for the country/year if needed
-        let currentHs6 = hs6;
-        if (!currentHs6 && !selectedHS6) {
-          // Fallback to smartphones if no HS6 available
-          currentHs6 = "851713";
-          // Only set if it would actually change the value to prevent loops
-          if (hs6 !== currentHs6) {
-            setHs6(currentHs6);
-          }
-        }
+  // Ensure we have an HS6 before any selection (smartphones as default).
+  useEffect(() => {
+    if (!hs6 && !selectedHS6) setHs6("851713");
+  }, [hs6, selectedHS6, setHs6]);
 
-        // Use selectedHS6 if available, otherwise use currentHs6
-        const effectiveHs6 = selectedHS6 || currentHs6;
-        if (effectiveHs6) {
-          // Always fetch map data for the current HS6 and selected metric
-          await loadMapData(year, effectiveHs6, mapMetric);
-        }
+  const effectiveHs6 = selectedHS6 || hs6;
 
-        // Top 10 products for the selected country/year
-        await loadProductData(year, country);
+  useEffect(() => {
+    if (!state.year || !state.country || !effectiveHs6) return;
+    loadMapData(state.year, effectiveHs6, mapMetric).catch((e) => console.error("[map load] failed", e));
+  }, [state.year, state.country, effectiveHs6, mapMetric, loadMapData]);
 
-      } catch (e) {
-        console.error("[data load] failed", e);
-      }
-    })();
-  }, [state.country, state.year, selectedId, selectedHS6, hs6, mapMetric, loadSignals, loadMapData, loadProductData]);
+  useEffect(() => {
+    if (!state.year || !state.country) return;
+    loadProductData(state.year, state.country).catch((e) => console.error("[products load] failed", e));
+  }, [state.year, state.country, loadProductData]);
 
   // Handle country change - create synthetic signal when country changes and we have a selected HS6
   const [previousCountry, setPreviousCountry] = useState(null);
@@ -101,6 +90,23 @@ export default function App() {
     }
     setPreviousCountry(state.country);
   }, [state.country, selectedHS6, hs6, handleCountryClick, savedHS6Codes, referenceData, state, previousCountry]);
+
+  // Stable handler identities: echarts-for-react deep-compares onEvents with
+  // fast-deep-equal (functions by reference), so a fresh closure per render
+  // forced a full chart dispose + re-init on EVERY re-render — the flicker.
+  // "Latest ref" pattern: the identity passed down NEVER changes, while the
+  // ref always points at a closure over current state (handleCountryClick
+  // itself changes identity whenever hs6/selectedHS6 change).
+  const countryClickRef = useRef(null);
+  useEffect(() => {
+    countryClickRef.current = (countryIso3, countryName) =>
+      handleCountryClick(countryIso3, countryName, savedHS6Codes, referenceData, state);
+  });
+  const onMapCountryClick = useCallback(
+    (countryIso3, countryName) => countryClickRef.current?.(countryIso3, countryName),
+    []
+  );
+  const onBarSelect = useCallback((id) => setHs6(id), [setHs6]);
 
   // Options for the Controls component (fallbacks if controls not loaded yet)
   const countries = (controls.countries && controls.countries.length) ? controls.countries : ["BEL"];
@@ -227,10 +233,14 @@ export default function App() {
             <div>
               <ProductBarChart
                 data={(panelVM.barData && panelVM.barData.length) ? panelVM.barData : productData}
-                title={barChartTitle((panelVM.mapData && panelVM.mapData.length) ? (panelVM.meta || {}) : { hs6, year: state.year, metric: 'delta_export_abs' }, panelVM.meta?.signalType)}
-                subtitle={barChartSubtitle(panelVM.meta?.signalType, panelVM.partnerCounts)}
+                title={(panelVM.barData && panelVM.barData.length)
+                  ? barChartTitle(panelVM.meta || {}, panelVM.meta?.signalType)
+                  : `Top 10 produktů českého exportu — ${referenceData.countryNames?.[state.country] || state.country}${state.year ? `, ${state.year}` : ''}`}
+                subtitle={(panelVM.barData && panelVM.barData.length)
+                  ? barChartSubtitle(panelVM.meta?.signalType, panelVM.partnerCounts)
+                  : "Největší produkty (HS6) českého exportu do vybrané země\nHodnoty: objem exportu v USD"}
                 selectedId={(panelVM.barData && panelVM.barData.length) ? selectedCountry : null}
-                onSelect={(id) => setHs6(id)}
+                onSelect={onBarSelect}
                 referenceData={referenceData}
               />
             </div>
@@ -254,7 +264,7 @@ export default function App() {
                       checked={mapMetric === 'cz_share_in_partner_import'}
                       onChange={(e) => setMapMetric(e.target.value)}
                     />
-                    Český podíl na importu země (%)
+                    Český podíl na importu produktu (%)
                     <HelpButton id="cz_share_in_partner_import" size={15} />
                   </label>
                   <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 14 }}>
@@ -264,20 +274,24 @@ export default function App() {
                       checked={mapMetric === 'export_value_usd'}
                       onChange={(e) => setMapMetric(e.target.value)}
                     />
-                    Celková hodnota českého exportu do země (USD, 2023)
+                    Český export produktu do země (USD)
                     <HelpButton id="export_value_usd" size={15} />
                   </label>
                 </div>
               </div>
               
+              {/* Render from worldData's own metric/hs6 (what the rows were
+                  fetched for), not the radio state — the radio flips instantly
+                  while data lags, which used to format share decimals with the
+                  USD formatter ("0 USD" on every country). */}
               <WorldMap
-                data={worldData}
-                metric={mapMetric}
+                data={worldData.rows}
+                metric={worldData.metric || mapMetric}
                 nameMap={ISO3_TO_NAME}
                 czechNames={referenceData.countryNames}
                 nameField='name'
-                meta={{ hs6: selectedHS6 || hs6, year: state.year }}
-                onCountryClick={(countryIso3, countryName) => handleCountryClick(countryIso3, countryName, savedHS6Codes, referenceData, state)}
+                meta={{ hs6: worldData.hs6 || effectiveHs6, year: state.year }}
+                onCountryClick={onMapCountryClick}
               />
 
             </div>

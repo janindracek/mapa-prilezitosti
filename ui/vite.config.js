@@ -17,6 +17,13 @@ export default defineConfig({
       '/trend': 'http://127.0.0.1:8000',
       '/debug': 'http://127.0.0.1:8000',
       '/top_signals': 'http://127.0.0.1:8000',
+      // '/insights' also covers '/insights_data' (prefix match). These were
+      // missing, so dev requests fell through to the SPA fallback (HTML),
+      // breaking KeyData/SignalInfo/bars in dev.
+      '/insights': 'http://127.0.0.1:8000',
+      '/peer_groups': 'http://127.0.0.1:8000',
+      '/bars': 'http://127.0.0.1:8000',
+      '/meta': 'http://127.0.0.1:8000',
     }
   },
   build: {

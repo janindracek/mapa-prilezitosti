@@ -1,6 +1,9 @@
 // Constants extracted from App.jsx
 
-export const API_BASE = import.meta?.env?.VITE_API_BASE || (import.meta?.env?.DEV ? 'http://127.0.0.1:8000' : '');
+// Re-export so every caller shares api.js's base. The previous local definition
+// used `import.meta?.env?...`, which Vite cannot statically replace — it always
+// resolved to "" and split the app between two API bases in dev.
+export { BASE as API_BASE } from './api.js';
 
 export const ISO3_TO_NAME = {
   ABW: "Aruba",

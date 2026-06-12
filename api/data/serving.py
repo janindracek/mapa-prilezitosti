@@ -19,16 +19,18 @@ _MAP_METRIC = {
     "export_value_usd": "export_cz_to_partner",
 }
 
-# The map/product shaping below only ever touches these 5 of core_trade's 19
+# The map/product shaping below only ever touches these 6 of core_trade's 19
 # columns. Reading just these, with the pyarrow dtype backend (compact string
-# storage), keeps the single resident copy ~66 MB AND — critically — keeps the
-# READ-TIME peak low: the default object-string read explodes the two
+# storage), keeps the single resident copy small (~80 MB) AND — critically —
+# keeps the READ-TIME peak low: the default object-string read explodes the two
 # high-cardinality string columns to ~190 MB transient, inflating the RSS
 # high-water mark past the 512 MB hosting cap. The pyarrow backend never
 # materializes Python str objects, so peak RSS stays ~halved. Loading the full
 # 19-col object frame was the cause of the /map_v2 OOM 502s. Output is identical
 # to the float64 path (pyarrow doubles are full precision).
-_CORE_COLS = ["year", "hs6", "partner_iso3", "podil_cz_na_importu", "export_cz_to_partner"]
+# import_partner_total is needed as the denominator for share aggregation.
+_CORE_COLS = ["year", "hs6", "partner_iso3", "podil_cz_na_importu",
+              "export_cz_to_partner", "import_partner_total"]
 
 
 class ServingDataLoader:
@@ -83,7 +85,16 @@ class ServingDataLoader:
         if sub.empty or col not in sub.columns:
             return []
 
-        agg = sub.groupby("partner_iso3")[col].sum().reset_index()
+        if is_share:
+            # A share cannot be summed across products: with no hs6 filter the
+            # old per-HS6-share sum produced nonsense (e.g. SVK "113727%").
+            # Compute it as total CZ exports / total partner imports — which for
+            # a single-HS6 subset reduces to the stored podil value.
+            g = sub.groupby("partner_iso3")[["export_cz_to_partner", "import_partner_total"]].sum()
+            agg = (g["export_cz_to_partner"] / g["import_partner_total"].where(g["import_partner_total"] > 0)
+                   ).rename(col).reset_index()
+        else:
+            agg = sub.groupby("partner_iso3")[col].sum().reset_index()
         results = []
         for _, r in agg.iterrows():
             v = float(r[col]) if pd.notnull(r[col]) else 0.0

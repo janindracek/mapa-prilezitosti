@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import ReactEChartsCore from "echarts-for-react/lib/core";
 import echarts from "../lib/echarts.js";
 
@@ -135,8 +135,10 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
     return `World — ${metric}`;
   }
 
-  // Defensive: normalize data to an array of {name, value:number} using robust resolution
-  const safeData = Array.isArray(data)
+  // Defensive: normalize data to an array of {name, value:number} using robust resolution.
+  // Memoized — a fresh array identity per render cascaded into a fresh option
+  // object, forcing ECharts to redraw (and re-animate) on every parent render.
+  const safeData = useMemo(() => Array.isArray(data)
     ? data.map((item) => {
         const rawField = item?.[nameField];
         const iso3Field = item?.iso3 != null ? String(item.iso3) : null; // may be 'DEU' or '276'
@@ -167,7 +169,7 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         const iso3Code = /^[A-Z]{3}$/.test(iso3) ? iso3 : null;
         return { name: String(resolved || ''), value: valueNum, iso3: iso3Code };
       })
-    : [];
+    : [], [data, nameMap, nameField]);
 
   // English region name → Czech name, so tooltips read in Czech on the Czech UI.
   const nameToCzech = useMemo(() => {
@@ -267,7 +269,7 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
           top: 10,
           bottom: 50,
           aspectScale: 0.85, // Slightly compress vertically
-          emphasis: { 
+          emphasis: {
             label: { show: false },
             itemStyle: {
               areaColor: "#e5e7eb",
@@ -293,7 +295,7 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         },
       ],
     };
-  }, [safeData, metric, meta, nameToCzech]);
+  }, [safeData, metric, nameToCzech]);
 
 
 
@@ -328,19 +330,28 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
     return mapping;
   }, [safeData, data, nameMap]);
 
-  // ECharts event handlers
-  const onEvents = onCountryClick ? {
+  // ECharts event handlers. echarts-for-react dispose()s and rebuilds the whole
+  // chart whenever onEvents fails its deep-equal check, and functions only
+  // compare by reference — so the object must keep ONE identity for the chart's
+  // lifetime. nameToIso3/onCountryClick change with data, so the stable handler
+  // reads them through a ref instead of closing over them ("latest ref").
+  const clickCtxRef = useRef({ onCountryClick, nameToIso3 });
+  useEffect(() => {
+    clickCtxRef.current = { onCountryClick, nameToIso3 };
+  });
+  const onEvents = useMemo(() => ({
     'click': (params) => {
-      if (params.componentType === 'series' && params.seriesType === 'map') {
+      const { onCountryClick: cb, nameToIso3: lookup } = clickCtxRef.current;
+      if (cb && params.componentType === 'series' && params.seriesType === 'map') {
         const countryName = params.name;
-        const iso3 = nameToIso3.get(countryName);
-        
+        const iso3 = lookup.get(countryName);
+
         if (iso3) {
-          onCountryClick(iso3, countryName);
+          cb(iso3, countryName);
         }
       }
     }
-  } : undefined;
+  }), []);
 
   return (
     <div data-testid="worldmap" style={{ border: "1px solid #eee", borderRadius: 6, padding: 12, background: "#fff" }}>

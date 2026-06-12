@@ -8,6 +8,12 @@
       "port": 8000
     },
     {
+      "name": "ui-dev-live-api",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-lc", "cd ui && VITE_API_BASE=https://mapa-prilezitosti-z6ch.onrender.com npm run dev"],
+      "port": 5173
+    },
+    {
       "name": "issue-tree",
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8123", "--directory", "/Users/janindracek/Downloads/czech-defence-issue-tree"],

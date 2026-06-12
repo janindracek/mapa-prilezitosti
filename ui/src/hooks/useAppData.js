@@ -1,5 +1,5 @@
 // Data management hook extracted from App.jsx
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchControls, fetchMap, fetchBars } from '../lib/api.js';
 
 export function useAppData() {
@@ -17,8 +17,10 @@ export function useAppData() {
   // Current selection (defaults will be set after controls load)
   const [state, setState] = useState({ country: "", year: 2023 });
 
-  // Data for widgets
-  const [worldData, setWorldData] = useState([]);
+  // Data for widgets. worldData keeps the rows TOGETHER with the metric/hs6
+  // they were fetched for, so the map can never format one metric's data with
+  // another metric's formatter (the "0 USD" tooltip bug).
+  const [worldData, setWorldData] = useState({ rows: [], metric: null, hs6: null });
   const [productData, setProductData] = useState([]);
 
   // Load controls and reference data centrally
@@ -90,10 +92,16 @@ export function useAppData() {
     }));
   }, []);
 
+  // Monotonic sequence so out-of-order responses are dropped: with several map
+  // requests in flight (slow free-tier API), last-resolver-wins used to swap the
+  // map's numbers and shades to a stale product/metric.
+  const mapReqSeq = useRef(0);
   const loadMapData = useCallback(async (year, hs6, mapMetric) => {
     if (!year || !hs6) return;
-    const world = await fetchMap({ year, hs6, metric: mapMetric });
-    setWorldData(world);
+    const seq = ++mapReqSeq.current;
+    const rows = await fetchMap({ year, hs6, metric: mapMetric });
+    if (seq !== mapReqSeq.current) return; // superseded by a newer request
+    setWorldData({ rows: Array.isArray(rows) ? rows : [], metric: mapMetric, hs6 });
   }, []);
 
   const loadProductData = useCallback(async (year, country) => {

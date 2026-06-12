@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import ReactEChartsCore from "echarts-for-react/lib/core";
 import echarts from "../lib/echarts.js";
 
@@ -43,30 +43,6 @@ export default function ProductBarChart({
   const czechNames = referenceData.countryNames;
 
   const items = Array.isArray(data) ? data : [];
-  const seriesData = items
-    .map((b) => {
-      // Convert ISO3 country codes to Czech names if possible
-      let displayName = b.name || b.id;
-      const iso3 = String(b.id || b.name || '').toUpperCase();
-      if (/^[A-Z]{3}$/.test(iso3) && czechNames[iso3]) {
-        displayName = czechNames[iso3];
-      }
-      
-      return {
-        value: Number(b.value) || 0, // API returns values already in USD, no scaling needed
-        id: b.id,
-        value_fmt: null,
-        name: displayName,
-        itemStyle: b.id === selectedId
-          ? { opacity: 1, borderWidth: 2, borderColor: "#222" }
-          : { opacity: 0.8 },
-      };
-    })
-    .sort((a, b) => b.value - a.value);  // Sort descending (largest first)
-
-  // For horizontal bar chart: reverse arrays so largest values appear at top
-  const categories = seriesData.map((d) => d.name).reverse();  
-  const reversedSeriesData = [...seriesData].reverse();
 
   // Auto height so labels never overlap; minimum height for empty/small lists
   const height = Math.max(220, 28 * Math.max(1, items.length) + 40);
@@ -88,52 +64,85 @@ export default function ProductBarChart({
     return "Celkový český export do jednotlivých zemí (seřazeno sestupně)\nHodnoty: objem exportu v USD";
   })();
 
-  const option = {
-    grid: { left: 8, right: 60, top: 8, bottom: 8, containLabel: true },
-    tooltip: {
-      trigger: "item",
-      formatter: (p) => {
-        const d = p?.data || {};
-        // Try multiple ways to access the value
-        const val = Number.isFinite(p.value) ? p.value : 
-                   Number.isFinite(d.value) ? d.value : 
-                   Number.isFinite(p.data?.value) ? p.data.value : 0;
-        const formatted = formatChartValue(val);
-        return `${d.name}<br/><b>${formatted} mil. USD</b>`;
-      },
-    },
-    xAxis: {
-      type: "value",
-      axisLabel: {
-        fontSize: 12,
-        margin: 8,
-        formatter: (v) => {
-          // Use same formatting function as tooltip for consistency
-          const formatted = formatChartValue(v);
-          return `${formatted} mil.`; // Always show as millions for simplicity
+  // Memoized: the option holds formatter closures, which echarts-for-react
+  // deep-compares by reference — a fresh option per render forced a full
+  // setOption/redraw (re-animation) on every parent re-render.
+  const option = useMemo(() => {
+    const seriesData = (Array.isArray(data) ? data : [])
+      .map((b) => {
+        // Convert ISO3 country codes to Czech names if possible
+        let displayName = b.name || b.id;
+        const iso3 = String(b.id || b.name || '').toUpperCase();
+        if (/^[A-Z]{3}$/.test(iso3) && czechNames[iso3]) {
+          displayName = czechNames[iso3];
+        }
+
+        return {
+          value: Number(b.value) || 0, // API returns values already in USD, no scaling needed
+          id: b.id,
+          value_fmt: null,
+          name: displayName,
+          itemStyle: b.id === selectedId
+            ? { opacity: 1, borderWidth: 2, borderColor: "#222" }
+            : { opacity: 0.8 },
+        };
+      })
+      .sort((a, b) => b.value - a.value);  // Sort descending (largest first)
+
+    // For horizontal bar chart: reverse arrays so largest values appear at top
+    const categories = seriesData.map((d) => d.name).reverse();
+    const reversedSeriesData = [...seriesData].reverse();
+
+    return {
+      grid: { left: 8, right: 60, top: 8, bottom: 8, containLabel: true },
+      tooltip: {
+        trigger: "item",
+        formatter: (p) => {
+          const d = p?.data || {};
+          // Try multiple ways to access the value
+          const val = Number.isFinite(p.value) ? p.value :
+                     Number.isFinite(d.value) ? d.value :
+                     Number.isFinite(p.data?.value) ? p.data.value : 0;
+          const formatted = formatChartValue(val);
+          return `${d.name}<br/><b>${formatted} mil. USD</b>`;
         },
       },
-    },
-    yAxis: { type: "category", data: categories, axisTick: { show: false } },
-    series: [
-      {
-        type: "bar",
-        data: reversedSeriesData,
-        label: { show: false },
-        itemStyle: { borderRadius: [2, 2, 2, 2] },
-        emphasis: { focus: "series" },
+      xAxis: {
+        type: "value",
+        axisLabel: {
+          fontSize: 12,
+          margin: 8,
+          hideOverlap: true, // tick labels are long ("1 000,0 mil.") and collided
+          formatter: (v) => {
+            // Use same formatting function as tooltip for consistency
+            const formatted = formatChartValue(v);
+            return `${formatted} mil.`; // Always show as millions for simplicity
+          },
+        },
       },
-    ],
-  };
+      yAxis: { type: "category", data: categories, axisTick: { show: false } },
+      series: [
+        {
+          type: "bar",
+          data: reversedSeriesData,
+          label: { show: false },
+          itemStyle: { borderRadius: [2, 2, 2, 2] },
+          emphasis: { focus: "series" },
+        },
+      ],
+    };
+  }, [data, selectedId, czechNames]);
 
-  const onEvents = onSelect
+  // Memoized for the same reason as option — changed onEvents makes
+  // echarts-for-react dispose() and rebuild the whole chart.
+  const onEvents = useMemo(() => onSelect
     ? {
         click: (params) => {
           const d = params?.data;
           if (d && d.id) onSelect(d.id);
         },
       }
-    : undefined;
+    : undefined, [onSelect]);
 
   return (
     <div style={{ border: "1px solid #eee", borderRadius: 6, padding: 12, background: "#fff" }}>
