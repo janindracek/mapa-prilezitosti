@@ -17,6 +17,9 @@ from api.settings import settings
 _MAP_METRIC = {
     "cz_share_in_partner_import": "podil_cz_na_importu",
     "export_value_usd": "export_cz_to_partner",
+    # Market size: the partner's total imports. Per-HS6 when hs6 is given;
+    # summed across all products otherwise. Same USD formatting as exports.
+    "import_value_usd": "import_partner_total",
 }
 
 # The map/product shaping below only ever touches these 6 of core_trade's 19

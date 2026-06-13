@@ -2,6 +2,13 @@ import React, { useEffect } from 'react';
 
 // Detailed explanations for each key data tile in Czech
 const KEY_DATA_EXPLANATIONS = {
+  'hero_tile': {
+    title: 'Hlavní dlaždice (podíl vs. medián / vývoj exportu)',
+    description: 'První, zvýrazněná dlaždice shrnuje jádro vybraného signálu. U benchmark signálů ukazuje podíl ČR vs. medián srovnatelné skupiny a jejich rozdíl v procentních bodech (p. b.). U signálů meziroční změny ukazuje vývoj exportu z předchozího na aktuální rok.',
+    formula: 'Odstup = (Podíl_ČR − Medián_skupiny) × 100 [p. b.]',
+    calculation: 'Procentní bod (p. b.) je absolutní rozdíl dvou procentuálních hodnot: podíl 31,3 % vs. medián 59,6 % znamená odstup −28,3 p. b. Záporný odstup (červeně) = ČR je pod úrovní srovnatelných zemí; kladný (zeleně) = nad ní.',
+    interpretation: 'Záporný odstup při velkém trhu naznačuje růstový potenciál — pokud by ČR dorovnala medián, rozdíl × velikost importu země odhaduje dodatečný roční export (viz věta nad panelem).'
+  },
   'bilateral_export': {
     title: 'Export ČR → země',
     description: 'Hodnota bilaterálního exportu z České republiky do vybrané země pro konkrétní HS6 produkt.',

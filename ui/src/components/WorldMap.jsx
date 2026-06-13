@@ -84,12 +84,42 @@ function buildNameMappings(geoData) {
     '862': 'Venezuela', '876': 'Wallis and Futuna', '882': 'Samoa', '887': 'Yemen', '894': 'Zambia'
   };
   
-  // ISO3 → region name AS SPELLED IN ui/public/world.json. Generated from the
-  // numeric table above via pycountry + manual fixes for this geojson's
-  // non-standard names (USA, England, Republic of Serbia, Ivory Coast, ...).
-  // Without this table byIso3 stayed empty, so API rows (Czech names + iso3)
-  // never matched geojson regions and most countries rendered as "no data".
-  const ISO3_TO_GEOJSON_NAME = {
+  try {
+    const features = geoData.features || [];
+    for (const f of features) {
+      const props = f?.properties || {};
+      const nm = props?.name || "";
+      if (!nm) continue;
+      nameSet.add(nm);
+    }
+
+    // Add numeric mappings
+    for (const [numericCode, countryName] of Object.entries(numericToName)) {
+      if (nameSet.has(countryName)) {
+        byNumeric.set(numericCode, countryName);
+      }
+    }
+
+    // ISO3 mappings — the path the API data (iso3 + Czech display name)
+    // actually resolves through.
+    for (const [iso3, countryName] of Object.entries(ISO3_TO_GEOJSON_NAME)) {
+      if (nameSet.has(countryName)) {
+        byIso3.set(iso3, countryName);
+      }
+    }
+
+  } catch (_) {}
+
+  __NAME_BY = { byIso3, byNumeric, nameSet };
+  return __NAME_BY;
+}
+
+// ISO3 → region name AS SPELLED IN ui/public/world.json. Generated from the
+// curated numeric table via pycountry + manual fixes for this geojson's
+// non-standard names (USA, England, Republic of Serbia, Ivory Coast, ...).
+// Module scope so the render path (selected/peer highlights) can resolve
+// region names even for countries absent from the current data rows.
+const ISO3_TO_GEOJSON_NAME = {
     AFG: "Afghanistan", AGO: "Angola", ALB: "Albania", ARE: "United Arab Emirates",
     ARG: "Argentina", ARM: "Armenia", ATF: "French Southern and Antarctic Lands", AUS: "Australia",
     AUT: "Austria", AZE: "Azerbaijan", BDI: "Burundi", BEL: "Belgium",
@@ -134,39 +164,16 @@ function buildNameMappings(geoData) {
     USA: "USA", UZB: "Uzbekistan", VEN: "Venezuela", VNM: "Vietnam",
     VUT: "Vanuatu", YEM: "Yemen", ZAF: "South Africa", ZMB: "Zambia",
     ZWE: "Zimbabwe",
-  };
+};
 
-  try {
-    const features = geoData.features || [];
-    for (const f of features) {
-      const props = f?.properties || {};
-      const nm = props?.name || "";
-      if (!nm) continue;
-      nameSet.add(nm);
-    }
-
-    // Add numeric mappings
-    for (const [numericCode, countryName] of Object.entries(numericToName)) {
-      if (nameSet.has(countryName)) {
-        byNumeric.set(numericCode, countryName);
-      }
-    }
-
-    // ISO3 mappings — the path the API data (iso3 + Czech display name)
-    // actually resolves through.
-    for (const [iso3, countryName] of Object.entries(ISO3_TO_GEOJSON_NAME)) {
-      if (nameSet.has(countryName)) {
-        byIso3.set(iso3, countryName);
-      }
-    }
-
-  } catch (_) {}
-  
-  __NAME_BY = { byIso3, byNumeric, nameSet };
-  return __NAME_BY;
+// Region name for an iso3 — prefers the geojson-validated map (populated once
+// world.json loads), falls back to the static table above.
+function regionNameForIso3(iso3) {
+  if (!iso3) return null;
+  return __NAME_BY.byIso3.get(iso3) || ISO3_TO_GEOJSON_NAME[iso3] || null;
 }
 
-export default function WorldMap({ data = [], metric = "value", nameMap = null, czechNames = null, nameField = 'name', meta = {}, onCountryClick = null }) {
+export default function WorldMap({ data = [], metric = "value", nameMap = null, czechNames = null, nameField = 'name', meta = {}, onCountryClick = null, selectedIso3 = null, peerIso3 = [] }) {
   function formatHs6Dot(code) {
     const raw = String(code ?? '').trim();
     const digits = raw.replace(/\D/g, '');
@@ -191,6 +198,9 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
     }
     if (metric === 'export_value_usd') {
       return `Celková hodnota českého exportu HS6 ${hs || '—'}${y ? `, ${y}` : ''}, v USD`;
+    }
+    if (metric === 'import_value_usd') {
+      return `Celkový import HS6 ${hs || '—'} do země${y ? `, ${y}` : ''}, v USD`;
     }
     return `World — ${metric}`;
   }
@@ -249,22 +259,56 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
 
   // Map option: choropleth over the registered "world" map
   const option = useMemo(() => {
-    const seriesData = safeData.map((d) => ({ name: d.name, value: d.value }));
+    const selectedRegion = regionNameForIso3(selectedIso3);
+    const peerRegions = new Set(
+      (Array.isArray(peerIso3) ? peerIso3 : [])
+        .map(regionNameForIso3)
+        .filter(Boolean)
+    );
+    const highlightStyle = (regionName) => {
+      if (selectedRegion && regionName === selectedRegion) {
+        return { borderColor: "#111827", borderWidth: 2 };
+      }
+      if (peerRegions.has(regionName)) {
+        return { borderColor: "#7c3aed", borderWidth: 1.5 };
+      }
+      return null;
+    };
+
+    const seriesData = safeData.map((d) => {
+      const hl = highlightStyle(d.name);
+      return hl ? { name: d.name, value: d.value, itemStyle: hl } : { name: d.name, value: d.value };
+    });
+    // Selected/peer countries absent from the data rows still deserve their
+    // outline (value stays null → region keeps the no-data fill).
+    const present = new Set(seriesData.map((d) => d.name));
+    [selectedRegion, ...peerRegions].forEach((regionName) => {
+      if (regionName && !present.has(regionName)) {
+        seriesData.push({ name: regionName, value: null, itemStyle: highlightStyle(regionName) });
+      }
+    });
 
     // Metric semantics
     const isShare =
       metric === "cz_share_in_partner_import" ||
       metric === "partner_share_in_cz_exports";
-    const values = seriesData
+    const values = safeData
       .map(d => (Number.isFinite(Number(d.value)) ? Number(d.value) : null))
       .filter(v => v !== null);
 
+    // Robust scale ceiling: 95th percentile of POSITIVE values, so a single
+    // outlier (e.g. a 99.9% share micro-market) cannot wash out the rest of
+    // the map. Values above the ceiling clamp to the top color.
+    const positives = values.filter((v) => v > 0).sort((a, b) => a - b);
+    const p95 = positives.length
+      ? positives[Math.min(positives.length - 1, Math.floor(0.95 * (positives.length - 1)))]
+      : 0;
+
     // Scale & colors
-    let vmin, vmax, colors, tooltipFmt;
+    let vmin, vmax, colors, tooltipFmt, legendFmt;
     if (isShare) {
-      const rawMax = values.length ? Math.max(...values) : 0;
       vmin = 0;
-      vmax = Math.max(rawMax, 0.01); // API returns percentages as decimals (0.5029 = 50.29%)
+      vmax = Math.max(p95, 0.01); // API returns shares as decimals (0.5029 = 50.29%)
       colors = ["#fef3c7", "#f59e0b", "#92400e"];  // warm yellow to brown gradient
       tooltipFmt = (v) => {
         if (v == null) return 'n/a';
@@ -275,13 +319,19 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         }
         return `${percentage.toFixed(1)}%`;
       }; // Multiply by 100 for display with better precision for small values
+      legendFmt = (v) => `${(v * 100).toLocaleString("cs-CZ", { maximumFractionDigits: 1 })} %`;
     } else {
       const minV = values.length ? Math.min(...values) : 0;
-      const maxV = values.length ? Math.max(...values) : 0;
+      const usdCompact = (v) => {
+        const a = Math.abs(v);
+        if (a >= 1e9) return `${(v / 1e9).toLocaleString("cs-CZ", { maximumFractionDigits: 1 })} mld.`;
+        if (a >= 1e6) return `${(v / 1e6).toLocaleString("cs-CZ", { maximumFractionDigits: 0 })} mil.`;
+        return Math.round(v).toLocaleString("cs-CZ");
+      };
       if (minV < 0) {
         // Diverging scale only when the metric can actually be negative
         // (e.g. a YoY delta): red → light → green centered on 0.
-        const maxAbs = Math.max(Math.abs(minV), Math.abs(maxV), 1e-9);
+        const maxAbs = Math.max(Math.abs(minV), Math.abs(values.length ? Math.max(...values) : 0), 1e-9);
         vmin = -maxAbs;
         vmax = maxAbs;
         colors = ["#dc2626", "#fef2f2", "#16a34a"];
@@ -290,12 +340,15 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         // many zero-export countries at its midpoint (near-white) and wasted
         // half the range, so the map looked empty even with real data.
         vmin = 0;
-        vmax = Math.max(maxV, 1e-9);
-        colors = ["#f0fdf4", "#4ade80", "#15803d"]; // light → rich green
+        vmax = Math.max(p95, 1e-9);
+        colors = metric === "import_value_usd"
+          ? ["#eff6ff", "#60a5fa", "#1d4ed8"]  // market size: blue, distinct from CZ-export green
+          : ["#f0fdf4", "#4ade80", "#15803d"]; // light → rich green
       }
       const nf = new Intl.NumberFormat("cs-CZ", { maximumFractionDigits: 0 });
       // Values are already in USD, no scaling needed
       tooltipFmt = (v) => v == null ? 'n/a' : `${nf.format(v)} USD`;
+      legendFmt = (v) => usdCompact(v);
     }
 
     return {
@@ -311,12 +364,26 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         },
       },
       visualMap: {
-        show: false, // Hide the color slider
+        show: true, // legend: without a scale the choropleth can't be read
+        type: "continuous",
         min: vmin,
         max: vmax,
         calculable: false,
+        orient: "horizontal",
+        left: 10,
+        bottom: 0,
+        itemWidth: 12,
+        itemHeight: 110,
+        // text order for horizontal continuous visualMap: [max, min]
+        text: [`${legendFmt(vmax)}+`, legendFmt(vmin)],
+        textStyle: { fontSize: 11, color: "#666" },
         inRange: {
           color: colors
+        },
+        // values above the p95 ceiling clamp to the top color instead of the
+        // default out-of-range gray
+        outOfRange: {
+          color: colors[colors.length - 1]
         }
       },
       series: [
@@ -360,7 +427,7 @@ export default function WorldMap({ data = [], metric = "value", nameMap = null, 
         },
       ],
     };
-  }, [safeData, metric, nameToCzech]);
+  }, [safeData, metric, nameToCzech, selectedIso3, peerIso3]);
 
 
 

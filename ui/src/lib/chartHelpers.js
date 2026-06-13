@@ -38,14 +38,13 @@ export function barChartSubtitle(signalType = null, partnerCounts = {}) {
   }
   
   if (signalType?.includes('Peer_gap')) {
-    if (totalPartners && peerGroupPartners) {
-      return `Ukazuje ${peerGroupPartners} exportních partnerů v peer group, z celkem ${totalPartners} exportních partnerů Česka celkem.\nHodnoty: objem českého exportu v USD`;
-    } else if (peerGroupPartners) {
-      return `Ukazuje ${peerGroupPartners} exportních partnerů v peer group.\nHodnoty: objem českého exportu v USD`;
+    if (peerGroupPartners) {
+      return `Podíl ČR na importu daného produktu v zemích srovnávací skupiny (${peerGroupPartners} zemí). Přerušovaná čára = medián skupiny.`;
     }
+    return `Podíl ČR na importu daného produktu v zemích srovnávací skupiny. Přerušovaná čára = medián skupiny.`;
   } else if (signalType === 'YoY_export_change' || signalType === 'YoY_partner_share_change') {
     if (totalPartners && peerGroupPartners) {
-      return `Ukazuje ${peerGroupPartners} největších exportních partnerů z celkem ${totalPartners} partnerů Česka.\nHodnoty: objem českého exportu v USD`;
+      return `Ukazuje ${peerGroupPartners} největších exportních partnerů z celkem ${totalPartners} destinací českého exportu.\nHodnoty: objem českého exportu v USD`;
     } else if (peerGroupPartners) {
       return `Ukazuje ${peerGroupPartners} největších exportních partnerů Česka.\nHodnoty: objem českého exportu v USD`;
     }

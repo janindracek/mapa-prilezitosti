@@ -95,6 +95,7 @@ export function useSignalHandling(adaptSignals) {
     const syntheticSignal = {
       id: `hs6_synthetic_${hs6Code}`,
       type: 'YoY_export_change',
+      synthetic: true, // own-product analysis, not a detected signal
       hs6: hs6Code,
       hs6_name: hs6Label,
       partner_iso3: state.country,
@@ -151,6 +152,8 @@ export function useSignalHandling(adaptSignals) {
       const isYoYSignal = signal.type === 'YoY_export_change' || signal.type === 'YoY_partner_share_change';
       const keyData = {
         cz_to_c: insightsData.cz_to_c ?? null,
+        // Previous-year bilateral export (new API field; null on older servers)
+        cz_to_c_prev: insightsData.cz_to_c_prev ?? null,
         cz_world_total: insightsData.cz_world_total ?? null,
         c_import_total: insightsData.c_import_total,
         cz_share_in_c: insightsData.cz_share_in_c,
@@ -229,6 +232,7 @@ export function useSignalHandling(adaptSignals) {
       // Fallback: create basic keyData with no fake numbers
       const keyData = {
         cz_to_c: null,
+        cz_to_c_prev: null,
         cz_world_total: null,
         c_import_total: null,
         cz_share_in_c: null, 
@@ -261,6 +265,7 @@ export function useSignalHandling(adaptSignals) {
     const syntheticSignal = {
       id: `country_click_${countryIso3}_${currentHs6}_${Date.now()}`,
       type: 'YoY_export_change', // Default signal type for country+HS6 combinations
+      synthetic: true, // own-product analysis, not a detected signal
       hs6: currentHs6,
       hs6_name: hs6Label,
       partner_iso3: countryIso3,

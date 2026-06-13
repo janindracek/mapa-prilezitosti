@@ -4,6 +4,24 @@ Newest first. One entry per working session: what changed, what was decided, wha
 
 ---
 
+## 2026-06-13 — M7 UX pass: decision-support presentation (on `main`)
+
+After the technical review (flicker / map "0 USD" / OOM — fixed in `dd6acb9`), ran a **multi-model, persona-driven UX review** (4 reviewer subagents: opus=trade-mission domain, fable=information design, sonnet=Czech content/trust, haiku=first-time user) over real evidence captured from the live API for three click-through scenarios (DEU peer-gap / VNM YoY / ARE own-product). Strong convergence; deduped into a feasibility-tagged list; implemented everything **except the one L-scoped item** (named-competitor breakdown per market — needs raw-BACI supplier data in the serving layer).
+
+Implemented (two parallel subagents — API vs UI — then integrated; see README §7.1):
+- **Trust/correctness:** peer_compare selected-country **0.0 bug** fixed (was hardcoded; now its real value/share); insight text "5-year growth" falsehood → honest 2022→2023 line; CZE dropped from world-import list; ISO3→Czech names; Czech decimal commas; degenerate-median clause suppressed; `/insights` returns `source`; the red blanket "LLM" warning replaced by a sober data-source note.
+- **Story:** opportunity headline (headroom in USD); KeyData hero tile (share-vs-median + gap in p. b., or prev→current for YoY); benchmark chart re-encoded as **CZ share with a dashed median markLine**; signal-list magnitudes; first-class own-product flow.
+- **Map:** `visualMap` legend; p95 color ceiling (kills outlier wash-out); third metric `import_value_usd` (market size, blue); selected + peer-group border highlights.
+- **API contract additions:** `/bars` `share`; `/insights_data` `cz_to_c_prev` + percent-consistent `cz_delta_pct`; `/map_v2` `import_value_usd`; `/signals/all` drops pseudo-codes (108140→107762, −378 `S19`); peer teaser ordered by market size + Czech names.
+
+**Two real ECharts bugs found via browser verification** (the markLine was in the option but never painted): (1) the slimmed `lib/echarts.js` never registered **`MarkLineComponent`** — silently ignored; (2) even registered, `lazyUpdate={true}` defers a mark-component added in the same setOption as series data, so it never paints. Fix = register the component **and** `lazyUpdate={false}` on the bar chart. Confirmed: 2 810 amber px in a clean vertical column at the median position; label "medián 3,7 %".
+
+**Verified:** `npm run build` clean; vitest no new failures vs the 5 stale-placeholder baseline; lint no new errors (agents fixed 2, 11→9); browser run of the prod build on all three scenarios — headline/hero/chart/map/legend/highlights/insight all render correct numbers, no console errors; backend acceptance curls match an independent pandas recompute.
+
+**Note:** the 5 stale UI placeholder tests stay red (pre-existing; assert old component output). **Deferred (v2):** named-competitor supplier breakdown (the L item) — logged for the ETL/serving change it needs.
+
+---
+
 ## 2026-06-11 — M7 LIVE on Render, Free tier ✅ (branch `m7-hosting` → merged `main`)
 
 **Live URL:** https://mapa-prilezitosti-z6ch.onrender.com — full dashboard, **Free tier (512 MB)**, region Frankfurt. Smoke 7/7; all UI endpoints 200; survived 120 heavy `/bars` requests with 0 failures.

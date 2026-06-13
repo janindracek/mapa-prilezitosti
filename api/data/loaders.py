@@ -1,7 +1,8 @@
 import os
 import json
 import pandas as pd
-from typing import Dict, Optional, Set
+from functools import lru_cache
+from typing import Dict, FrozenSet, Optional, Set
 from api.settings import settings
 
 
@@ -36,6 +37,23 @@ def load_hs6_names() -> Dict[str, str]:
         return dict(zip(df["hs6"], df["name"]))
     except Exception:
         return {}
+
+
+@lru_cache(maxsize=1)
+def load_real_country_iso3() -> FrozenSet[str]:
+    """ISO3 codes of REAL countries from data/serving/countries.parquet.
+
+    BACI ships pseudo-aggregates (e.g. 'S19' = "Other Asia, nes") that sit in
+    countries.parquet too, so membership alone isn't enough — require a plain
+    three-letter alpha code on top. Used to keep pseudo-codes out of signal
+    listings and peer teasers."""
+    try:
+        df = pd.read_parquet(settings.COUNTRIES_PATH, columns=["iso3"])
+        codes = df["iso3"].dropna().astype(str)
+        return frozenset(c for c in codes if len(c) == 3 and c.isalpha() and c.isupper())
+    except Exception as e:
+        print(f"Warning: could not load country ISO3 set: {e}")
+        return frozenset()
 
 
 def load_peer_groups(peer_type: str, year: int, country_iso3: str) -> Optional[pd.DataFrame]:

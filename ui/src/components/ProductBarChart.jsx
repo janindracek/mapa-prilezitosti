@@ -29,15 +29,27 @@ function formatChartValue(x) {
   }
 }
 
-export default function ProductBarChart({ 
-  data = [], 
-  title, 
-  subtitle, 
-  onSelect, 
-  selectedId = null, 
-  hs6Label = null, 
+// Percent with 1 decimal in cs-CZ, e.g. 31.32 -> "31,3 %"
+function formatPercentValue(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return `${n.toLocaleString("cs-CZ", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %`;
+}
+
+export default function ProductBarChart({
+  data = [],
+  title,
+  subtitle,
+  onSelect,
+  selectedId = null,
+  hs6Label = null,
   czechTitleMode = 'cz',
-  referenceData = { countryNames: {}, hs6Labels: {}, continents: {}, loading: false }
+  referenceData = { countryNames: {}, hs6Labels: {}, continents: {}, loading: false },
+  // Peer-benchmark mode: bars encode CZ share of each country's imports (%)
+  // instead of USD, with a dashed group-median markLine. Falls back to the
+  // USD encoding when records carry no `share` field (older API).
+  shareMode = false,
+  peerMedian = null
 }) {
   // Use centralized reference data instead of loading independently
   const czechNames = referenceData.countryNames;
@@ -68,7 +80,13 @@ export default function ProductBarChart({
   // deep-compares by reference — a fresh option per render forced a full
   // setOption/redraw (re-animation) on every parent re-render.
   const option = useMemo(() => {
-    const seriesData = (Array.isArray(data) ? data : [])
+    const rows = Array.isArray(data) ? data : [];
+    // Use the share encoding only when the API actually sent shares —
+    // otherwise degrade gracefully to the USD encoding.
+    const hasShares = rows.some((b) => Number.isFinite(Number(b?.share)));
+    const useShareEncoding = shareMode && hasShares;
+
+    const seriesData = rows
       .map((b) => {
         // Convert ISO3 country codes to Czech names if possible
         let displayName = b.name || b.id;
@@ -77,10 +95,15 @@ export default function ProductBarChart({
           displayName = czechNames[iso3];
         }
 
+        const usd = Number(b.value) || 0; // API returns values already in USD
+        const shareVal = Number.isFinite(Number(b?.share)) ? Number(b.share) : null;
+
         return {
-          value: Number(b.value) || 0, // API returns values already in USD, no scaling needed
+          value: useShareEncoding ? (shareVal != null ? shareVal * 100 : 0) : usd,
+          usd,
+          share: shareVal,
           id: b.id,
-          value_fmt: null,
+          value_fmt: b.value_fmt ?? null,
           name: displayName,
           itemStyle: b.id === selectedId
             ? { opacity: 1, borderWidth: 2, borderColor: "#222" }
@@ -93,18 +116,26 @@ export default function ProductBarChart({
     const categories = seriesData.map((d) => d.name).reverse();
     const reversedSeriesData = [...seriesData].reverse();
 
+    const medianPct = Number.isFinite(Number(peerMedian)) ? Number(peerMedian) * 100 : null;
+
     return {
       grid: { left: 8, right: 60, top: 8, bottom: 8, containLabel: true },
       tooltip: {
         trigger: "item",
         formatter: (p) => {
           const d = p?.data || {};
+          if (useShareEncoding) {
+            const shareTxt = d.share != null ? formatPercentValue(d.share * 100) : "—";
+            const exportTxt = d.value_fmt ? `${d.value_fmt} USD` : `${formatChartValue(d.usd)} mil. USD`;
+            return `${d.name}: <b>${shareTxt}</b> podíl ČR na importu • export ${exportTxt}`;
+          }
           // Try multiple ways to access the value
           const val = Number.isFinite(p.value) ? p.value :
                      Number.isFinite(d.value) ? d.value :
                      Number.isFinite(p.data?.value) ? p.data.value : 0;
           const formatted = formatChartValue(val);
-          return `${d.name}<br/><b>${formatted} mil. USD</b>`;
+          const shareSuffix = d.share != null ? ` • podíl ${formatPercentValue(d.share * 100)}` : "";
+          return `${d.name}<br/><b>${formatted} mil. USD</b>${shareSuffix}`;
         },
       },
       xAxis: {
@@ -114,6 +145,7 @@ export default function ProductBarChart({
           margin: 8,
           hideOverlap: true, // tick labels are long ("1 000,0 mil.") and collided
           formatter: (v) => {
+            if (useShareEncoding) return formatPercentValue(v);
             // Use same formatting function as tooltip for consistency
             const formatted = formatChartValue(v);
             return `${formatted} mil.`; // Always show as millions for simplicity
@@ -128,10 +160,31 @@ export default function ProductBarChart({
           label: { show: false },
           itemStyle: { borderRadius: [2, 2, 2, 2] },
           emphasis: { focus: "series" },
+          // Dashed vertical line at the peer-group median share. z above the
+          // bars (default series z=2) so it isn't hidden behind the many bars
+          // that extend past the median.
+          ...(useShareEncoding && medianPct != null ? {
+            markLine: {
+              symbol: 'none',
+              silent: true,
+              animation: false,
+              z: 10,
+              lineStyle: { type: 'dashed', color: '#b45309', width: 2, opacity: 1 },
+              label: {
+                show: true,
+                formatter: `medián ${formatPercentValue(medianPct)}`,
+                position: 'insideEndTop',
+                fontSize: 11,
+                fontWeight: 'bold',
+                color: '#b45309',
+              },
+              data: [{ name: 'medián', xAxis: medianPct }],
+            },
+          } : {}),
         },
       ],
     };
-  }, [data, selectedId, czechNames]);
+  }, [data, selectedId, czechNames, shareMode, peerMedian]);
 
   // Memoized for the same reason as option — changed onEvents makes
   // echarts-for-react dispose() and rebuild the whole chart.
@@ -157,7 +210,7 @@ export default function ProductBarChart({
           echarts={echarts}
           option={option}
           notMerge={true}
-          lazyUpdate={true}
+          lazyUpdate={false}
           style={{ width: "100%", height }}
           onEvents={onEvents}
         />

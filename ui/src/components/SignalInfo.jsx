@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE } from '../lib/constants.js';
 import HelpButton from './HelpButton.jsx';
-import { REGISTRY, SIGNAL_METHOD, methodologyForSignal } from '../lib/labels.js';
+import { REGISTRY, SIGNAL_METHOD, methodologyForSignal, helpText } from '../lib/labels.js';
 
 export default function SignalInfo({
   signal = null,
@@ -14,12 +14,17 @@ export default function SignalInfo({
   const [error, setError] = useState(null);
 
   const type = signal?.type;
-  const isPeerGroupSignal = !!(type && type.startsWith('Peer_gap'));
-  const method = type ? SIGNAL_METHOD[type] : null; // trade_structure | human | undefined
+  const hasSignal = !!signal;
+  const isSynthetic = !!signal?.synthetic;
+  const isPeerGroupSignal = !isSynthetic && !!(type && type.startsWith('Peer_gap'));
+  // Synthetic (own-product) rows show the geographic (human) group — that is
+  // the comparison group the KeyData median refers to.
+  const method = isSynthetic ? 'human' : (type ? SIGNAL_METHOD[type] : null); // trade_structure | human | undefined
+  const wantsPeerInfo = isPeerGroupSignal || isSynthetic;
 
   // Fetch the selected market's peer-group explanation for peer-gap signals.
   useEffect(() => {
-    if (!isPeerGroupSignal || !signal || !country || !method) {
+    if (!wantsPeerInfo || !hasSignal || !country || !method) {
       setPeerGroupData(null);
       return;
     }
@@ -41,7 +46,7 @@ export default function SignalInfo({
       }
     })();
     return () => { cancelled = true; };
-  }, [isPeerGroupSignal, type, country, year, method]);
+  }, [wantsPeerInfo, hasSignal, type, country, year, method]);
 
   if (!signal) {
     return (
@@ -52,9 +57,13 @@ export default function SignalInfo({
   }
 
   const row = REGISTRY[type] || {};
-  const typeDisplay = row.card_title || row.badge || type;
-  const explanation = row.tooltip || 'Popis signálu není k dispozici.';
-  const methodProse = type ? methodologyForSignal(type) : '';
+  const typeDisplay = isSynthetic
+    ? 'Vlastní analýza produktu'
+    : (row.card_title || row.badge || type);
+  const explanation = isSynthetic
+    ? 'Analýza vámi vybraného produktu na zvoleném trhu. Nejde o automaticky detekovaný signál.'
+    : (row.tooltip || 'Popis signálu není k dispozici.');
+  const methodProse = isSynthetic ? helpText('human') : (type ? methodologyForSignal(type) : '');
 
   return (
     <div style={{ border: "1px solid #eee", borderRadius: 6, padding: 12, background: "#fff" }}>
@@ -88,7 +97,7 @@ export default function SignalInfo({
 
       <div>
         <strong style={{ color: "#333" }}>Porovnávací skupina:</strong>
-        {!isPeerGroupSignal ? (
+        {!wantsPeerInfo ? (
           <div style={{ marginTop: 4, fontSize: 14, fontStyle: 'italic', color: '#666' }}>není relevantní</div>
         ) : (
           <div style={{ marginTop: 4 }}>

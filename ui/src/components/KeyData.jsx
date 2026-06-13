@@ -1,45 +1,6 @@
 import React, { useState } from "react";
 import KeyDataOverlay from './KeyDataOverlay.jsx';
-
-// Czech number formatting function
-function formatCzechUSD(x) {
-  if (x == null || Number.isNaN(x)) return "—";
-  if (x === 0) return "0 USD"; // a real zero is data, not a missing value
-  try {
-    // API returns values already properly scaled 
-    const actualValue = x;
-    const millions = actualValue / 1e6;
-    if (millions >= 1000) {
-      const billions = millions / 1000;
-      const formatted = billions.toLocaleString("cs-CZ", { 
-        minimumFractionDigits: 1, 
-        maximumFractionDigits: 1 
-      });
-      return `${formatted} mld. USD`;
-    } else if (millions >= 1) {
-      const formatted = millions.toLocaleString("cs-CZ", { 
-        minimumFractionDigits: 1, 
-        maximumFractionDigits: 1 
-      });
-      return `${formatted} mil. USD`;
-    } else if (millions >= 0.01) {
-      const formatted = millions.toLocaleString("cs-CZ", { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-      });
-      return `${formatted} mil. USD`;
-    } else {
-      const thousands = x / 1000;
-      const formatted = thousands.toLocaleString("cs-CZ", { 
-        minimumFractionDigits: 0, 
-        maximumFractionDigits: 0 
-      });
-      return `${formatted} tis. USD`;
-    }
-  } catch {
-    return String(x) + " USD";
-  }
-}
+import { formatCzechUSD, formatPct1, formatSignedPct, formatUsdPair } from "../lib/format.js";
 
 function formatPercentage(value) {
   if (value == null || Number.isNaN(value)) return "—";
@@ -49,8 +10,7 @@ function formatPercentage(value) {
 // YoY delta is already a percentage value (not a 0..1 ratio); format defensively
 function formatYoYDelta(value) {
   if (value == null || Number.isNaN(value)) return "—";
-  const formatted = value.toLocaleString("cs-CZ", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  return `${value > 0 ? '+' : ''}${formatted}%`;
+  return formatSignedPct(value);
 }
 
 export default function KeyData({ 
@@ -109,6 +69,7 @@ export default function KeyData({
 
   const {
     cz_to_c = null,        // Bilateral export to partner
+    cz_to_c_prev = null,   // Previous-year bilateral export (may be absent on older API)
     cz_world_total = null, // Total CZ export for this HS6
     c_import_total = null, // Country's total imports for this HS6
     cz_share_in_c = null,  // CZ's share of country's imports
@@ -116,43 +77,87 @@ export default function KeyData({
     cz_delta_pct = null    // YoY change percentage
   } = data;
 
-  // Prepare metrics in logical order for 3x2 grid
-  const metrics = [
-    {
-      label: "Export ČR → země",
-      value: formatCzechUSD(cz_to_c),
-      shortLabel: "Bilateral export"
-    },
-    {
-      label: "Celkový export ČR",
-      value: formatCzechUSD(cz_world_total),
-      shortLabel: "Total CZ export"
-    },
-    {
-      label: "Import země celkem",
-      value: formatCzechUSD(c_import_total),
-      shortLabel: "Country imports"
-    },
-    {
-      label: "Podíl ČR v importu",
-      value: formatPercentage(cz_share_in_c),
-      shortLabel: "CZ market share"
-    },
-    // Median peer share: 0 is a real value ("peers also export nothing"),
-    // only null/NaN means unknown
-    {
-      label: "Medián peer group",
-      value: formatPercentage(median_peer_share),
-      shortLabel: "Peer median"
-    },
-    // YoY change: only rendered when a real YoY number exists (the hook
-    // passes null for non-YoY signals and placeholder zeros)
-    {
-      label: "Meziroční změna",
-      value: formatYoYDelta(cz_delta_pct),
-      shortLabel: "YoY change"
+  // Per-signal tile semantics: peer-gap signals get a "share vs median" hero
+  // tile, YoY/own-product signals get a "prev → current" hero tile.
+  const signalType = signal?.type || '';
+  const isSynthetic = !!signal?.synthetic
+    || String(signal?.id || '').startsWith('hs6_synthetic_')
+    || String(signal?.id || '').startsWith('country_click_');
+  const isPeerSignal = !isSynthetic && signalType.includes('Peer_gap');
+  const isYoYSignal = isSynthetic
+    || signalType === 'YoY_export_change'
+    || signalType === 'YoY_partner_share_change';
+
+  // Tile descriptors: { label, value, sub?, subStyle?, hero? }
+  let metrics;
+
+  if (isPeerSignal) {
+    const hasPair = Number.isFinite(Number(cz_share_in_c)) && Number.isFinite(Number(median_peer_share));
+    const gapPb = hasPair ? (Number(cz_share_in_c) - Number(median_peer_share)) * 100 : null;
+    const gapTxt = gapPb == null ? null
+      : `${gapPb > 0 ? '+' : gapPb < 0 ? '−' : ''}${Math.abs(gapPb).toLocaleString("cs-CZ", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} p. b.`;
+    metrics = [
+      {
+        hero: true,
+        label: "Podíl ČR vs medián srovnatelných trhů",
+        value: `${formatPct1(cz_share_in_c)} vs ${formatPct1(median_peer_share)}`,
+        sub: gapTxt,
+        subStyle: { color: gapPb != null && gapPb < 0 ? "#dc2626" : "#008C00", fontWeight: "bold", fontSize: 13 }
+      },
+      { label: "Export ČR → země", value: formatCzechUSD(cz_to_c) },
+      { label: "Celkový export ČR (produkt, svět)", value: formatCzechUSD(cz_world_total) },
+      { label: "Import země celkem", value: formatCzechUSD(c_import_total) },
+      { label: "Meziroční změna", value: formatYoYDelta(cz_delta_pct) }
+    ];
+  } else if (isYoYSignal) {
+    const cur = Number.isFinite(Number(cz_to_c)) ? Number(cz_to_c) : null;
+    const yoy = Number.isFinite(Number(cz_delta_pct)) ? Number(cz_delta_pct) : null;
+    // Prefer the real previous-year value from /insights_data; derive it from
+    // the YoY % when the field is absent (older API), never when yoy = -100.
+    let prev = Number.isFinite(Number(cz_to_c_prev)) ? Number(cz_to_c_prev) : null;
+    if (prev == null && cur != null && yoy != null && yoy !== -100) {
+      prev = cur / (1 + yoy / 100);
     }
-  ];
+    const sigYear = Number(signal?.year || year) || null;
+    const heroLabel = isSynthetic
+      ? `Vývoj exportu ČR do země${sigYear ? ` (${sigYear - 1}→${sigYear})` : ''}`
+      : "Meziroční změna exportu ČR do země";
+    const hasPair = prev != null && cur != null;
+    metrics = [
+      {
+        hero: true,
+        label: heroLabel,
+        value: hasPair ? formatUsdPair(prev, cur) : formatYoYDelta(cz_delta_pct),
+        sub: hasPair && yoy != null ? `(${formatSignedPct(yoy)})` : null,
+        subStyle: { color: yoy != null && yoy < 0 ? "#dc2626" : "#008C00", fontWeight: "bold", fontSize: 13 }
+      },
+      { label: "Export ČR → země", value: formatCzechUSD(cz_to_c) },
+      { label: "Celkový export ČR (produkt, svět)", value: formatCzechUSD(cz_world_total) },
+      { label: "Import země celkem", value: formatCzechUSD(c_import_total) },
+      { label: "Podíl ČR v importu", value: formatPercentage(cz_share_in_c) },
+      // Geographic peer median only when it carries signal (>= 0.1 %)
+      ...(Number.isFinite(Number(median_peer_share)) && Number(median_peer_share) >= 0.001 ? [{
+        label: "Medián srovnatelných trhů",
+        value: formatPercentage(median_peer_share),
+        sub: "(medián geograficky srovnatelných trhů)",
+        subStyle: { color: "#666", fontSize: 10 }
+      }] : [])
+    ];
+  } else {
+    // No recognized signal type — legacy 3x2 grid
+    metrics = [
+      { label: "Export ČR → země", value: formatCzechUSD(cz_to_c) },
+      { label: "Celkový export ČR (produkt, svět)", value: formatCzechUSD(cz_world_total) },
+      { label: "Import země celkem", value: formatCzechUSD(c_import_total) },
+      { label: "Podíl ČR v importu", value: formatPercentage(cz_share_in_c) },
+      // Median peer share: 0 is a real value ("peers also export nothing"),
+      // only null/NaN means unknown
+      { label: "Medián peer group", value: formatPercentage(median_peer_share) },
+      // YoY change: only rendered when a real YoY number exists (the hook
+      // passes null for non-YoY signals and placeholder zeros)
+      { label: "Meziroční změna", value: formatYoYDelta(cz_delta_pct) }
+    ];
+  }
 
   return (
     <div style={{ border: "1px solid #eee", borderRadius: 6, padding: 12, background: "#fff" }}>
@@ -241,36 +246,42 @@ export default function KeyData({
         </div>
       )}
       
-      {/* 3x2 grid of mini-tiles */}
-      <div style={{ 
-        display: "grid", 
+      {/* Grid of mini-tiles; hero tiles span two columns */}
+      <div style={{
+        display: "grid",
         gridTemplateColumns: "1fr 1fr 1fr",
         gap: 8
       }}>
-        {metrics.slice(0, 6).map((metric, index) => (
-          <div key={index} style={{ 
-            padding: "8px", 
-            backgroundColor: "#f8f9fa", 
+        {metrics.map((metric, index) => (
+          <div key={index} style={{
+            padding: "8px",
+            backgroundColor: "#f8f9fa",
             borderRadius: 4,
             textAlign: "center",
-            minHeight: 60
+            minHeight: 60,
+            ...(metric.hero ? { gridColumn: "span 2", border: "1px solid #e9ecef" } : {})
           }}>
-            <div style={{ 
-              fontSize: 11, 
+            <div style={{
+              fontSize: 11,
               color: "#666",
               marginBottom: 4,
               lineHeight: 1.2
             }}>
               {metric.label}
             </div>
-            <div style={{ 
-              fontSize: 14, 
-              fontWeight: "bold", 
+            <div style={{
+              fontSize: metric.hero ? 17 : 14,
+              fontWeight: "bold",
               color: "#008C00",
               lineHeight: 1.2
             }}>
               {metric.value}
             </div>
+            {metric.sub && (
+              <div style={{ marginTop: 3, lineHeight: 1.2, fontSize: 11, color: "#666", ...(metric.subStyle || {}) }}>
+                {metric.sub}
+              </div>
+            )}
           </div>
         ))}
       </div>

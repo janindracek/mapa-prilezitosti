@@ -23,6 +23,7 @@ function fmtNum(x, share = false) {
 
 export default function AnalyticsTable({ referenceData = { countryNames: {}, hs6Labels: {} } }) {
   const [filters, setFilters] = useState({ type: "", method: "", band: "", country: "", hs6: "" });
+  const [minValue, setMinValue] = useState("");
   const [page, setPage] = useState(1);
   const [data, setData] = useState({ total: 0, rows: [] });
   const [loading, setLoading] = useState(false);
@@ -93,6 +94,15 @@ export default function AnalyticsTable({ referenceData = { countryNames: {}, hs6
           onChange={(e) => set("country", e.target.value.toUpperCase())} />
         <input style={{ ...selStyle, width: 110 }} placeholder="HS6" value={filters.hs6}
           onChange={(e) => set("hs6", e.target.value.replace(/\D/g, ""))} />
+        <input
+          style={{ ...selStyle, width: 150 }}
+          type="number"
+          min="0"
+          placeholder="Min. hodnota (USD)"
+          title="Skryje řádky signálů typu Nárůst exportu, jejichž exportní hodnota je pod limitem. Filtr velkých procent z malých základů; uplatňuje se na načtenou stránku."
+          value={minValue}
+          onChange={(e) => setMinValue(e.target.value)}
+        />
       </div>
 
       <div style={{ fontSize: 13, color: "#666", marginBottom: 6 }}>
@@ -110,7 +120,14 @@ export default function AnalyticsTable({ referenceData = { countryNames: {}, hs6
             </tr>
           </thead>
           <tbody>
-            {data.rows.map((r, i) => (
+            {data.rows.filter((r) => {
+              // Min-USD filter: only meaningful for YoY export rows, whose
+              // `value` IS the export amount in USD (share-type rows keep showing).
+              const min = Number(minValue);
+              if (!minValue || !Number.isFinite(min)) return true;
+              if (r.type !== "YoY_export_change") return true;
+              return Number(r.value) >= min;
+            }).map((r, i) => (
               <tr key={i}>
                 <td style={td}>{signalBadge(r.type)}</td>
                 <td style={{ ...td, color: r.band === "weak" ? "#8a6d00" : "#2e7d32" }}>

@@ -10,8 +10,8 @@ router = APIRouter()
 @router.get("/insights")
 def get_insights(importer: str, hs6: str, year: int):
     """Generate the narrative insight text for an (importer, hs6, year)."""
-    text = generate_insights(settings.METRICS_PARQUET_PATH, importer, hs6, year)
-    return {"insight": text}
+    text, source = generate_insights(settings.METRICS_PARQUET_PATH, importer, hs6, year)
+    return {"insight": text, "source": source}
 
 
 @router.get("/insights_data")
@@ -29,6 +29,7 @@ def get_insights_data(importer: str, hs6: str, year: int):
         "median_peer_share": context.get("pen_med"),        # peer benchmark (request-time median)
         "import_yoy_change": context.get("imp_yoy_change"),  # partner's import YoY %
         "cz_to_c": context.get("cz_to_imp_last"),           # CZ export to partner
+        "cz_to_c_prev": context.get("cz_to_imp_prev"),      # CZ export to partner, previous year
         "cz_world_total": context.get("cz_global_last"),    # CZ total world export for HS6
-        "cz_delta_pct": context.get("cz_export_yoy"),       # CZ's own export YoY % (fixed: was a dup of import YoY)
+        "cz_delta_pct": context.get("cz_export_yoy"),       # CZ's own export YoY in PERCENT (79.4 = +79.4%)
     }

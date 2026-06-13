@@ -34,16 +34,41 @@ function signalTypeOf(s) {
   return s?.type || "";
 }
 
+const SYNTHETIC_BADGE_COLORS = { bg: "#f0f0f0", border: "#ddd", text: "#444" };
+
+// Compact right-aligned magnitude: peer rows "31 % vs 60 %", YoY rows "+816 %".
+function magnitudeText(s) {
+  const type = signalTypeOf(s);
+  if (s?.synthetic) return null; // synthetic rows carry placeholder zeros
+  if (type.includes("Peer_gap")) {
+    const v = Number(s?.value);          // on peer rows, value IS the CZ share decimal
+    const m = Number(s?.peer_median);
+    if (!Number.isFinite(v) || !Number.isFinite(m)) return null;
+    const f = (x) => Math.round(x * 100).toLocaleString("cs-CZ");
+    return `${f(v)} % vs ${f(m)} %`;
+  }
+  if (type === "YoY_export_change" || type === "YoY_partner_share_change") {
+    const y = Number(s?.yoy);            // raw percent units, NOT value_fmt
+    if (!Number.isFinite(y)) return null;
+    const f = y.toLocaleString("cs-CZ", { maximumFractionDigits: 0 });
+    return `${y > 0 ? "+" : ""}${f} %`;
+  }
+  return null;
+}
+
 function Row({ s, hs6Map, selected, onSelect }) {
   const type = signalTypeOf(s);
-  const colors = COLORS[type] || COLORS.YoY_export_change;
+  const isSynthetic = !!s?.synthetic;
+  const colors = isSynthetic ? SYNTHETIC_BADGE_COLORS : (COLORS[type] || COLORS.YoY_export_change);
+  const badgeText = isSynthetic ? "Vlastní analýza" : signalBadge(type);
   const text = productText(s, hs6Map);
+  const magnitude = magnitudeText(s);
   return (
     <li
       onClick={() => onSelect && onSelect(s)}
-      title={`${signalBadge(type)} · ${text}`}
+      title={`${badgeText} · ${text}`}
       style={{
-        display: "grid", gridTemplateColumns: "auto 1fr", alignItems: "center", gap: 8,
+        display: "grid", gridTemplateColumns: "auto 1fr auto", alignItems: "center", gap: 8,
         padding: "6px 8px", borderBottom: "1px solid #eee",
         cursor: onSelect ? "pointer" : "default",
         background: selected ? "#f0f7ff" : "transparent",
@@ -54,11 +79,14 @@ function Row({ s, hs6Map, selected, onSelect }) {
         background: colors.bg, border: `1px solid ${colors.border}`, color: colors.text,
         padding: "2px 6px", borderRadius: 10, fontSize: 12, whiteSpace: "nowrap",
       }}>
-        {signalBadge(type)}
+        {badgeText}
       </span>
       <span style={{ display: "flex", alignItems: "center", gap: 6, overflow: "hidden" }}>
         <span aria-hidden>{ICON[type] || "🔎"}</span>
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{text}</span>
+      </span>
+      <span style={{ fontSize: 12, color: "#666", whiteSpace: "nowrap", textAlign: "right" }}>
+        {magnitude || ""}
       </span>
     </li>
   );

@@ -34,7 +34,7 @@ class PeerGroupRegistry:
         "trade_structure": {
             "name": "Trade Structure Groups", 
             "description": "Countries clustered by similarity of their import portfolios across HS2 categories using cosine similarity. This identifies economies with comparable trade structure patterns.",
-            "explanation_template": "Země je zařazena do skupiny '{cluster_name}': {cluster_description} Skupina zahrnuje {country_count} zemí s podobnou obchodní strukturou včetně {sample_countries}.",
+            "explanation_template": "Země je zařazena do skupiny '{cluster_name}': {cluster_description} Skupina zahrnuje {country_count} zemí s podobnou obchodní strukturou, např. {sample_countries}.",
             "data_source": "peer_groups_hs2.parquet",
             "supports_clustering": True,
             "cluster_explanations": {
@@ -83,7 +83,7 @@ class PeerGroupRegistry:
         "opportunity": {
             "name": "Export Opportunity Peers",
             "description": "Countries grouped by similar export opportunity profiles and market potential. This identifies economies with comparable market opportunities.",
-            "explanation_template": "Země je zařazena do skupiny '{cluster_name}': {cluster_description} Skupina zahrnuje {country_count} zemí s podobnými exportními příležitostmi včetně {sample_countries}.",
+            "explanation_template": "Země je zařazena do skupiny '{cluster_name}': {cluster_description} Skupina zahrnuje {country_count} zemí s podobnými exportními příležitostmi, např. {sample_countries}.",
             "data_source": "peer_groups_opportunity.parquet",
             "supports_clustering": True,
             "cluster_explanations": {
@@ -132,7 +132,7 @@ class PeerGroupRegistry:
         "human": {
             "name": "Curated Regional Groups",
             "description": "Manually curated peer groups based on expert economic and geographic analysis. These groups reflect real-world economic relationships.",
-            "explanation_template": "Expertně kurátorovaná skupina '{cluster_name}': {cluster_description} Země je seskupena s {country_count} zeměmi včetně {sample_countries}.",
+            "explanation_template": "Expertně kurátorovaná skupina '{cluster_name}': {cluster_description} Země je seskupena s {country_count} zeměmi, např. {sample_countries}.",
             "data_source": "peer_groups_human.parquet", 
             "supports_clustering": True,
             "cluster_names": {
@@ -334,9 +334,24 @@ class PeerGroupRegistry:
             elif method == "human":
                 cluster_name = methodology.get("cluster_names", {}).get(cluster_id)
         
-        # Generate explanation text
+        # Generate explanation text. Teaser examples are ordered by market size
+        # (total imports, latest year) and shown as Czech names — the previous
+        # alphabetical ISO3 slice opened Germany's group with "AGO, ALB, AZE".
         country_count = len(peer_countries)
         sample_countries = ", ".join(peer_countries[:3]) if peer_countries else "none found"
+        if peer_countries:
+            try:
+                from api.data_access import country_import_totals, metrics_mtime_key
+                from api.data.loaders import load_real_country_iso3
+                from api.data.serving import serving_data
+                totals = country_import_totals(metrics_mtime_key())
+                real_iso3 = load_real_country_iso3()
+                candidates = [c for c in peer_countries if not real_iso3 or c in real_iso3]
+                sample = sorted(candidates, key=lambda c: totals.get(c, 0.0), reverse=True)[:3]
+                if sample:
+                    sample_countries = ", ".join(serving_data.country_name(c) for c in sample)
+            except Exception as e:
+                print(f"Error building peer teaser sample for {country_iso3}: {e}")
         
         explanation_template = methodology.get("explanation_template", "Peer group includes {country_count} countries including {sample_countries}.")
         explanation_text = explanation_template.format(

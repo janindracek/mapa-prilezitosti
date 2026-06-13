@@ -72,7 +72,7 @@
     "card_title": "",
     "short_label": "Strukturální",
     "tooltip": "",
-    "full_description": "Skupiny tvořené metodou k-means (kosinová podobnost) na profilech importních podílů podle kapitol HS2 – tedy podle toho, co trh dováží. ČR patří do skupiny „Evropské jádro a vyspělá Asie“: vyspělá výroba, silná poptávka po strojírenství, vozidlech a meziproduktech, vysoká diverzifikace.",
+    "full_description": "Skupiny zemí tvořené metodou k-means (kosinová podobnost) na profilech importních podílů podle kapitol HS2 – tedy podle toho, co trh dováží. Země ve stejné skupině mají podobnou strukturu dovozu, takže srovnání českého podílu na jejich trzích je vypovídající. Konkrétní skupinu vybrané země zobrazuje panel Informace o signálu.",
     "map_title": "",
     "status": "ok",
     "notes": "method=trade_structure; ČR ve skupině #4; descriptor z peer_groups_hs2_explained.csv (přeloženo EN→CZ v M3)"
@@ -85,7 +85,7 @@
     "card_title": "",
     "short_label": "Geografický",
     "tooltip": "",
-    "full_description": "Expertně sestavené skupiny podle geografie a úrovně rozvoje. ČR patří do skupiny „Střední a východní Evropa“ (Rakousko, Bulharsko, Maďarsko, Polsko, Rumunsko, Slovensko, Slovinsko) – průmyslové jádro s vysokým podílem strojírenství a automobilového průmyslu.",
+    "full_description": "Expertně sestavené skupiny zemí podle geografické blízkosti a úrovně ekonomického rozvoje. Země ve stejné skupině sdílejí region a podobné tržní podmínky, takže jejich dovozní chování lze smysluplně srovnávat. Konkrétní skupinu vybrané země zobrazuje panel Informace o signálu.",
     "map_title": "",
     "status": "ok",
     "notes": "method=human; ČR ve skupině #3; descriptor z peer_groups_human_explained.csv"
@@ -111,7 +111,7 @@
     "card_title": "",
     "short_label": "Podíl ČR",
     "tooltip": "",
-    "full_description": "Český podíl na importu",
+    "full_description": "Podíl ČR na celkovém importu vybraného produktu (HS6) do dané země, v %. Čím vyšší podíl, tím silnější pozice ČR na daném trhu.",
     "map_title": "Český podíl na importu HS6 {hs6}, {year}",
     "status": "ok",
     "notes": "= podil_cz_na_importu"
@@ -124,10 +124,23 @@
     "card_title": "",
     "short_label": "Hodnota exportu",
     "tooltip": "",
-    "full_description": "Celková hodnota exportu",
+    "full_description": "Hodnota českého exportu vybraného produktu (HS6) do dané země, v USD.",
     "map_title": "Celková hodnota exportu HS6 {hs6}, {year}",
     "status": "ok",
     "notes": "= export_cz_to_partner"
+  },
+  "import_value_usd": {
+    "id": "import_value_usd",
+    "kind": "map_metric",
+    "section_header": "",
+    "badge": "",
+    "card_title": "",
+    "short_label": "Velikost trhu",
+    "tooltip": "",
+    "full_description": "Celková hodnota importu vybraného produktu (HS6) do dané země ze všech dodavatelů světa, v USD. Ukazuje velikost trhu bez ohledu na to, kolik do něj dodává ČR – tmavší modrá znamená větší trh.",
+    "map_title": "Celkový import HS6 {hs6} do země, {year}",
+    "status": "ok",
+    "notes": "= import_partner_total (M7 třetí mapová metrika)"
   },
   "podil_cz_na_importu": {
     "id": "podil_cz_na_importu",

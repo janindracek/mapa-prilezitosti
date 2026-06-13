@@ -105,6 +105,23 @@ def core_max_year(_key: tuple[float, float]) -> int | None:
 
 
 @lru_cache(maxsize=1)
+def country_import_totals(_key: tuple[float, float]) -> dict:
+    """Total imports per country for the latest year: sum of import_partner_total
+    across all hs6 (one small GROUP BY inside DuckDB, cached by parquet mtime).
+    Used to order peer-group teaser examples by market size."""
+    sql = (
+        "SELECT partner_iso3, SUM(import_partner_total) AS total_imports "
+        f"FROM read_parquet('{_CORE}') "
+        f"WHERE year = (SELECT max(year) FROM read_parquet('{_CORE}')) "
+        "GROUP BY 1"
+    )
+    with _QUERY_SEM:
+        rows = _duck().cursor().execute(sql).fetchall()
+    return {str(iso): float(total) for iso, total in rows
+            if iso is not None and total is not None}
+
+
+@lru_cache(maxsize=1)
 def get_metrics_cached(_key: tuple[float, float]):
     """DEPRECATED full-frame load. No live endpoint calls this anymore — the
     map/products path uses ServingDataLoader and every other consumer uses

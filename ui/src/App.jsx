@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Controls from "./components/Controls.jsx";
 import SignalsList from "./components/SignalsList.jsx";
 import WorldMap from "./components/WorldMap.jsx";
 import ProductBarChart from "./components/ProductBarChart.jsx";
 import KeyData from "./components/KeyData.jsx";
+import OpportunityHeadline from "./components/OpportunityHeadline.jsx";
 import SignalInfo from "./components/SignalInfo.jsx";
 import HelpButton from "./components/HelpButton.jsx";
 import AnalyticsTable from "./components/AnalyticsTable.jsx";
@@ -112,6 +113,7 @@ export default function App() {
   const countries = (controls.countries && controls.countries.length) ? controls.countries : ["BEL"];
   const selectedCountry = state.country || null;
 
+
   // Get selected signal - either from signals list or create synthetic for HS6 selection
   let selectedSignal = Array.isArray(signals) ? signals.find((x) => x.id === selectedId) || null : null;
   
@@ -122,6 +124,7 @@ export default function App() {
       selectedSignal = {
         id: `hs6_synthetic_${selectedHS6}`,
         type: 'YoY_export_change',
+        synthetic: true,
         hs6: selectedHS6,
         hs6_name: hs6Item.label,
         partner_iso3: state.country,
@@ -131,6 +134,21 @@ export default function App() {
       };
     }
   }
+
+  // Map highlight inputs: the analyzed country + (for peer signals) its
+  // comparison group. peer_countries arrives as a JSON string array of iso3.
+  const isPeerSignalSelected = !!selectedSignal?.type?.includes?.('Peer_gap');
+  const peerCountriesRaw = isPeerSignalSelected ? selectedSignal?.peer_countries : null;
+  const peerIso3 = useMemo(() => {
+    if (!peerCountriesRaw) return [];
+    try {
+      const arr = typeof peerCountriesRaw === 'string' ? JSON.parse(peerCountriesRaw) : peerCountriesRaw;
+      return Array.isArray(arr) ? arr.filter((c) => typeof c === 'string') : [];
+    } catch {
+      return [];
+    }
+  }, [peerCountriesRaw]);
+  const mapSelectedIso3 = selectedSignal?.partner_iso3 || state.country || null;
 
 
 
@@ -220,7 +238,12 @@ export default function App() {
             </div>
           </div>
           {/* Right column skeleton */}
-          <div style={{ display: "grid", gap: 12, gridTemplateRows: "auto auto 1fr", paddingLeft: 8 }}>
+          <div style={{ display: "grid", gap: 12, gridTemplateRows: "auto auto auto 1fr", paddingLeft: 8 }}>
+            <OpportunityHeadline
+              signal={selectedSignal}
+              keyData={panelVM.keyData}
+              referenceData={referenceData}
+            />
             <KeyData
               data={panelVM.keyData}
               signal={selectedSignal}
@@ -242,6 +265,8 @@ export default function App() {
                 selectedId={(panelVM.barData && panelVM.barData.length) ? selectedCountry : null}
                 onSelect={onBarSelect}
                 referenceData={referenceData}
+                shareMode={!!panelVM.meta?.signalType?.includes?.('Peer_gap')}
+                peerMedian={selectedSignal?.peer_median ?? null}
               />
             </div>
             <div>
@@ -256,7 +281,7 @@ export default function App() {
                 <div style={{ fontWeight: "bold", marginBottom: 6, fontSize: 14 }}>
                   Zobrazit na mapě:
                 </div>
-                <div style={{ display: "flex", gap: 16 }}>
+                <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                   <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 14 }}>
                     <input
                       type="radio"
@@ -264,7 +289,7 @@ export default function App() {
                       checked={mapMetric === 'cz_share_in_partner_import'}
                       onChange={(e) => setMapMetric(e.target.value)}
                     />
-                    Český podíl na importu produktu (%)
+                    Český podíl na importu produktu do dané země (%)
                     <HelpButton id="cz_share_in_partner_import" size={15} />
                   </label>
                   <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 14 }}>
@@ -277,7 +302,22 @@ export default function App() {
                     Český export produktu do země (USD)
                     <HelpButton id="export_value_usd" size={15} />
                   </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 14 }}>
+                    <input
+                      type="radio"
+                      value="import_value_usd"
+                      checked={mapMetric === 'import_value_usd'}
+                      onChange={(e) => setMapMetric(e.target.value)}
+                    />
+                    Velikost trhu — import země (USD)
+                    <HelpButton id="import_value_usd" size={15} />
+                  </label>
                 </div>
+                {isPeerSignalSelected && (
+                  <div style={{ marginTop: 6, fontSize: 12, color: "#666" }}>
+                    Tmavý okraj = vybraná země, fialový okraj = srovnávací skupina
+                  </div>
+                )}
               </div>
               
               {/* Render from worldData's own metric/hs6 (what the rows were
@@ -292,6 +332,8 @@ export default function App() {
                 nameField='name'
                 meta={{ hs6: worldData.hs6 || effectiveHs6, year: state.year }}
                 onCountryClick={onMapCountryClick}
+                selectedIso3={mapSelectedIso3}
+                peerIso3={peerIso3}
               />
 
             </div>
@@ -301,7 +343,15 @@ export default function App() {
       {/* Bottom insights section with title and warning */}
       <div style={{ border: "1px solid #eee", borderRadius: 6, padding: 12, background: "#fff", minHeight: 220 }}>
         <div style={{ fontFamily: "Montserrat", fontWeight: "bold", marginBottom: 8, fontSize: 18, color: "#008C00" }}>Kontext země a produktu</div>
-        <div style={{ marginBottom: 12, color: "red", fontSize: 14, fontWeight: "bold" }}>VAROVÁNÍ: obsah vygenerovaný automaticky skrz LLM; správnost není zaručena</div>
+        {insights.source === 'llm' ? (
+          <div style={{ marginBottom: 12, color: "#92400e", fontSize: 13 }}>
+            Text byl doplněn jazykovým modelem — klíčové údaje ověřte v panelech výše.
+          </div>
+        ) : (
+          <div style={{ marginBottom: 12, color: "#666", fontSize: 12 }}>
+            Automaticky sestavený souhrn z obchodních dat BACI (2022–2023). Neobsahuje informace mimo poskytnutá data.
+          </div>
+        )}
         <div style={{ textAlign: "left", whiteSpace: "pre-wrap", fontSize: 16, lineHeight: 1.5 }}>
           {insights.loading ? "Načítání kontextu…" : (insights.text || "Žádný kontext není k dispozici pro tento výběr.")}
         </div>

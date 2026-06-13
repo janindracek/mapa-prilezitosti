@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { API_BASE } from '../lib/constants.js';
 
 export function useInsights(selectedId, selectedHS6, panelVM, state, signals) {
-  const [insights, setInsights] = useState({ text: "", loading: false, error: null });
+  const [insights, setInsights] = useState({ text: "", source: "template", loading: false, error: null });
 
   // Insights: only after explicit signal click or HS6 selection + 1s debounce to avoid request bursts
   useEffect(() => {
@@ -43,10 +43,16 @@ export function useInsights(selectedId, selectedHS6, panelVM, state, signals) {
           throw new Error(`Unexpected response (content-type=${ctype}): ${txt.slice(0,120)}…`);
         }
         const data = await res.json();
-        setInsights({ text: data.insight || "No insights available", loading: false, error: null });
+        setInsights({
+          text: data.insight || "No insights available",
+          // 'template' | 'llm'; older servers don't send it -> template
+          source: data.source === 'llm' ? 'llm' : 'template',
+          loading: false,
+          error: null,
+        });
       } catch (e) {
         if (e?.name === 'AbortError') return; // canceled due to rapid re-click
-        setInsights({ text: "", loading: false, error: String(e?.message || e) });
+        setInsights({ text: "", source: "template", loading: false, error: String(e?.message || e) });
       }
     }, 1000); // 1s debounce
 

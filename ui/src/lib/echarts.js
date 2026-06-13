@@ -9,6 +9,7 @@ import {
   TooltipComponent,
   VisualMapComponent,
   GridComponent,
+  MarkLineComponent,
 } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 
@@ -18,6 +19,7 @@ echarts.use([
   TooltipComponent,
   VisualMapComponent,
   GridComponent,
+  MarkLineComponent, // peer-median reference line on the benchmark bar chart
   CanvasRenderer,
 ]);
 

@@ -177,6 +177,18 @@ The AI insight text (`/insights`) runs on OpenAI and falls back to a determinist
 
 Czech UI. Blocks: **pre-selections** (`/controls`, defaults), **clicking/interactions** (signal click sets year+hs6+metric+country and refetches; map country-click synthesizes a signal; bar click sets hs6), **descriptors** (`/peer_groups/*`), **chart/bars** (3 modes), **map** (two logics, §5), **trend mini**, **KeyData tiles**, **insight text**. Full mapping in `_finalization/architecture.html` §③.
 
+### 7.1 Decision-support presentation (M7 UX pass)
+
+A multi-model UX review (export-mission persona) drove a set of presentation changes so the four panels tell **one** coherent story per selected opportunity. All are client-side on the existing endpoints except the small API contract additions noted.
+
+- **Opportunity headline** (`OpportunityHeadline.jsx`, above KeyData) — one Czech sentence computed from the selected signal + `/insights_data`. Peer-gap: *"ČR dodává 31,3 % importu … (medián srovnatelných trhů 59,6 %) — dorovnání mediánu ≈ +17,7 mil. USD ročně."* The headroom = `(peer_median − cz_share) × c_import_total`. YoY: *"… vzrostl z 1 343 USD na 1,1 mil. USD (+81 570 % meziročně)"* — always pairs the % with its absolute base.
+- **KeyData hero tile** (`KeyData.jsx`) — peer-gap signals lead with a double-width "Podíl ČR vs medián … / −28,3 p. b." tile (red below / green above); YoY/own-product lead with a "prev → current" tile. The degenerate peer-median tile is hidden when the median rounds below 0.1 %. A real `0` shows "0 USD" (not "—").
+- **Benchmark bar chart** (`ProductBarChart.jsx`, `shareMode`) — for peer-gap signals the bars encode **CZ share of each peer market** (%), sorted by share, with a dashed amber **median markLine**. Falls back to USD encoding when `share` is absent. Requires `MarkLineComponent` registered in `lib/echarts.js` **and** `lazyUpdate={false}` (a mark-component added in the same update as series data does not paint under lazyUpdate).
+- **World map** (`WorldMap.jsx`) — a `visualMap` **legend** is now shown; the color ceiling is the **95th percentile** of positive values (outliers clamp, no wash-out); a third metric **`import_value_usd`** ("Velikost trhu — import země", blue ramp) answers "big market where we're weak"; the selected country gets a dark border and peer countries a purple border (`selectedIso3` / `peerIso3` props; iso3→region via the module-scope `ISO3_TO_GEOJSON_NAME`).
+- **Signal list** (`SignalsList.jsx`) — each row shows a compact magnitude ("31 % vs 60 %" / "+816 %"); own-product synthetic rows badge "Vlastní analýza".
+- **Insight text** (`api/insights_text.py`) — fixed the false "5-year growth" claim (now "Meziroční změna importu (2022→2023)"), excludes CZE from the world-import list, resolves all ISO3 → Czech names, uses Czech decimal commas, and omits the median clause when degenerate. `/insights` returns `source` (`template`|`llm`); the UI shows a sober data-source note instead of the blanket red "LLM" warning.
+- **API contract additions (M7 UX):** `/bars` partner & peer_compare records gain `share`; `/insights_data` gains `cz_to_c_prev` and serves `cz_delta_pct` in consistent percent units; `/map_v2` accepts `metric=import_value_usd`; `/signals/all` filters BACI pseudo-codes (e.g. `S19`); peer-group teaser members are ordered by market size and shown in Czech.
+
 ---
 
 ## 8. Pipeline & annual refresh

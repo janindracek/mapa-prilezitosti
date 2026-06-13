@@ -152,10 +152,21 @@ class UnifiedSignalsService:
             # TODO: Load from reference data files for proper names
             signal['hs6_name'] = f"HS6 {signal.get('hs6', '')}"  # Placeholder
             signal['partner_name'] = signal.get('partner_iso3', '')  # Use ISO3 as fallback
-            
+
+            # M7: the ETL stores YoY as a RATIO (delta/prev; etl/02), so the
+            # raw `yoy` field was 100× smaller than every percent surface
+            # (value_fmt below ×100s it; /insights_data speaks percent).
+            # Serve `yoy` in PERCENT too so all magnitudes agree.
+            if str(signal.get('type', '')).startswith('YoY'):
+                try:
+                    if signal.get('yoy') is not None and not pd.isna(signal['yoy']):
+                        signal['yoy'] = float(signal['yoy']) * 100.0
+                except (TypeError, ValueError):
+                    pass
+
             # Format values
             signal['value_fmt'], signal['unit'] = fmt_value(
-                float(signal.get('intensity', 0.0)), 
+                float(signal.get('intensity', 0.0)),
                 signal.get('type', '')
             )
             
@@ -330,6 +341,12 @@ class UnifiedSignalsService:
                         signal_type: Optional[str] = None, band: Optional[str] = None,
                         hs6: Optional[str] = None, page: int = 1, page_size: int = 50) -> Dict[str, Any]:
         df = self._load_signals()
+        # Drop BACI pseudo-aggregates (e.g. partner 'S19' = "Other Asia, nes") —
+        # they are not countries and must not surface in the analytics tab.
+        from api.data.loaders import load_real_country_iso3
+        real_iso3 = load_real_country_iso3()
+        if real_iso3 and "partner_iso3" in df.columns:
+            df = df[df["partner_iso3"].isin(real_iso3)]
         if country:
             iso = normalize_iso(country)
             if iso and iso != "CZE":

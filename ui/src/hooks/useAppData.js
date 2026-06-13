@@ -89,6 +89,8 @@ export function useAppData() {
       method: s.method,        // peer methodology id
       peer_median: s.peer_median,
       delta_vs_peer: s.delta_vs_peer,
+      peer_countries: s.peer_countries, // JSON string array of iso3 (map highlight)
+      peer_count: s.peer_count,
     }));
   }, []);
 

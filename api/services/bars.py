@@ -128,9 +128,12 @@ class BarsService:
         """
         # Normalize HS6 and read only this product's rows (all years) from the
         # parquet — small slice, keeps the existing year-filter + fallback logic.
+        # podil_cz_na_importu rides along so every partner bar can expose the CZ
+        # market share for that (hs6, year, partner).
         hs6_padded = str(hs6).zfill(6)
         df = query_core(
-            ["year", "partner_iso3", "hs6", "export_cz_to_partner"], hs6=hs6_padded
+            ["year", "partner_iso3", "hs6", "export_cz_to_partner", "podil_cz_na_importu"],
+            hs6=hs6_padded,
         )
         if df.empty:
             return []
@@ -166,6 +169,12 @@ class BarsService:
         if value_col is None:
             return []
         
+        # Keep the pre-peer-filter frame: the selected country is not part of
+        # its own peer group, so its REAL row must come from here (it used to be
+        # re-appended with a hardcoded 0.0 — wrong whenever CZ actually exports
+        # there, e.g. DEU/930400/2023 is 19.6M USD, not 0).
+        base_data = filtered_data
+
         # Apply peer group filtering
         if mode == "peer_compare" and country and peer_group:
             iso3 = normalize_iso(country)
@@ -175,21 +184,35 @@ class BarsService:
                     filtered_data = filtered_data[
                         filtered_data["partner_iso3"].isin(peer_countries)
                     ]
-        
-        # Aggregate by partner
+
+        # Aggregate by partner. One core_trade row exists per (year, hs6,
+        # partner), so "max" just carries the stored share alongside the value.
+        agg_spec = {value_col: "sum"}
+        has_share = "podil_cz_na_importu" in filtered_data.columns
+        if has_share:
+            agg_spec["podil_cz_na_importu"] = "max"
         partner_totals = (
             filtered_data.groupby("partner_iso3", as_index=False)
-            .agg({value_col: "sum"})
-            .rename(columns={value_col: "value"})
+            .agg(agg_spec)
+            .rename(columns={value_col: "value", "podil_cz_na_importu": "share"})
         )
-        
-        # Ensure selected country is included
+
+        # Ensure selected country is included — with its REAL value/share from
+        # the pre-filter frame (0 only if it genuinely has no row).
         if country:
             iso3 = normalize_iso(country)
             if iso3 and partner_totals[partner_totals["partner_iso3"] == iso3].empty:
+                own = base_data[base_data["partner_iso3"] == iso3]
+                own_value = float(own[value_col].sum()) if not own.empty else 0.0
+                own_share = None
+                if has_share and not own.empty:
+                    own_share = own["podil_cz_na_importu"].max()
+                extra = {"partner_iso3": [iso3], "value": [own_value]}
+                if has_share:
+                    extra["share"] = [own_share]
                 partner_totals = pd.concat([
-                    partner_totals, 
-                    pd.DataFrame({"partner_iso3": [iso3], "value": [0.0]})
+                    partner_totals,
+                    pd.DataFrame(extra)
                 ], ignore_index=True)
         
         # Sort and limit
@@ -212,8 +235,12 @@ class BarsService:
         
         # Format results
         partner_totals["id"] = partner_totals["partner_iso3"]
-        records = partner_totals[["id", "value"]].to_dict(orient="records")
-        
+        out_cols = ["id", "value"] + (["share"] if has_share else [])
+        records = partner_totals[out_cols].to_dict(orient="records")
+        for record in records:
+            # CZ share of the partner's imports for this (hs6, year) — float or null.
+            record["share"] = to_json_safe(record.get("share"))
+
         # Add country names and format values
         records = self._enrich_country_names(records)
         return self._format_values(records, "USD")
